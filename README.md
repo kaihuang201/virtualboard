@@ -1,2 +1,2 @@
 # virtualboard
-An in-browser multi-user table top game simulator
+An in-browser multi-user tabletop game simulator
