@@ -44,7 +44,26 @@ var vboard = vboard || {};
 			}
 		});
 		vboard.renderInit();
-		vboard.loadDummyBlock();
+		vboard.loadDummyBlocks();
+		var canvas = vboard.engine.getRenderingCanvas();
+		//canvas.addEventListener("mousedown", function (evt) {
+		//	//if(evt.button !== 0) {
+		//	//	return;
+		//	// }
+		//	console.log("pointer down");
+        //
+		//	var pickInfo = vboard.scene.pick(vboard.scene.pointerX, vboard.scene.pointerY, function (mesh) {
+		//		return true;
+		//	}, false);
+        //
+		//	if(pickInfo.hit) {
+		//		vboard.currentMesh = pickInfo.pickedMesh;
+		//		vboard.lastMeshPos = [vboard.scene.pointerX, vboard.scene.pointerY];
+		//	}
+		//});
+		canvas.addEventListener("mousedown", vboard.onPointerDown);
+		canvas.addEventListener("mouseup", vboard.onPointerUp);
+		canvas.addEventListener("mousemove", vboard.onPointerMove);
 	};
 
 	vboard.verticalMoveLoop = function (dir) {
@@ -77,7 +96,7 @@ var vboard = vboard || {};
 		vboard.engine = new BABYLON.Engine(canvas, true);
 		vboard.scene = (function () {
 			var scene = new BABYLON.Scene(vboard.engine);
-			scene.clearColor = new BABYLON.Color3(1, 1, 0.984);
+			scene.clearColor = new BABYLON.Color3(0.5, 1, 0.984);
 			var camera = new BABYLON.FreeCamera("Camera", new BABYLON.Vector3(0, 10, 0), scene);
 			vboard.camera = camera;
 
@@ -101,27 +120,84 @@ var vboard = vboard || {};
 			//camera.rotation = new BABYLON.Vector3(Math.PI/2, 0, 0);
 
 			scene.activeCamera = camera;
+			camera.detachControl(canvas);
 			vboard.light = new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0, 1, 0), scene);
 			vboard.light.groundColor = new BABYLON.Color3(1, 1, 0.984);
+
+			//scene.onDispose = function () {
+			//	window.removeEventListener("pointerdown", vboard.onPointerDown);
+			//	window.removeEventListener("pointerup", vboard.onPointerUp);
+			//	window.removeEventListener("pointermove", vboard.onPointerMove);
+			// };
 
 			return scene;
 		})();
 		vboard.engine.runRenderLoop(vboard.renderLoop);
 	};
 
-	vboard.loadDummyBlock = function () {
-		vboard.box = BABYLON.Mesh.CreateBox("mesh", 3, vboard.scene);
-		var material = new BABYLON.StandardMaterial("std", vboard.scene);
-		material.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5);
-		material.diffuseTexture = new BABYLON.Texture("b1.png", vboard.scene);
-		vboard.box.material = material;
+	vboard.onPointerDown = function (evt) {
+		//if(evt.button !== 0) {
+		//	return;
+		// }
+		console.log("pointer down");
+
+		var pickInfo = vboard.scene.pick(vboard.scene.pointerX, vboard.scene.pointerY, function (mesh) {
+			return true;
+		});
+
+		if(pickInfo.hit) {
+			vboard.currentMesh = pickInfo.pickedMesh;
+			vboard.lastMeshPos = [vboard.scene.pointerX, vboard.scene.pointerY];
+		}
+	};
+
+	vboard.onPointerUp = function (evt) {
+		//if(evt.button !== 0) {
+		//	return;
+		// }
+		console.log("pointer up");
+		vboard.currentMesh = null;
+	};
+
+	vboard.onPointerMove = function (evt) {
+		if(!vboard.currentMesh) {
+			return;
+		}
+		console.log("pointer move");
+		var currPos = [vboard.scene.pointerX, vboard.scene.pointerY];
+		var diffx = currPos[0] - vboard.lastMeshPos[0];
+		var diffy = currPos[1] - vboard.lastMeshPos[1];
+		vboard.currentMesh.position = vboard.currentMesh.position.add(new BABYLON.Vector3(diffx, -diffy, 0));
+		vboard.lastMeshPos = currPos;
+	};
+
+	vboard.loadDummyBlocks = function () {
+		var material1 = new BABYLON.StandardMaterial("std", vboard.scene);
+		material1.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5);
+		material1.diffuseTexture = new BABYLON.Texture("b1.png", vboard.scene);
+
+		var material2 = new BABYLON.StandardMaterial("std", vboard.scene);
+		//material2.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5);
+		material2.diffuseTexture = new BABYLON.Texture("SPACE_1.jpg", vboard.scene);
+
+		var plane1 = BABYLON.Mesh.CreatePlane("plane", 3.0, vboard.scene);
+		plane1.material = material1;
+		plane1.position = new BABYLON.Vector3(0, 10, 1);
+
+		var plane2 = BABYLON.Mesh.CreatePlane("plane", 2.0, vboard.scene);
+		plane2.material = material1;
+		plane2.position = new BABYLON.Vector3(0, 3, 1.5);
+
+		var plane3 = BABYLON.Mesh.CreatePlane("plane", 4.0, vboard.scene);
+		plane3.material = material2;
+		plane3.position = new BABYLON.Vector3(6, 4, 2);
 	};
 
 	vboard.renderLoop = function () {
 		console.log("renderloop");
 		//console.debug(vboard);
 		if(vboard.box) {
-			vboard.box.position.y = 3*Math.sin(vboard.frame / 50);
+			//vboard.box.position.y = 3*Math.sin(vboard.frame / 50);
 		}
 		vboard.frame++;
 		vboard.scene.render();
