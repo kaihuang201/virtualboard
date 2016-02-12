@@ -122,14 +122,31 @@ def createlobby(request):
     """
     create lobby view, take an input of name for the lobby
     """
+    # try:
 
-    nameOfLobby = 'abc'
+    # except (KeyError, Field.):
+
+    # else:
+    fetchedName = request.POST['lobbyName']
+
+    if not Lobby.objects.get(name='fetchedName'):
+        return render(request, 'web/createlobby.tpl', {
+                'error_msg': 'lobby with selected name already exists'
+            })
+    else:
+        new_lobby = Lobby(name = fetchedName, num_members = 0)
+        new_lobby.save()
+        return HttpResponseRedirect(reverse('web:lobby', args=(new_lobby.id,)))
+        # return HttpResponseRedirect('lobbylist')
 
 
-    return render(request, 'web/createlobby.tpl', {})
+    # context = {}
+    # return render(request, 'web/createlobby.tpl', context)
+    
 
-def lobby(request):
-	return render(request, 'web/lobby.tpl', {})
-	# return HttpResponse("Main Lobby view")
+def lobby(request,lobby_id):
+    lobby_instance = get_object_or_404(Lobby, pk=lobby_id)
+    context = {"lobby_instance":lobby_instance}
+    return render(request, 'web/lobby.tpl', context)
 
 

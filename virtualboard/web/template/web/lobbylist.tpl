@@ -8,9 +8,7 @@
     {% for lobby in lobby_list %}
         <h3>click on lobby name to join :)</h3>
         <li>
-            <a href="{% url 'lobby' lobby.name %}">
-              lobby.name ({{lobby.num_members}} people)
-            </a>
+              {{ lobby.name }} ({{ lobby.num_members }} people)
         </li>
     {% endfor %}
   {% else %}

@@ -8,6 +8,8 @@ urlpatterns = patterns('',
         url(r'^signout/$', views.signout, name='signout'),
         #url(r'^profile/$', views.profile, name='profile'),
         url(r'^listoflobbies/$', views.listoflobbies, name='listoflobbies'),
+        # ex: /createlobby/
         url(r'^createlobby/$', views.createlobby, name='createlobby'),
-        url(r'^lobby/$', views.lobby, name='lobby'),
+        # ex: /12345/
+        url(r'^(?P<lobby_id>[0-9]+)/$', views.lobby, name='lobby'),
 )
