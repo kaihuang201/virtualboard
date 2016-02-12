@@ -114,12 +114,18 @@ def listoflobbies(request):
     """
     List of Lobbies view
     """
-    return HttpResponse("list of obbies")
+    lobby_list = Lobby.objects.order_by('-num_members')
+    context = {'lobby_list': lobby_list}
+    return render(request, 'web/lobbylist.tpl', context)
 
 def createlobby(request):
     """
     create lobby view, take an input of name for the lobby
     """
+
+    nameOfLobby = 'abc'
+
+
     return render(request, 'web/createlobby.tpl', {})
 
 def lobby(request):
