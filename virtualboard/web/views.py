@@ -120,9 +120,10 @@ def createlobby(request):
     """
     create lobby view, take an input of name for the lobby
     """
-    return HttpResponse("please type a name for your lobby:")
+    return render(request, 'web/createlobby.tpl', {})
 
 def lobby(request):
-	return render(request, 'web/lobby.tpl', {'form' : form, 'next':next})
+	return render(request, 'web/lobby.tpl', {})
+	# return HttpResponse("Main Lobby view")
 
 
