@@ -9,4 +9,5 @@ urlpatterns = patterns('',
         #url(r'^profile/$', views.profile, name='profile'),
         url(r'^listoflobbies/$', views.listoflobbies, name='listoflobbies'),
         url(r'^createlobby/$', views.createlobby, name='createlobby'),
+        url(r'^lobby/$', views.lobby, name='lobby'),
 )

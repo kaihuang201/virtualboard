@@ -114,9 +114,7 @@ def listoflobbies(request):
     """
     List of Lobbies view
     """
-    now = datetime.datetime.now()
-    html = "<html><body>It is now %s.</body></html>" % now
-    return HttpResponse(html)
+    return HttpResponse("list of obbies")
 
 def createlobby(request):
     """
@@ -124,6 +122,7 @@ def createlobby(request):
     """
     return HttpResponse("please type a name for your lobby:")
 
-
+def lobby(request):
+	return render(request, 'web/lobby.tpl', {'form' : form, 'next':next})
 
 
