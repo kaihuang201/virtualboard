@@ -7,4 +7,6 @@ urlpatterns = patterns('',
         url(r'^signup/$', views.signup, name='signup'),
         url(r'^signout/$', views.signout, name='signout'),
         #url(r'^profile/$', views.profile, name='profile'),
+        url(r'^listoflobbies/$', views.listoflobbies, name='listoflobbies'),
+        url(r'^createlobby/$', views.createlobby, name='createlobby'),
 )

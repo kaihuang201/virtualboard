@@ -108,3 +108,22 @@ def signout(request):
     logout(request)
     # redirect signout successful
     return HttpResponseRedirect(reverse('web:index'))
+
+
+def listoflobbies(request):
+    """
+    List of Lobbies view
+    """
+	now = datetime.datetime.now()
+	html = "<html><body>It is now %s.</body></html>" % now
+	return HttpResponse(html)
+
+def createlobby(request):
+    """
+    create lobby view, take an input of name for the lobby
+    """
+	return HttpResponse("please type a name for your lobby:")
+
+
+
+
