@@ -1,0 +1,11 @@
+Design Implementation details
+ - Board has a finite area which players can clearly see
+	 - Players can move camera to view corner and part of the abyss beyond
+	 - Board itself can be textured with multiple layers (grass on bottom, wood on top)
+ - Camera can be panned and rotated freely
+ - Expandable menu from the side of the screen
+	 - Appears when the mouse is very close to the edge of the canvas
+ - Depth is handled by z axis ordering
+	 - When an object is moved to be overlapping another, the z ordering of many objects may be affected
+ - Click and drag misses result in camera movement
+ - Objects should be able to be rotated

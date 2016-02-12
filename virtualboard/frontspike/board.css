@@ -14,3 +14,12 @@ canvas#canvas
 	height: 100%;
 	touch-action: none;
 }
+
+div#menu
+{
+	position: absolute;
+	height: 100%;
+	width: 300px;
+	top: 0px;
+	background-color: #ffffff;
+}
