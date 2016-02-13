@@ -2,6 +2,8 @@ from django.contrib.auth import authenticate, logout, login
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
+from django.core.exceptions import ObjectDoesNotExist
+
 
 from django.core.urlresolvers import reverse
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -127,21 +129,43 @@ def createlobby(request):
     # except (KeyError, Field.):
 
     # else:
-    fetchedName = request.POST['lobbyName']
+    # fetchedName = request.POST['lobbyName']
 
-    if not Lobby.objects.get(name='fetchedName'):
-        return render(request, 'web/createlobby.tpl', {
-                'error_msg': 'lobby with selected name already exists'
-            })
-    else:
-        new_lobby = Lobby(name = fetchedName, num_members = 0)
-        new_lobby.save()
-        return HttpResponseRedirect(reverse('web:lobby', args=(new_lobby.id,)))
-        # return HttpResponseRedirect('lobbylist')
+    # if not Lobby.objects.get(name='fetchedName'):
+        # return render(request, 'web/createlobby.tpl', {
+        #         'error_msg': 'lobby with selected name already exists'
+        #     })
+    # else:
+    #     new_lobby = Lobby(name = fetchedName, num_members = 0)
+    #     new_lobby.save()
+        # return HttpResponseRedirect(reverse('web:lobby', args=(new_lobby.id,)))
+    #     # return HttpResponseRedirect('lobbylist')
 
 
     # context = {}
     # return render(request, 'web/createlobby.tpl', context)
+    if request.method == 'POST':
+        form = lobbyCreationForm(request.POST)
+        if form.is_valid():
+            fetchedName = form.cleaned_data['lobbyName']
+            
+            try:
+                tempLobby = Lobby.objects.get(name='fetchedName')
+            except ObjectDoesNotExist:
+                tempLobby = None
+
+            if tempLobby != None:
+                return render(request, 'web/createlobby.tpl', {
+                    'error_msg': 'lobby with selected name already exists'
+                    })
+            else:
+                new_lobby = Lobby(name = fetchedName, num_members = 0)
+                new_lobby.save()
+                return HttpResponseRedirect(reverse('web:lobby', args=(new_lobby.id,)))
+            # return HttpResponseRedirect(reverse('lobby',kwargs={'lobby_id': lobby.id}))
+    else:
+        form = lobbyCreationForm()
+    return render(request,'web/createlobby.tpl',{'form': form})
     
 
 def lobby(request,lobby_id):
