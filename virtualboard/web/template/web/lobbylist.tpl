@@ -5,13 +5,13 @@
 
 {% block content %}
   {% if lobby_list %}
+    <h3>click on lobby name to join :)</h3>
     {% for lobby in lobby_list %}
-        <h3>click on lobby name to join :)</h3>
-        <li>
-          <a href="/{{ lobby.id }}">
-            {{ lobby.name }} ({{ lobby.num_members }} people)
-          </a>
-        </li>
+      <li>
+        <a href="/{{ lobby.id }}">
+          {{ lobby.name }} ({{ lobby.num_members }} people)
+        </a>
+      </li>
     {% endfor %}
   {% else %}
       <p> No lobby exists <p>
