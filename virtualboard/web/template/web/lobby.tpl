@@ -9,6 +9,6 @@
     <p>{{ lobby_instance.num_members }} players</p>
 
     <button type="button" class="btn btn-primary">start game</button>
-    <button type="button" class="btn btn-danger">leave</button>
+    <a href="{% url 'web:leavelobby' lobby_instance.id %}" class="btn btn-danger">leave</a>
   {% endif %}
 {% endblock %}

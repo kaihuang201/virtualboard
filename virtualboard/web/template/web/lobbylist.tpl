@@ -5,10 +5,11 @@
 
 {% block content %}
   {% if lobby_list %}
-    <h3>click on lobby name to join :)</h3>
+    <a href="{% url 'web:createlobby' %}" class="btn btn-default">create a lobby</a>
+    <h3>or click on a lobby name to join :)</h3>
     {% for lobby in lobby_list %}
       <li>
-        <a href="/{{ lobby.id }}">
+        <a href="{% url 'web:lobby' lobby.id %}">
           {{ lobby.name }} ({{ lobby.num_members }} people)
         </a>
       </li>

@@ -13,6 +13,6 @@ urlpatterns = patterns('',
         url(r'^createlobby/$', views.createlobby, name='createlobby'),
         # ex: /12345/
         url(r'^(?P<lobby_id>[0-9]+)/$', views.lobby, name='lobby'),
-        url(r'^(?P<lobby_id>[0-9]+)/join/$', views.lobby, name='joinlobby'),
-        url(r'^(?P<lobby_id>[0-9]+)/leave/$', views.lobby, name='leavelobby'),
+        url(r'^(?P<lobby_id>[0-9]+)/join/$', views.joinlobby, name='joinlobby'),
+        url(r'^(?P<lobby_id>[0-9]+)/leave/$', views.leavelobby, name='leavelobby'),
 )
