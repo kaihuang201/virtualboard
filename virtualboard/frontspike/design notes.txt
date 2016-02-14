@@ -9,3 +9,9 @@ Design Implementation details
 	 - When an object is moved to be overlapping another, the z ordering of many objects may be affected
  - Click and drag misses result in camera movement
  - Objects should be able to be rotated
+
+Main User Process
+1. Connect to main site (run by django)
+2. Request lobby list (run by django)
+3. Connect/create lobby (tornado session created, information is passed from django to tornado)
+4. Game page is served via django, but a long term connection is maintained over tornado
