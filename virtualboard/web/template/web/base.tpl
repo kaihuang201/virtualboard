@@ -37,6 +37,7 @@
 
 {% block content %}
   <h1> Welcome to Virtual Board! </h1>
+  <a href="{% url 'web:listoflobbies' %}" class="btn btn-default">Lobby List</a>
 {% endblock %}		
 
 </body>
