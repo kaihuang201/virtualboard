@@ -9,7 +9,7 @@ class Lobby(models.Model):
 		return self.name
 
 	def __str__(self):
-		return "Lobby " + self.id + ": " + self.name
+		return "Lobby " + str(self.id) + ": " + self.name
 
 class Profile(models.Model):
     user = models.ForeignKey(User)

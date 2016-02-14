@@ -18,7 +18,7 @@ from django.db import connection
 
 from forms import *
 from web.models import *
-
+from web.modules.lobby_func import *
 
 def index(request):
     return render(request, 'web/base.tpl', {})
@@ -111,69 +111,19 @@ def signout(request):
     # redirect signout successful
     return HttpResponseRedirect(reverse('web:index'))
 
+# lobby views
 
 def listoflobbies(request):
-    """
-    List of Lobbies view
-    """
-    lobby_list = Lobby.objects.order_by('-num_members')
-    context = {'lobby_list': lobby_list}
-    return render(request, 'web/lobbylist.tpl', context)
-
-def createlobby(request):
-    """
-    create lobby view, take an input of name for the lobby
-    """
-    if request.user.is_authenticated():
-        if request.method == 'POST':
-            form = lobbyCreationForm(request.POST)
-            if form.is_valid():
-                fetchedName = form.cleaned_data['lobbyName']
-                
-                try:
-                    tempLobby = Lobby.objects.get(name=fetchedName)
-                except ObjectDoesNotExist:
-                    tempLobby = None
-
-                if tempLobby != None:
-                    return render(request, 'web/createlobby.tpl', {
-                        'error_msg': 'lobby with selected name already exists'
-                        })
-                else:
-                    new_lobby = Lobby(name = fetchedName, num_members = 1)
-                    new_lobby.save()
-                    curUserProfile = Profile.objects.get(user=request.user)
-                    curUserProfile.currentLobby = new_lobby
-                    curUserProfile.save()
-                    return HttpResponseRedirect(reverse('web:lobby', args=(new_lobby.id,)))
-        else:
-            form = lobbyCreationForm()
-            return render(request,'web/createlobby.tpl',{'form': form})
-    else:
-        return HttpResponseRedirect(reverse('web:index'))
-    
+    return listoflobbies_func(request)
 
 def lobby(request,lobby_id):
-    lobby_instance = get_object_or_404(Lobby, pk=lobby_id)
-    context = {"lobby_instance":lobby_instance}
-    return render(request, 'web/lobby.tpl', context)
+    return lobby_func(request,lobby_id)
 
+def createlobby(request):
+    return createlobby_func(request)
 
 def leavelobby(request,lobby_id):
-    curUserProfile = Profile.objects.get(user=request.user)
-    curUserProfile.currentLobby = None
-    curLobby = Lobby.objects.get(pk=lobby_id)
-    curLobby.num_members -= 1
-    if curLobby.num_members <= 0:
-        curLobby.delete()
-
-    return HttpResponseRedirect(reverse('web:listoflobbies'))
+    return leavelobby_func(request,lobby_id)
 
 def joinlobby(request,lobby_id):
-    if request.user.is_authenticated():
-        curLobby = Lobby.objects.get(pk=lobby_id)
-        curLobby.num_members += 1
-        Profile.objects.get(user = request.user).currentLobby =  curLobby
-        return HttpResponseRedirect(reverse('web:lobby', args=(lobby_id,)))
-    else:
-        return HttpResponseRedirect(reverse('web:signin'))
+    return joinlobby_func(request,lobby_id)
