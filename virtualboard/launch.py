@@ -5,7 +5,7 @@ import tornado.wsgi
 import django.core.handlers.wsgi
 from django.core.wsgi import get_wsgi_application
 from tornado.options import options, define, parse_command_line
-from web.tornado_sockets import HelloHandler
+from web.tornado_handlers import HelloHandler
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'virtualboard.settings'
 
