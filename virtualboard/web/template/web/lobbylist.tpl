@@ -22,6 +22,7 @@
               </div>
             {% else %}
                 <p> No lobby exists <p>
+                <a href="{% url 'web:createlobby' %}" class="btn btn-default">create a lobby</a>
             {% endif %}
 
           </div>
