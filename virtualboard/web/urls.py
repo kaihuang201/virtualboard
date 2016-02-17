@@ -1,5 +1,6 @@
 from django.conf.urls import patterns, include, url
 from web import views
+from . import views
 
 urlpatterns = patterns('',
         url(r'^$', views.index, name='index'),
@@ -7,4 +8,11 @@ urlpatterns = patterns('',
         url(r'^signup/$', views.signup, name='signup'),
         url(r'^signout/$', views.signout, name='signout'),
         #url(r'^profile/$', views.profile, name='profile'),
+        url(r'^listoflobbies/$', views.listoflobbies, name='listoflobbies'),
+        # ex: /createlobby/
+        url(r'^createlobby/$', views.createlobby, name='createlobby'),
+        # ex: /12345/
+        url(r'^(?P<lobby_id>[0-9]+)/$', views.lobby, name='lobby'),
+        url(r'^(?P<lobby_id>[0-9]+)/join/$', views.joinlobby, name='joinlobby'),
+        url(r'^(?P<lobby_id>[0-9]+)/leave/$', views.leavelobby, name='leavelobby'),
 )

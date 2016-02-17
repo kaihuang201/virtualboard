@@ -22,3 +22,10 @@ class signupForm(signinForm):
                 'placeholder' : 'Password Again',
             })
     password_again = forms.CharField(max_length=30, widget=widget)
+
+class lobbyCreationForm(forms.Form):
+    lobbyName_widget = forms.TextInput(attrs={
+        'class' : "form-control",
+        'placeholder' : 'name of your lobby',
+        })
+    lobbyName = forms.CharField(max_length = 30, widget = lobbyName_widget)

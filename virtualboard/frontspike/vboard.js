@@ -173,19 +173,24 @@ var vboard = vboard || {};
 
 	vboard.loadDummyBlocks = function () {
 		var material1 = new BABYLON.StandardMaterial("std", vboard.scene);
-		material1.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5);
+		material1.diffuseColor = new BABYLON.Color3(1, 1, 1);
 		material1.diffuseTexture = new BABYLON.Texture("b1.png", vboard.scene);
 
 		var material2 = new BABYLON.StandardMaterial("std", vboard.scene);
 		//material2.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5);
 		material2.diffuseTexture = new BABYLON.Texture("SPACE_1.jpg", vboard.scene);
 
+		var material3 = new BABYLON.StandardMaterial("std", vboard.scene);
+		material3.diffuseTexture = new BABYLON.Texture("crown.png", vboard.scene);
+		material3.diffuseTexture.hasAlpha = true;
+		//material3.diffuseTexture.useAlphaFromDiffuseTexture = true;
+
 		var plane1 = BABYLON.Mesh.CreatePlane("plane", 3.0, vboard.scene);
 		plane1.material = material1;
 		plane1.position = new BABYLON.Vector3(0, 10, 1);
 
 		var plane2 = BABYLON.Mesh.CreatePlane("plane", 2.0, vboard.scene);
-		plane2.material = material1;
+		plane2.material = material3;
 		plane2.position = new BABYLON.Vector3(0, 3, 1.5);
 
 		var plane3 = BABYLON.Mesh.CreatePlane("plane", 4.0, vboard.scene);
