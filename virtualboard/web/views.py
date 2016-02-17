@@ -68,8 +68,12 @@ def signup(request):
             profile = Profile(user=newuser, motto = '')
             profile.save()
 
-        # redirect welcome page
-        return HttpResponseRedirect(reverse('web:index'))
+            auth_user = authenticate(username=uname, password=pswd)
+            login(request, auth_user)
+
+            # redirect welcome page
+            return HttpResponseRedirect(reverse('web:index'))
+
     elif request.method=='GET':
         # get request
         form = signupForm()
