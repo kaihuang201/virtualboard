@@ -114,16 +114,31 @@ def signout(request):
 # lobby views
 
 def listoflobbies(request):
-    return listoflobbies_func(request)
+    if user.is_authenticated():
+        return listoflobbies_func(request)
+    else:
+        return render(request, 'web/403.tpl')
 
 def lobby(request,lobby_id):
-    return lobby_func(request,lobby_id)
+    if user.is_authenticated():
+        return lobby_func(request,lobby_id)
+    else:
+        return render(request, 'web/403.tpl')
 
 def createlobby(request):
-    return createlobby_func(request)
+    if user.is_authenticated():
+        return createlobby_func(request)
+    else:
+        return render(request, 'web/403.tpl')
 
 def leavelobby(request,lobby_id):
-    return leavelobby_func(request,lobby_id)
+    if user.is_authenticated():
+        return leavelobby_func(request,lobby_id)
+    else:
+        return render(request, 'web/403.tpl')
 
 def joinlobby(request,lobby_id):
-    return joinlobby_func(request,lobby_id)
+    if user.is_authenticated():
+        return joinlobby_func(request,lobby_id)
+    else:
+        return render(request, 'web/403.tpl')

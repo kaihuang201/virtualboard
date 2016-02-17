@@ -21,13 +21,18 @@ from web.models import *
 
 def listoflobbies_func(request):
     """
-    List of Lobbies view
+    View page with list of listo of lobbies
+    Must be signed in to see this page
     """
     lobby_list = Lobby.objects.order_by('-num_members')
     context = {'lobby_list': lobby_list}
     return render(request, 'web/lobbylist.tpl', context)
 
+
 def lobby_func(request,lobby_id):
+    """
+
+    """
     lobby_instance = get_object_or_404(Lobby, pk=lobby_id)
     context = {"lobby_instance":lobby_instance}
     return render(request, 'web/lobby.tpl', context)

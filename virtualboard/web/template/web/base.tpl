@@ -7,6 +7,7 @@
   <meta charset="utf-8">
   <title>{% block title %} Virtual Board {% endblock %}</title>
   <link rel="stylesheet" type="text/css" href="{% static 'bootstrap.min.css' %}">
+  <link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
   <script src="{% static 'jquery-1.11.0.min.js' %}" type="text/javascript"></script>
 </head>
 
@@ -20,10 +21,11 @@
     </div>
 
     <!-- Collect the nav links, forms, and other content for toggling -->
-    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+    <div class="collapse navbar-collapse" id="nav-test bs-example-navbar-collapse-1">
       <ul class="nav navbar-nav navbar-right">
         {% if user.is_authenticated %}
           <li><a style="color:#eee">You are signed in as <b>{{user.username}}</b></a></li>
+          <li><a style="color:#eee" href="/listoflobbies/">Lobbies</a></li>
           <li><a style="color:#fff" href="/profile/">My Profile</a></li>
           <li><a style="color:#eee" href="/signout/">Sign Out</a></li>
         {% else %}
@@ -37,7 +39,6 @@
 
 {% block content %}
   <h1> Welcome to Virtual Board! </h1>
-  <a href="{% url 'web:listoflobbies' %}" class="btn btn-default">Lobby List</a>
 {% endblock %}		
 
 </body>
