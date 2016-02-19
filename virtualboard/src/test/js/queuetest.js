@@ -1,7 +1,7 @@
 Qunit.module( "QueueTest", function(hooks){
 
     hooks.beforeEach(function (assert){
-
+        VBoard.users.createNewUser("Phil", BABYLON.Color3(123,0,123));
     });
 
     hooks.afterEach(function(assert){
