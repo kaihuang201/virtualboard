@@ -29,7 +29,7 @@ def listoflobbies_func(request):
 
 def lobby_func(request,lobby_id):
     lobby_instance = get_object_or_404(Lobby, pk=lobby_id)
-    context = {"lobby_instance":lobby_instance}
+    context = {"lobby_instance":lobby_instance, "user_id":request.user.username}
     return render(request, 'web/lobby.tpl', context)
 
 def createlobby_func(request):

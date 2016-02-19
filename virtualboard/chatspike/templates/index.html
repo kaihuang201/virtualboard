@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="{{ static_url("chat.css") }}" type="text/css">
   </head>
   <body>
-    <div id="body">
+    <div id="chatbody">
       <div id="inbox">
         {% for message in messages %}
           {% module Template("message.html", message=message) %}
