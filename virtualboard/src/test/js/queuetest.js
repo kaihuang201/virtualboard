@@ -1,14 +1,14 @@
-Qunit.module( "QueueTest", function(hooks){
+Qunit.module( "QueueTest", function(hooks) {
 
-    hooks.beforeEach(function (assert){
+    hooks.beforeEach(function (assert) {
         VBoard.users.createNewUser("Phil", BABYLON.Color3(123,0,123));
     });
 
-    hooks.afterEach(function(assert){
+    hooks.afterEach(function(assert) {
         VBoard.board.clearBoard();
     });
 
-    Qunit.test("Testing Generating Pieces", function(assert){
+    Qunit.test("Testing Generating Pieces", function(assert) {
 
         //Getting number of pieces on the board before the piece is added
         var preSize = VBoard.board.pieces.length;
@@ -25,7 +25,7 @@ Qunit.module( "QueueTest", function(hooks){
     });
 
 
-    Qunit.test("Testing Piece is actually on the board", function(assert){
+    Qunit.test("Testing Piece is actually on the board", function(assert) {
 
         //generating two pieces
         var piece1 = VBoard.board.generatePiece("name", VBoard.users.getNone(), VBoard.board.getCenter());
