@@ -17,7 +17,6 @@ class Lobby(models.Model):
 		"""
 			remove one member from the Lobby, delete if no members remaining
 		"""
-		print("remove_one")
 		self.num_members -= 1
 		if self.num_members <= 0:
 			self.delete()
@@ -25,7 +24,6 @@ class Lobby(models.Model):
 			self.save()
 
 
-#TODO - modify class variable names to follow convention
 class Profile(models.Model):
     user = models.ForeignKey(User)
     motto = models.CharField(max_length=200, blank=True)

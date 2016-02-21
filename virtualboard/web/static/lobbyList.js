@@ -1,12 +1,18 @@
 var lobbyList = lobbyList || {};
 (function(){
 	lobbyList.init = function() {
+		/*
+			Initialize click events
+		*/
 		lobbyList.openModalOnClick();
 		lobbyList.submitForm();
 		lobbyList.clearErrorActions();
 	};
 
 	lobbyList.openModalOnClick = function() {
+		/*
+			Click events on lobby links to open approprate modal forms
+		*/
 		$(".joinable-lobby").on("click", function(){
 			var is_protected = $(this).data("isprotected");
 			var lobby_id = $(this).data("lobbyid");
@@ -21,6 +27,8 @@ var lobbyList = lobbyList || {};
 			}
 		});
 		$("#current-lobby").on("click", function() {
+			var lobby_id = $(this).data("lobbyid");
+			$("#join_lobby_id").val(lobby_id);
 			$("#confirmJoinModalTitle").text("Go To Lobby");
 			$("#submit_join_lobby").text("Go");
 			$("#confirmJoinModal").modal();
@@ -68,7 +76,7 @@ var lobbyList = lobbyList || {};
 			var lobby_id = $("#join_lobby_id").val();
 			if (lobby_id.length == 0) {
 				console.log("Error: lobby_id was not set correctly");
-				displayErrors(["Sorry, something went wrong. We can't add you to this lobby."])
+				lobbyList.displayErrors(["Sorry, something went wrong. We can't add you to this lobby."])
 				return;
 			}
 			var url_path = "/" + lobby_id  +"/join/";
@@ -130,6 +138,5 @@ var lobbyList = lobbyList || {};
 
 })();
 $(document).ready(function() {
-	console.log("document ready")
 	lobbyList.init();
 });

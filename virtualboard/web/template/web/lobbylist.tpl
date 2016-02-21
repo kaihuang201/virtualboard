@@ -32,7 +32,6 @@
   <!-- Confirm Modal -->
   <div class="modal fade" id="confirmJoinModal" role="dialog">
     <div class="modal-dialog">
-      <!-- Modal content-->
       <div class="modal-content">
         <div class="modal-header">
           <button class="close-modal" type="button" class="close" data-dismiss="modal">&times;</button>
