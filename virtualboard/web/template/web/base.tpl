@@ -9,6 +9,7 @@
   <link rel="stylesheet" type="text/css" href="{% static 'bootstrap.min.css' %}">
   <link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
   <script src="{% static 'jquery-1.11.0.min.js' %}" type="text/javascript"></script>
+  <script src="{% static 'bootstrap.min.js' %}" type="text/javascript"></script>
 </head>
 
 <body>
@@ -25,7 +26,7 @@
       <ul class="nav navbar-nav navbar-right">
         {% if user.is_authenticated %}
           <li><a style="color:#eee">You are signed in as <b>{{user.username}}</b></a></li>
-          <li><a style="color:#eee" href="/listoflobbies/">Lobbies</a></li>
+          <li><a style="color:#eee" href="/lobbies/">Lobbies</a></li>
           <li><a style="color:#fff" href="/profile/">My Profile</a></li>
           <li><a style="color:#eee" href="/signout/">Sign Out</a></li>
         {% else %}

@@ -18,7 +18,7 @@ from django.db import connection
 
 from forms import *
 from web.models import *
-from web.modules.lobby_func import *
+from web.modules.lobby_func import * 
 
 def index(request):
     return render(request, 'web/base.tpl', {})
@@ -113,32 +113,32 @@ def signout(request):
 
 # lobby views
 
-def listoflobbies(request):
-    if user.is_authenticated():
-        return listoflobbies_func(request)
+def lobby_list(request):
+    if request.user.is_authenticated():
+        return lobby_list_func(request)
     else:
-        return render(request, 'web/403.tpl')
+        return render(request, 'web/403.tpl', status=403)
 
-def lobby(request,lobby_id):
-    if user.is_authenticated():
-        return lobby_func(request,lobby_id)
+def view_lobby(request, lobby_id):
+    if request.user.is_authenticated():
+        return view_lobby_func(request,lobby_id)
     else:
-        return render(request, 'web/403.tpl')
+        return render(request, 'web/403.tpl', status=403)
 
-def createlobby(request):
-    if user.is_authenticated():
-        return createlobby_func(request)
+def create_lobby(request):
+    if request.user.is_authenticated():
+        return create_lobby_func(request)
     else:
-        return render(request, 'web/403.tpl')
+        return render(request, 'web/403.tpl', status=403)
 
-def leavelobby(request,lobby_id):
-    if user.is_authenticated():
-        return leavelobby_func(request,lobby_id)
+def leave_lobby(request, lobby_id):
+    if request.user.is_authenticated():
+        return leave_lobby_func(request,lobby_id)
     else:
-        return render(request, 'web/403.tpl')
+        return render(request, 'web/403.tpl', status=403)
 
-def joinlobby(request,lobby_id):
-    if user.is_authenticated():
-        return joinlobby_func(request,lobby_id)
+def join_lobby(request, lobby_id):
+    if request.user.is_authenticated():
+        return join_lobby_func(request, lobby_id)
     else:
-        return render(request, 'web/403.tpl')
+        return render(request, 'web/403.tpl', status=403)
