@@ -34,7 +34,6 @@
       </div>
     </div>
 
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.3/jquery.min.js" type="text/javascript"></script>
     <script>
       var lobby_id = {{ lobby_instance.id }};
     </script>

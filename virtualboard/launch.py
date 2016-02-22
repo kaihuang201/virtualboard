@@ -20,7 +20,6 @@ def main():
         )
     tornado_app = tornado.web.Application(
         [
-            (r'^/hello/$', HelloHandler),
             (r'^/([0-9]+)/message/new/$', MessageNewHandler),
             (r'^/([0-9]+)/message/updates/$', MessageUpdatesHandler),
             (r'^/([0-9]+)/message/loadcache/$', MessageCacheHandler),

@@ -17,11 +17,11 @@ $(document).ready(function() {
     if (!window.console) window.console = {};
     if (!window.console.log) window.console.log = function() {};
 
-    $("#messageform").live("submit", function() {
+    $("#messageform").on("submit", function() {
         newMessage($(this));
         return false;
     });
-    $("#messageform").live("keypress", function(e) {
+    $("#messageform").on("keypress", function(e) {
         if (e.keyCode == 13) {
             newMessage($(this));
             return false;
@@ -35,7 +35,8 @@ $(document).ready(function() {
 function newMessage(form) {
     var message = form.formToDict();
     var disabled = form.find("input[type=submit]");
-    disabled.disable();
+    var testField = form.find("input[name=body]");
+    testField.get(0).value = "";
     $.postJSON("/" + lobby_id + "/message/new/", message, function(response) {
         updater.showMessage(response);
         if (message.id) {
@@ -87,7 +88,7 @@ jQuery.fn.enable = function(opt_enable) {
 };
 
 var updater = {
-    errorSleepTime: 500,
+    errorSleepTime: 100,
     cursor: null,
 
     loadCache: function() {
