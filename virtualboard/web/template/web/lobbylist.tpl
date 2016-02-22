@@ -5,6 +5,7 @@
 
 {% block content %}
 
+<!-- <<<<<<< HEAD
   {% if current_lobby %} 
     <h3>Your Lobby</h3>
     <p id="current-lobby" data-lobbyid={{current_lobby.id}} data-isprotected={{current_lobby.is_passcode_protected}}>
@@ -13,7 +14,7 @@
   {% endif %}
 
   <br/>
-  <a href="{% url 'web:createlobby' %}" class="btn btn-default">Create New Lobby</a>
+  
   <br/>
   
   {% if lobby_list %}
@@ -28,6 +29,40 @@
   {% else %}
       <p>There are no other lobbies.<p>
   {% endif %}
+======= -->
+  <div class="container container-table">
+      <div class="row vertical-center-row">
+          <div class="text-center col-md-4 col-md-offset-4">
+            {% if current_lobby %} 
+              <h3>Your Lobby</h3>
+              <p id="current-lobby" data-lobbyid={{current_lobby.id}} data-isprotected={{current_lobby.is_passcode_protected}}>
+                {{ current_lobby.name }} ({{current_lobby.num_members}}/8 people)
+              </p>
+            {% endif %}
+
+            <a href="{% url 'web:createlobby' %}" class="btn btn-default">Create New Lobby</a>
+
+            {% if lobby_list %}
+              <h3>Or Join an Existing Lobby</h3>
+              <div class="btn-group-vertical">
+                {% for lobby in lobby_list %}
+                  
+                    <p class="joinable-lobby" data-lobbyid={{lobby.id}} data-isprotected={{lobby.is_passcode_protected}}>
+                      {{ lobby.name }} ({{ lobby.num_members }}/8 people)
+                    </p>
+                  
+                {% endfor %}
+              </div>
+            {% else %}
+                <p> No lobby exists <p>
+                <a href="{% url 'web:createlobby' %}" class="btn btn-default">create a lobby</a>
+            {% endif %}
+
+          </div>
+      </div>
+  </div>
+  
+<!-- >>>>>>> origin/master -->
 
   <!-- Confirm Modal -->
   <div class="modal fade" id="confirmJoinModal" role="dialog">
