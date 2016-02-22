@@ -1,0 +1,39 @@
+<!-- https://nicolas.perriault.net/code/2013/testing-frontend-javascript-code-using-mocha-chai-and-sinon/ -->
+
+
+{% load staticfiles %}
+<head>
+  <title>{% block title %}Mocha Tests{% endblock %}</title>
+</head>
+
+{% block content %}
+  <link href="https://cdn.rawgit.com/mochajs/mocha/2.2.5/mocha.css" rel="stylesheet" />
+  <!-- this file is already loaded in base -->
+  <!-- <link rel="stylesheet" media="all" href="{% url 'web:index' %}/s"> -->
+
+
+  <div id="mocha">
+    <h1>Tests of frontend scripts</h1>
+  </div>
+  <div id="messages"></div>
+  <div id="fixtures"></div>
+
+  <script src="https://cdn.rawgit.com/jquery/jquery/2.1.4/dist/jquery.min.js"></script>
+  <script src="https://cdn.rawgit.com/Automattic/expect.js/0.3.1/index.js"></script>
+  <script src="https://cdn.rawgit.com/mochajs/mocha/2.2.5/mocha.js"></script>
+  <script src="{% static 'vendor/chai.js' %}" type="text/javascript"></script>
+  
+  
+  <script>mocha.setup('bdd')</script>
+  <script src="{% static 'tests/lobby_test.js' %}" type="text/javascript"></script>
+
+  <script>
+    // mocha.checkLeaks();
+    // mocha.globals(['jQuery']);
+
+    mocha.run();
+  </script>
+</body>
+</html>
+
+{% endblock %}

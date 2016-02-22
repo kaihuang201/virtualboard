@@ -142,3 +142,13 @@ def join_lobby(request, lobby_id):
         return join_lobby_func(request, lobby_id)
     else:
         return render(request, 'web/403.tpl', status=403)
+
+
+# test pages
+def frontendtests(request):
+    if request.user.is_authenticated():
+        return render(request,'web/tests/frontendtests.html',{})
+        # return HttpResponse("TESTS!")
+    else:
+        return render(request, 'web/403.tpl', status=403)
+    
