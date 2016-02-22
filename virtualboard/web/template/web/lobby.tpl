@@ -9,6 +9,7 @@
     
   {% else %}
     <h1 id="welcome">Hi {{ user_id }}! Welcome to lobby #{{ lobby_instance.id }}『{{ lobby_instance.name }}』<h1>
+
     <p>{{ lobby_instance.num_members }} players</p>
 
     <button type="button" class="btn btn-primary">start game</button>

@@ -8,6 +8,7 @@
   <title>{% block title %} Virtual Board {% endblock %}</title>
   <link rel="stylesheet" type="text/css" href="{% static 'bootstrap.min.css' %}">
   <script src="{% static 'jquery-1.11.0.min.js' %}" type="text/javascript"></script>
+  <script src="{% static 'bootstrap.min.js' %}" type="text/javascript"></script>
   <link rel="stylesheet" type="text/css" href="{% static 'main.css' %}">
 </head>
 
@@ -44,12 +45,12 @@
     <div class="container container-table">
         <div class="row vertical-center-row">
             <div class="text-center col-md-4 col-md-offset-4">
-              <a href="{% url 'web:listoflobbies' %}" class="btn btn-default btn-lg">Lobby List</a>
+              <a href="{% url 'web:lobbies' %}" class="btn btn-default btn-lg">Lobby List</a>
             </div>
         </div>
     </div>
     
-  {% endblock %}		
+  {% endblock %}    
 <!-- </div> -->
 
 
