@@ -29,12 +29,12 @@
           {% block status %}
           {% endblock status %}
           <li><a >You are signed in as <b>{{user.username}}</b></a></li>
-          <li><a style="color:#eee" href="/lobbies/">Lobbies</a></li>
-          <li><a  href="/profile/">My Profile</a></li>
-          <li><a  href="/signout/">Sign Out</a></li>
+          <li><a href="/lobbies/">Lobbies</a></li>
+          <li><a href="/profile/">My Profile</a></li>
+          <li><a href="/signout/">Sign Out</a></li>
         {% else %}
-          <li><a  href="/signin/">Sign In</a></li>
-          <li><a  href="/signup/">Sign Up</a></li>
+          <li><a href="/signin/">Sign In</a></li>
+          <li><a href="/signup/">Sign Up</a></li>
         {% endif %}
         
       </ul>

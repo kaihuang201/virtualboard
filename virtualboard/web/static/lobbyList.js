@@ -36,6 +36,9 @@ var lobbyList = lobbyList || {};
 	};
 
 	lobbyList.submitForm = function() {
+		/*
+			Event handlers for join lobby form submissions. Redirects to lobby page on success, displays error otherwise
+		*/
 		$("#passcode-join-lobby-form").on("submit", function(event){
 			event.preventDefault();
 			var lobby_id = $("#passcode_join_lobby_id").val();
@@ -112,13 +115,9 @@ var lobbyList = lobbyList || {};
 
 	lobbyList.clearErrorActions = function() {
 		$(".close-modal").on("click", function() {
-			lobbyList.clearErrors();
+			$(".join-lobby-errors").empty();
 		});
 	}
-
-	lobbyList.clearErrors = function() {
-		$(".join-lobby-errors").empty();
-	};
 
 	lobbyList.getCookie = function(name) {
 	    var cookieValue = null;
