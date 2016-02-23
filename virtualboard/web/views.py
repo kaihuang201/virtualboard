@@ -67,7 +67,7 @@ def signup(request):
                         {'form':form, 'error':errmsg})
                
             # add the profile 
-            profile = Profile(user=newuser, motto = '', currentLobby = None)
+            profile = Profile(user=newuser, motto = '', current_lobby = None)
             profile.save()
 
         # redirect welcome page
