@@ -3,11 +3,29 @@
 var expect = chai.expect;
 
 describe("lobbyList.js", function() {
-	it("test1", function() {
-	  expect(1+1).to.equal(2);
+	it("init", function() {
+		expect(function(){
+			lobbyList.init();
+		}).to.not.throw(Error);
 	});
 
-	it("test2", function() {
-	  expect(2+2).to.equal(3);
+	it("openModalOnClick", function() {
+		
 	});
+
+	it("submitForm", function() {
+		
+	});
+
+	it("displayErrors", function() {
+		
+	});
+
+	it("clearErrorActions", function() {
+		
+	});
+
+	it("getCookie", function() {
+
+	}
 });
