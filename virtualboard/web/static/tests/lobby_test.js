@@ -21,9 +21,9 @@ describe("lobbyList.js", function() {
 		}).to.not.throw(Error);
 	});
 
-	it("displayErrors", function([1,2]) {
+	it("displayErrors", function() {
 		expect(function(){
-			lobbyList.displayErrors();
+			lobbyList.displayErrors([1,2]);
 		}).to.not.throw(Error);
 		
 	});
