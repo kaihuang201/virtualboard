@@ -9,7 +9,7 @@
   <link rel="stylesheet" type="text/css" href="{% static 'bootstrap.min.css' %}">
   <script src="{% static 'jquery-1.11.0.min.js' %}" type="text/javascript"></script>
   <script src="{% static 'bootstrap.min.js' %}" type="text/javascript"></script>
-  <link rel="stylesheet" type="text/css" href="{% static 'main.css' %}">
+  <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
 </head>
 
 <body>
