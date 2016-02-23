@@ -27,5 +27,5 @@ describe("lobbyList.js", function() {
 
 	it("getCookie", function() {
 
-	}
+	});
 });
