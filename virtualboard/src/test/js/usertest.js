@@ -1,4 +1,4 @@
-Qunit.module( "QueueTest", function(hooks){
+QUnit.module( "QueueTest", function(hooks){
 
     hooks.beforeEach(function (assert){
 
@@ -8,7 +8,7 @@ Qunit.module( "QueueTest", function(hooks){
         VBoard.board.clearBoard();
     });
 
-    Qunit.test("Testing Generating Pieces", function(assert){
+    QUnit.test("Testing Generating Pieces", function(assert){
 
         assert.notEqual(VBoard.users.getLocal(), VBoard.users.getNone(), "We expect the local user to exist");
         
