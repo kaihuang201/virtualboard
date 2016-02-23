@@ -10,22 +10,33 @@ describe("lobbyList.js", function() {
 	});
 
 	it("openModalOnClick", function() {
-		
+		expect(function(){
+			lobbyList.openModalOnClick();
+		}).to.not.throw(Error);
 	});
 
 	it("submitForm", function() {
-		
+		expect(function(){
+			lobbyList.submitForm();
+		}).to.not.throw(Error);
 	});
 
-	it("displayErrors", function() {
+	it("displayErrors", function([1,2]) {
+		expect(function(){
+			lobbyList.displayErrors();
+		}).to.not.throw(Error);
 		
 	});
 
 	it("clearErrorActions", function() {
-		
+		expect(function(){
+			lobbyList.clearErrorActions();
+		}).to.not.throw(Error);
 	});
 
 	it("getCookie", function() {
-
+		expect(function(){
+			lobbyList.getCookie('abc');
+		}).to.not.throw(Error);
 	});
 });
