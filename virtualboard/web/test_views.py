@@ -41,19 +41,19 @@ class TestLobbyViews(TestCase):
 
     def test_lobby_list_denies_anonymous(self):
         response = self.client.get("/lobbies/", follow=True)
-        self.assertContains(response, "<h2>Please sign in to view this page.</h2>", status_code=403, html=True)
+        self.assertContains(response, "Please sign in to view this page.", status_code=403)
 
     def test_lobby_denies_anonymous(self):
         response = self.client.get("/1/", follow=True)
-        self.assertContains(response, "<h2>Please sign in to view this page.</h2>", status_code=403, html=True)
+        self.assertContains(response, "Please sign in to view this page.", status_code=403)
 
     def test_join_lobby_denies_anonymous(self):
         response = self.client.get("/1/join/", follow=True)
-        self.assertContains(response, "<h2>Please sign in to view this page.</h2>", status_code=403, html=True)
+        self.assertContains(response, "Please sign in to view this page.", status_code=403)
 
     def test_leave_lobby_denies_anonymous(self):
         response = self.client.get("/1/leave/", follow=True)
-        self.assertContains(response, "<h2>Please sign in to view this page.</h2>", status_code=403, html=True)
+        self.assertContains(response, "Please sign in to view this page", status_code=403)
 
     def test_lobby_list_auth(self):
         self.client.login(username='username', password='password')
