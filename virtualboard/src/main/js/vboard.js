@@ -26,7 +26,10 @@ var VBoard = VBoard || {};
 			vb.inputs.onScroll(Math.max(-1, Math.min(1, (-evt.detail))));
 		});
 		vb.renderInit();
-		vb.loadDummyBlocks();
+
+		if(!VBoard.testing) {
+			vb.loadDummyBlocks();
+		}
 	};
 
 	vb.board = (function () {
@@ -96,6 +99,7 @@ var VBoard = VBoard || {};
 			piece.mesh.position.z = z;
 		};
 
+		//function to calculate z index given a position in the pieces array
 		board.getZIndex = function (index) {
 			return 1 + (10/(0.2*index + 1));
 		};
@@ -110,9 +114,11 @@ var VBoard = VBoard || {};
 			piece.mesh.dispose();
 		};
 
+		//moves a piece to the back of the board (highest z index)
 		board.pushToBack = function (piece) {
 			var index = board.pieces.indexOf(piece);
-			for(var i = index-1; i < 0; i--) {
+
+			for(var i = index; i > 0; i--) {
 				board.pieces[i] = board.pieces[i-1];
 				board.pieces[i].mesh.position.z = board.getZIndex(i);
 			}
@@ -120,6 +126,7 @@ var VBoard = VBoard || {};
 			piece.mesh.position.z = board.getZIndex(0);
 		};
 
+		//moves a piece to the front of the board (lowest z index)
 		board.bringToFront = function (piece) {
 			var index = board.pieces.indexOf(piece);
 			for(var i = index; i < board.pieces.length-1; i++) {
@@ -156,6 +163,7 @@ var VBoard = VBoard || {};
 			piece.icon = icon;
 
 			board.add(piece);
+			return piece;
 		};
 
 		board.movePiece = function (piece, pos, user, instant) {
@@ -255,6 +263,8 @@ var VBoard = VBoard || {};
 
 	vb.inputs = (function () {
 		var inputs = {};
+
+		//to do: separate system from polling buttons (wasd, etc) versus event buttons (backspace, space, etc)
 		inputs.keysPressed = [];
 
 		inputs.onKeyDown = function (key) {

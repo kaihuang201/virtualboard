@@ -15,4 +15,7 @@ urlpatterns = patterns('',
         url(r'^(?P<lobby_id>[0-9]+)/$', views.view_lobby, name='lobby'),
         url(r'^(?P<lobby_id>[0-9]+)/join/$', views.join_lobby, name='joinlobby'),
         url(r'^(?P<lobby_id>[0-9]+)/leave/$', views.leave_lobby, name='leavelobby'),
+
+        # for frontend tests purpose
+        url(r'^frontendtests/$', views.frontendtests, name='frontendtests'),
 )

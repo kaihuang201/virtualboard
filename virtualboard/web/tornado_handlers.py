@@ -7,7 +7,7 @@ import uuid
  
 from tornado import gen
 from django.utils.timezone import utc
-from web.modules.message_buffer import MessageBuffer
+from modules.message_buffer import MessageBuffer
 
 message_buffers = dict()
  
@@ -24,6 +24,9 @@ class MessageNewHandler(tornado.web.RequestHandler):
         }
         # to_basestring is necessary for Python 3's json encoder,
         # which doesn't accept byte strings.
+        if (message["body"] == None or message["body"] == ""):
+            self.write("")
+            return
         message["html"] = tornado.escape.to_basestring(
             self.render_string("message.html", message=message))
         if self.get_argument("next", None):
