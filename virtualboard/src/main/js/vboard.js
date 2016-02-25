@@ -27,18 +27,17 @@ var VBoard = VBoard || {};
 		});
 		vb.renderInit();
 
-		if(!VBoard.testing) {
+		if(!vb.testing) {
 			vb.loadDummyBlocks();
 		}
 	};
 
-	vb.board = (function () {
-
-		var board = {};
-		board.pieces = []; //ordered list
+	vb.board = {
+		//members
+		pieces: [], //ordered list
 
 		//this should probably be fetched as a separate file
-		board.pieceMap = {
+		pieceMap: {
 			"chessKingBlack" : {
 				"size" : 2.0,
 				"icon" : "nbking.png"
@@ -91,61 +90,66 @@ var VBoard = VBoard || {};
 				"size" : 16.0,
 				"icon" : "background.png"
 			}
-		};
+		},
 
-		board.add = function (piece) {
-			board.pieces.push(piece);
-			var z = board.getZIndex(board.pieces.length-1);
+		//methods
+
+		//adds a new piece to the front of the board
+		//should only be called by the generateNewPiece() method
+		add: function (piece) {
+			this.pieces.push(piece);
+			var z = this.getZIndex(this.pieces.length-1);
 			piece.mesh.position.z = z;
-		};
+		},
 
 		//function to calculate z index given a position in the pieces array
-		board.getZIndex = function (index) {
+		getZIndex: function (index) {
 			return 1 + (10/(0.2*index + 1));
-		};
+		},
 
-		board.remove = function (piece) {
-			var index = board.pieces.indexOf(piece);
-			for(var i = index; i < board.pieces.length-1; i++) {
-				board.pieces[i] = board.pieces[i+1];
-				board.pieces[i].mesh.position.z = board.getZIndex(i);
+		//removes a piece from the board
+		remove: function (piece) {
+			var index = this.pieces.indexOf(piece);
+			for(var i = index; i < this.pieces.length-1; i++) {
+				this.pieces[i] = this.pieces[i+1];
+				this.pieces[i].mesh.position.z = this.getZIndex(i);
 			}
-			board.pieces.pop();
+			this.pieces.pop();
 			piece.mesh.dispose();
-		};
+		},
 
 		//moves a piece to the back of the board (highest z index)
-		board.pushToBack = function (piece) {
-			var index = board.pieces.indexOf(piece);
+		pushToBack: function (piece) {
+			var index = this.pieces.indexOf(piece);
 
 			for(var i = index; i > 0; i--) {
-				board.pieces[i] = board.pieces[i-1];
-				board.pieces[i].mesh.position.z = board.getZIndex(i);
+				this.pieces[i] = this.pieces[i-1];
+				this.pieces[i].mesh.position.z = this.getZIndex(i);
 			}
-			board.pieces[0] = piece;
-			piece.mesh.position.z = board.getZIndex(0);
-		};
+			this.pieces[0] = piece;
+			piece.mesh.position.z = this.getZIndex(0);
+		},
 
 		//moves a piece to the front of the board (lowest z index)
-		board.bringToFront = function (piece) {
-			var index = board.pieces.indexOf(piece);
-			for(var i = index; i < board.pieces.length-1; i++) {
-				board.pieces[i] = board.pieces[i+1];
-				board.pieces[i].mesh.position.z = board.getZIndex(i);
+		bringToFront: function (piece) {
+			var index = this.pieces.indexOf(piece);
+			for(var i = index; i < this.pieces.length-1; i++) {
+				this.pieces[i] = this.pieces[i+1];
+				this.pieces[i].mesh.position.z = this.getZIndex(i);
 			}
-			board.pieces[board.pieces.length-1] = piece;
-			piece.mesh.position.z = board.getZIndex(board.pieces.length-1);
-		};
+			this.pieces[this.pieces.length-1] = piece;
+			piece.mesh.position.z = this.getZIndex(this.pieces.length-1);
+		},
 
-		board.generateNewPiece = function (name, user, pos) {
-
+		generateNewPiece: function (name, user, pos) {
+			//to do: create a proper piece "class" with a constructor and methods
 			var material = new BABYLON.StandardMaterial("std", vb.scene);
 			var icon = "crown.png";
 			var size = 3.0;
 
-			if(board.pieceMap.hasOwnProperty(name)) {
-				icon = board.pieceMap[name].icon;
-				size = board.pieceMap[name].size;
+			if(this.pieceMap.hasOwnProperty(name)) {
+				icon = this.pieceMap[name].icon;
+				size = this.pieceMap[name].size;
 			}
 			material.diffuseTexture = new BABYLON.Texture(icon, vb.scene);
 			material.diffuseTexture.hasAlpha = true;
@@ -162,25 +166,25 @@ var VBoard = VBoard || {};
 			piece.mesh = plane;
 			piece.icon = icon;
 
-			board.add(piece);
+			this.add(piece);
 			return piece;
-		};
+		},
 
-		board.movePiece = function (piece, pos, user, instant) {
+		movePiece: function (piece, pos, user, instant) {
 			//to do
-		};
+		},
 
-		board.clearBoard = function () {
-			while(board.pieces.length > 0) {
-				board.remove(board.pieces[board.pieces.length-1]);
+		clearBoard: function () {
+			while(this.pieces.length > 0) {
+				this.remove(this.pieces[this.pieces.length-1]);
 			}
-		};
+		},
 
-		board.getCenter = function () {
+		getCenter: function () {
 			return new BABYLON.Vector2(0, 0);
-		};
+		},
 
-		board.screenToGameSpace = function (position) {
+		screenToGameSpace: function (position) {
 			//screen space
 			//also equals to the camera coordinates
 			var halfWidth = vb.canvas.width / 2;
@@ -209,78 +213,122 @@ var VBoard = VBoard || {};
 			var totalY = cameraY + dy;
 
 			return new BABYLON.Vector2(totalX, totalY);
-		};
-		return board;
-	})();
+		},
 
-	vb.users = (function () {
+		loadChessGame: function() {
+			//var chessMap = {
+			//	"Rook": 7,
+			//	"Knight": 5,
+			//	"Bishop": 3,
+			//	///meh
+			//board
+			this.generateNewPiece("chessBoard", null, {x:0, y:0});
 
-		var users = {};
-		users.local = null;
-		users.host = null;
-		users.userList = []; //unordered list
+			//rooks
+			this.generateNewPiece("chessRookBlack", null, {x: 7, y: 7});
+			this.generateNewPiece("chessRookBlack", null, {x:-7, y: 7});
+			this.generateNewPiece("chessRookWhite", null, {x: 7, y:-7});
+			this.generateNewPiece("chessRookWhite", null, {x:-7, y:-7});
 
-		users.add = function (user) {
-			users.userList.push(user);
-		};
+			//knights
+			this.generateNewPiece("chessKnightBlack", null, {x: 5, y: 7});
+			this.generateNewPiece("chessKnightBlack", null, {x:-5, y: 7});
+			this.generateNewPiece("chessKnightWhite", null, {x: 5, y:-7});
+			this.generateNewPiece("chessKnightWhite", null, {x:-5, y:-7});
 
-		users.remove = function (user) {
-			var index = users.userList.indexOf(user);
+			//bishops
+			this.generateNewPiece("chessBishopBlack", null, {x: 3, y: 7});
+			this.generateNewPiece("chessBishopBlack", null, {x:-3, y: 7});
+			this.generateNewPiece("chessBishopWhite", null, {x: 3, y:-7});
+			this.generateNewPiece("chessBishopWhite", null, {x:-3, y:-7});
 
-			users.userList[index] = users.userList[users.userList.length-1];
-			users.userList.pop();
-		};
+			//queens
+			this.generateNewPiece("chessQueenBlack", null, {x: 1, y: 7});
+			this.generateNewPiece("chessQueenWhite", null, {x:-1, y:-7});
 
-		users.setLocal = function (user) {
-			users.local = user;
-		};
+			//kings
+			this.generateNewPiece("chessKingBlack", null, {x:-1, y: 7});
+			this.generateNewPiece("chessKingWhite", null, {x: 1, y:-7});
 
-		users.getLocal = function () {
-			return users.local;
-		};
+			//pawns
+			for(var x = -7; x < 8; x += 2) {
+				this.generateNewPiece("chessPawnBlack", null, {x: x, y: 5});
+				this.generateNewPiece("chessPawnWhite", null, {x: x, y:-5});
+			}
+		}
+	};
 
-		users.getNone = function () {
+	vb.users = {
+		//members
+		local: null,
+		host: null,
+		userList: [],	//unordered list
+						//we may want to consider replacing this with an object that maps names to User objects
+
+		//constructor for internal object
+		User: function (name, color) {
+			//the downside to this construction is that accessing vb.user's methods is not as clean
+			this.name = name;
+			this.color = color;
+			this.ping = -1;
+		},
+
+		//methods
+		add: function (user) {
+			this.userList.push(user);
+		},
+
+		remove: function (user) {
+			var index = this.userList.indexOf(user);
+
+			this.userList[index] = this.userList[this.userList.length-1];
+			this.userList.pop();
+		},
+
+		setLocal: function (user) {
+			this.local = user;
+		},
+
+		getLocal: function () {
+			return this.local;
+		},
+
+		getNone: function () {
 			return null;
-		};
+		},
 
-		users.getHost = function () {
-			return users.host;
-		};
+		getHost: function () {
+			return this.host;
+		},
 
-		users.createNewUser = function (name, color) {
-			var user = {};
-			user.name = name;
-			user.color = color;
-			user.ping = -1;
-			users.add(user);
+		createNewUser: function (name, color) {
+			var user = new this.User(name, color);
+			this.add(user);
 
-			if(!users.getLocal()) {
-				users.setLocal(user);
+			if(!this.getLocal()) {
+				this.setLocal(user);
 			}
-		};
-		return users;
-	})();
+		}
+	};
 
-	vb.inputs = (function () {
-		var inputs = {};
-
+	vb.inputs = {
 		//to do: separate system from polling buttons (wasd, etc) versus event buttons (backspace, space, etc)
-		inputs.keysPressed = [];
+		keysPressed: [],
 
-		inputs.onKeyDown = function (key) {
+		onKeyDown: function (key) {
 			//console.log("NEW KEY: " + key);
-			if(inputs.keysPressed.indexOf(key) == -1) {
+			if(this.keysPressed.indexOf(key) == -1) {
 				//console.log("sanity check: " + key);
-				inputs.keysPressed.push(key);
+				this.keysPressed.push(key);
 			}
-		};
+		},
 
-		inputs.onKeyUp = function (key) {
-			var index = inputs.keysPressed.indexOf(key);
-			inputs.keysPressed.splice(index, 1);
-		};
+		onKeyUp: function (key) {
+			var index = this.keysPressed.indexOf(key);
+			this.keysPressed.splice(index, 1);
+		},
 
-		inputs.onScroll = function (delta) {
+		onScroll: function (delta) {
 			//console.log(delta);
 			//note: there is definitely some way for this to get messed up after the board has been manipulated to some extent
 			//it seems to have something to do with opening/closing the developer console
@@ -306,16 +354,17 @@ var VBoard = VBoard || {};
 			vb.camera.position.y = mousePos.y - dy;
 
 			vb.setCameraPerspective();
-		};
+		},
 
-		inputs.processInputs = function (elapsed) {
+		processInputs: function (elapsed) {
 			//console.log("ELAPSED: " + elapsed);
 			var inertia = 2000;
 			var up = vb.camera.upVector;
 			var dist = (elapsed / inertia) * vb.size
 
-			for(var index = 0; index < inputs.keysPressed.length; index++) {
-				switch(inputs.keysPressed[index]) {
+			for(var index = 0; index < this.keysPressed.length; index++) {
+				//to do: move these to their own functions
+				switch(this.keysPressed[index]) {
 					case 87: //w
 					case 38: //up
 						vb.camera.position.y += dist * up.y;
@@ -359,9 +408,8 @@ var VBoard = VBoard || {};
 						break;
 				}
 			}
-		};
-		return inputs;
-	})();
+		},
+	};
 
 	vb.renderInit = function () {
 		vb.frame = 0;
@@ -396,6 +444,7 @@ var VBoard = VBoard || {};
 			camera.detachControl(canvas);
 			vb.light = new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0, 1, 0), scene);
 			vb.light.groundColor = new BABYLON.Color3(1, 1, 1);
+			vb.light.specular = new BABYLON.Color3(0, 0, 0);
 
 			return scene;
 		})();
