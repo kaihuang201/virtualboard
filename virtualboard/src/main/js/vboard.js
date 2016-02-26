@@ -476,4 +476,15 @@ var VBoard = VBoard || {};
 $(document).ready(function () {
 	console.log("document ready");
 	VBoard.javascriptInit();
+
+	$("#viewMenuHover").hover(function() {
+		console.log("test");
+		$("#menu").animate({
+			width:"300px"
+		}, 300);
+	}, function() {
+		$("#menu").animate({
+			width:"0px"
+		}, 300);
+	});
 });

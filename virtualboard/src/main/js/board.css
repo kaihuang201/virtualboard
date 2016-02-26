@@ -23,3 +23,11 @@ div#menu
 	top: 0px;
 	background-color: #ffffff;
 }
+
+#viewMenuHover {
+	position: absolute;
+	top: 0px;
+	width : 100px; 
+	height : 100%;
+	z-index: 900;
+}
