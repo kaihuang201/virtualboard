@@ -1,5 +1,6 @@
 var VBoard = VBoard || {};
 (function (vb) {
+        vb.penEnabled = false;
 	//size of the vertical view plane
 	vb.size = 10;
 
@@ -25,11 +26,19 @@ var VBoard = VBoard || {};
 		window.addEventListener("DOMMouseScroll", function (evt) {
 			vb.inputs.onScroll(Math.max(-1, Math.min(1, (-evt.detail))));
 		});
+            
 		vb.renderInit();
 
 		if(!vb.testing) {
 			vb.loadDummyBlocks();
 		}
+
+            
+            vb.canvas.addEventListener("pointerdown", vb.onPointerDown, false);
+            vb.canvas.addEventListener("pointerup", vb.onPointerUp, false);
+            vb.canvas.addEventListener("pointermove", vb.onPointerMove, false);
+            console.log("added mouse handlers");
+
 	};
 
 	vb.board = {
@@ -89,7 +98,11 @@ var VBoard = VBoard || {};
 			"chessBoard" : {
 				"size" : 16.0,
 				"icon" : "background.png"
-			}
+			},
+                        "pen" : {
+                            "size" : 1.0,
+                            "icon" : "pen.png"
+                        }
 		},
 
 		//methods
@@ -311,6 +324,86 @@ var VBoard = VBoard || {};
 		}
 	};
 
+    var startingPoint;
+    var currentMesh;
+    var linesed = [];
+    linesed[0] = new BABYLON.Vector3(1, 10, 0);
+ 
+    var i = 0;
+    var lines;
+
+    var getGroundPosition = function () {
+        // Use a predicate to get position on the ground
+        var pickinfo = vb.scene.pick(vb.scene.pointerX, vb.scene.pointerY, function (mesh) { return mesh == ground; });
+        if (pickinfo.hit) {
+            return pickinfo.pickedPoint;
+        }
+
+        return null;
+    };
+
+    vb.onPointerDown = function (evt) {
+        console.log("on pointer down");
+        if (evt.button !== 0) {
+            return;
+        }
+
+        // check if we are under a mesh
+        var pickInfo = vb.scene.pick(vb.scene.pointerX, vb.scene.pointerY, function (mesh) { return mesh !== ground; });
+        if (pickInfo.hit) {
+            currentMesh = pickInfo.pickedMesh;
+            startingPoint = getGroundPosition(evt);
+
+            if (startingPoint) { // we need to disconnect camera from canvas
+                setTimeout(function () {
+                    vb.camera.detachControl(vb.canvas);
+                }, 0);
+            }
+        }
+    };
+
+    vb.onPointerUp = function () {
+        if (startingPoint) {
+            vb.camera.attachControl(vb.canvas, true);
+            startingPoint = null;
+            return;
+        }
+    };
+
+    vb.onPointerMove = function (evt) {
+        if (!startingPoint) {
+            return;
+        }
+
+        var current = getGroundPosition(evt);
+
+        if (!current) {
+            return;
+        }
+
+        var diff = current.subtract(startingPoint);
+        currentMesh.position.addInPlace(diff);
+        lines =BABYLON.Mesh.CreateLines("lines", linesed, vb.scene);
+        linesed[i] = new BABYLON.Vector3(currentMesh.position.x,currentMesh.position.y, currentMesh.position.z);
+    
+        i++;
+        startingPoint = current;
+
+    };
+
+    //var enablePenListeners = function () {
+    //    vb.canvas.addEventListener("pointerdown", onPointerDown, false);
+    //    vb.canvas.addEventListener("pointerup", onPointerUp, false);
+    //    vb.canvas.addEventListener("pointermove", onPointerMove, false);
+    //}
+
+    //var disablePenListeners = function () {
+    //    vb.canvas.removeEventListener("pointerdown", onPointerDown);
+    //    vb.canvas.removeEventListener("pointerup", onPointerUp);
+    //    vb.canvas.removeEventListener("pointermove", onPointerMove);
+    //}
+
+
 	vb.inputs = {
 		//to do: separate system from polling buttons (wasd, etc) versus event buttons (backspace, space, etc)
 		keysPressed: [],
@@ -406,11 +499,14 @@ var VBoard = VBoard || {};
 						vb.size = 10; //may need to be updated in the future
 						vb.setCameraPerspective();
 						break;
+                                        case 80://p
+                                                //toggle pen
+                                                enablePenListeners();
 				}
 			}
 		},
 	};
-
+    
 	vb.renderInit = function () {
 		vb.frame = 0;
 		vb.canvas = document.getElementById("canvas");
