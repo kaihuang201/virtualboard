@@ -19,11 +19,16 @@ div#menu
 {
 	position: absolute;
 	height: 100%;
-	width: 300px;
+	width: 250px;
+	padding: 15px;
 	top: 0px;
 	left: -300px;
 	background-color: #ffffff;
 	z-index: 900;
+}
+
+.btn-menu {
+	width: 100%;
 }
 
 #viewMenuHover {
@@ -47,8 +52,10 @@ div#menu
 div.context-item{
 	padding: 5px;
 	font-weight: bold;
+	cursor: pointer;
 }
 
 div.context-item:hover{
 	background-color: rgba(120,120,120,0.5);
 }
+

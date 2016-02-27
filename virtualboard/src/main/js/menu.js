@@ -2,6 +2,9 @@ var Menu = Menu || {};
 (function (menu) {
 
 	menu.init = function() {
+		for (var key in PieceMap.pieces) {
+			$("#add-piece-list").append( new Option(key, key) );
+		}
 		$("#viewMenuHover").mouseover(function() {
 			$("#menu").animate({
 				left:"0px"
@@ -13,10 +16,15 @@ var Menu = Menu || {};
 			}, 300);
 		});
 		$("#addPiece").on("click", function() {
-			var name = "chessRookBlack";
+			$("#add-piece-modal").modal();
+		});
+
+		$("#submit-add-piece").click(function() {
+			var selectedName = $("#add-piece-list").val();
 			var user = null;
 			var pos = {x:0, y:0};
-			VBoard.board.generateNewPiece(name, user, pos);
+			VBoard.board.generateNewPiece(selectedName, user, pos);
+			$("#add-piece-modal").modal("toggle");
 		});
 
 	};

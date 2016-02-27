@@ -42,62 +42,6 @@ var VBoard = VBoard || {};
 		//members
 		pieces: [], //ordered list
 
-		//this should probably be fetched as a separate file
-		pieceMap: {
-			"chessKingBlack" : {
-				"size" : 2.0,
-				"icon" : "nbking.png"
-			},
-			"chessQueenBlack" : {
-				"size" : 2.0,
-				"icon" : "nbqueen.png"
-			},
-			"chessKnightBlack" : {
-				"size" : 2.0,
-				"icon" : "nbknight.png"
-			},
-			"chessBishopBlack" : {
-				"size" : 2.0,
-				"icon" : "nbbishop.png"
-			},
-			"chessRookBlack" : {
-				"size" : 2.0,
-				"icon" : "nbrook.png"
-			},
-			"chessPawnBlack" : {
-				"size" : 2.0,
-				"icon" : "nbpawn.png"
-			},
-			"chessKingWhite" : {
-				"size" : 2.0,
-				"icon" : "nwking.png"
-			},
-			"chessQueenWhite" : {
-				"size" : 2.0,
-				"icon" : "nwqueen.png"
-			},
-			"chessKnightWhite" : {
-				"size" : 2.0,
-				"icon" : "nwknight.png"
-			},
-			"chessBishopWhite" : {
-				"size" : 2.0,
-				"icon" : "nwbishop.png"
-			},
-			"chessRookWhite" : {
-				"size" : 2.0,
-				"icon" : "nwrook.png"
-			},
-			"chessPawnWhite" : {
-				"size" : 2.0,
-				"icon" : "nwpawn.png"
-			},
-			"chessBoard" : {
-				"size" : 16.0,
-				"icon" : "background.png"
-			}
-		},
-
 		//methods
 
 		//adds a new piece to the front of the board
@@ -153,9 +97,9 @@ var VBoard = VBoard || {};
 			var icon = "crown.png";
 			var size = 3.0;
 
-			if(this.pieceMap.hasOwnProperty(name)) {
-				icon = this.pieceMap[name].icon;
-				size = this.pieceMap[name].size;
+			if(PieceMap.pieces.hasOwnProperty(name)) {
+				icon = PieceMap.pieces[name].icon;
+				size = PieceMap.pieces[name].size;
 			}
 			material.diffuseTexture = new BABYLON.Texture(icon, vb.scene);
 			material.diffuseTexture.hasAlpha = true;
