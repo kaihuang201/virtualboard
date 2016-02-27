@@ -21,7 +21,9 @@ div#menu
 	height: 100%;
 	width: 300px;
 	top: 0px;
+	left: -300px;
 	background-color: #ffffff;
+	z-index: 900;
 }
 
 #viewMenuHover {
@@ -29,5 +31,5 @@ div#menu
 	top: 0px;
 	width : 100px; 
 	height : 100%;
-	z-index: 900;
+	z-index: 800;
 }
