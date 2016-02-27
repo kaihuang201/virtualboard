@@ -33,3 +33,22 @@ div#menu
 	height : 100%;
 	z-index: 800;
 }
+
+#context-menu{
+	visibility: hidden;
+	background-color: white;
+	position: absolute;
+	z-index: 999;
+	width: 80px;
+	height: auto;
+	background-color: rgba(235,235,235,0.8);
+}
+
+div.context-item{
+	padding: 5px;
+	font-weight: bold;
+}
+
+div.context-item:hover{
+	background-color: rgba(120,120,120,0.5);
+}

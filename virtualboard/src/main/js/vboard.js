@@ -25,6 +25,12 @@ var VBoard = VBoard || {};
 		window.addEventListener("DOMMouseScroll", function (evt) {
 			vb.inputs.onScroll(Math.max(-1, Math.min(1, (-evt.detail))));
 		});
+
+		$("#canvas").click(function(){
+			$("#context-menu").css("visibility", "hidden");
+		});
+
+
 		vb.renderInit();
 
 		if(!vb.testing) {
@@ -165,6 +171,19 @@ var VBoard = VBoard || {};
 			piece.pickedUp = !!user;
 			piece.mesh = plane;
 			piece.icon = icon;
+
+			plane.actionManager = new BABYLON.ActionManager(vb.scene);
+			plane.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnLeftPickTrigger,
+			  function (evt) {
+			  		if(vb.inputs.keysPressed.indexOf(16) >= 0){
+						$("#context-menu").offset({top: vb.scene.pointerY, left: vb.scene.pointerX-5});
+						$("#context-menu").css("visibility", "visible");
+						$("#context-delete").click(function(){
+							vb.board.remove(piece);
+						$("#context-menu").css("visibility", "hidden");
+						});
+			  		}
+			  }));
 
 			this.add(piece);
 			return piece;
