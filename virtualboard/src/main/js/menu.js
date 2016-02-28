@@ -19,6 +19,10 @@ var Menu = Menu || {};
 			$("#add-piece-modal").modal();
 		});
 
+		$("#addChessBoard").on("click", function() {
+			VBoard.board.loadChessGame();
+		});
+
 		$("#submit-add-piece").click(function() {
 			var selectedName = $("#add-piece-list").val();
 			var user = null;

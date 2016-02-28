@@ -3,6 +3,8 @@ var VBoard = VBoard || {};
 	//size of the vertical view plane
 	vb.size = 10;
 
+	vb.selectedPiece;
+
 	vb.javascriptInit = function () {
 		vb.simTime = Date.now();
 		window.addEventListener("resize", vb.setCameraPerspective);
@@ -28,6 +30,23 @@ var VBoard = VBoard || {};
 
 		$("#canvas").click(function(){
 			$("#context-menu").css("visibility", "hidden");
+		});
+
+		window.addEventListener("mouseup", function(evt){
+			if(vb.selectedPiece){
+				vb.selectedPiece.pickedUp = false;
+				vb.selectedPiece.user = vb.users.getNone();
+				vb.selectedPiece = null;
+			}
+		});
+
+		window.addEventListener("mousemove", function(evt){
+			if(vb.selectedPiece){
+				var newPos = vb.board.screenToGameSpace(new BABYLON.Vector2(vb.scene.pointerX, vb.scene.pointerY));
+				vb.selectedPiece.position = new BABYLON.Vector3(newPos.x, newPos.y, vb.selectedPiece.position.z);
+				vb.selectedPiece.mesh.position.x = newPos.x;
+				vb.selectedPiece.mesh.position.y = newPos.y;
+			}
 		});
 
 
@@ -119,6 +138,10 @@ var VBoard = VBoard || {};
 			plane.actionManager = new BABYLON.ActionManager(vb.scene);
 			plane.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnLeftPickTrigger,
 			  function (evt) {
+			  		vb.selectedPiece = piece;
+			  		vb.board.bringToFront(piece);
+			  		piece.pickedUp = true;
+			  		piece.user = vb.users.getLocal();
 			  		if(vb.inputs.keysPressed.indexOf(16) >= 0){
 						$("#context-menu").offset({top: vb.scene.pointerY, left: vb.scene.pointerX-5});
 						$("#context-menu").css("visibility", "visible");
