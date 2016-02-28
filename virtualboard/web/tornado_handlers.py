@@ -4,6 +4,7 @@ import json
 import logging
 import tornado.websocket
 import uuid
+import os
  
 from tornado import gen
 from django.utils.timezone import utc
@@ -76,4 +77,14 @@ class DownloadStateHandler(tornado.web.RequestHandler):
         self.set_header('Content-Type', 'application/octet-stream')
         self.set_header('Content-Disposition', 'attachment; filename=' + filename)
         self.write("This is where the save file data will go, this file was generated from lobby #" + lobby_id)
-        self.finish()
+
+class UploadStateHandler(tornado.web.RequestHandler):
+    def post(self, lobby_id):
+        savefile = self.request.files['upload'][0]
+        filename = savefile['filename']
+        extn = os.path.splitext(filename)[1]
+        if (not extn == '.vb'):
+            self.write("Incorrect file format, please upload a .vb save file")
+            return
+
+        self.write(savefile['body'])

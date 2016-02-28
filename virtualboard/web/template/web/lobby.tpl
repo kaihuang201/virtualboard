@@ -22,6 +22,13 @@
         </div>
     </div>
 
+    <div id="savefile">
+      <form action="/{{ lobby_instance.id }}/load/" method="post" enctype="multipart/form-data">
+        <input type="file" name="upload">
+        <input type="submit" value="Upload">
+      </form>
+    </div>
+
 
     <div id="chatbox">
       <div id="inbox">
