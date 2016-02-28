@@ -69,3 +69,11 @@ class MessageCacheHandler(tornado.web.RequestHandler):
             self.write(dict(messages=message_buffers[lobby_id].cache))
         else:
             self.write(dict(messages=[]))
+
+class DownloadStateHandler(tornado.web.RequestHandler):
+    def get(self, lobby_id):
+        filename = "save.vb"
+        self.set_header('Content-Type', 'application/octet-stream')
+        self.set_header('Content-Disposition', 'attachment; filename=' + filename)
+        self.write("This is where the save file data will go, this file was generated from lobby #" + lobby_id)
+        self.finish()
