@@ -1,3 +1,7 @@
+import logging
+
+from tornado.concurrent import Future
+
 class MessageBuffer(object):
     def __init__(self):
         self.waiters = set()

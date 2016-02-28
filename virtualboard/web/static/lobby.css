@@ -1,0 +1,23 @@
+h1#welcome {
+    padding-top: 70px;
+}
+#chatbox {
+    max-height:300px; 
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+}
+#inbox {
+    max-height: 245px;
+    overflow-y: scroll;
+}
+#text-entry {
+}
+
+#input {
+  margin-top: 0.5em;
+}
+
+#inbox .message {
+  padding-top: 0.25em;
+}
