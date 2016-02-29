@@ -1,0 +1,96 @@
+//TODO: retexturing
+
+{
+	"type" : "chat",
+	"data" : [
+		{
+			"user" : 1,
+			"time" : 802983477643,
+			"msg" : "actual text here"
+		},
+		{
+			"user" : 2,
+			"time" : 802983477648,
+			"msg" : "more actual text here"
+		}
+	]
+}
+
+{
+	"type" : "pieceTransform",
+	"data" : [
+		{
+			"piece" : 3,
+			"user" : 4,
+
+			//optional parameters
+			"x" : 6.98721345,
+			"y" : 90.6532,
+			"r" : 0.45656,
+			"s" : 1.0
+		}
+	]
+}
+
+{
+	"type" : "pieceAdd",
+	"data" : [
+		{
+			"piece" : 6,
+			"user" : 4,
+			"name" : "my piece",
+			"url" : "/res/img.png",
+			"x" : 6.6435,
+			"y" : 65.2543,
+			"r" : 0.45656,
+			"s" : 1.0
+		}
+	]
+}
+
+{
+	"type" : "pieceRemove",
+	"data" : [
+		{
+			"piece" : 6,
+			"user" : 4
+		}
+	]
+}
+
+{
+	"type" : "userConnect",
+	"data" : [
+		{
+			"user" : 5,
+			"name" : "phil",
+			"color" : [
+				255,
+				0,
+				0
+			]
+		}
+	]
+}
+
+{
+	"type" : "userDisconnect",
+	"data" : [
+		{
+			"user" : 5,
+			"message" : "lost connection"
+		}
+	]
+}
+
+//TODO: private zones
+{
+	"type" : "createPrivateZone",
+	"data" : [
+		{
+
+		}
+	]
+}
+
+
