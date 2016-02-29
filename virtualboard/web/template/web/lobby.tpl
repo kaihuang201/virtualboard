@@ -23,8 +23,8 @@
     </div>
 
     <div id="savefile">
-      <form action="/{{ lobby_instance.id }}/load/" method="post" enctype="multipart/form-data">
-        <input type="file" name="upload">
+      <form action="/{{ lobby_instance.id }}/load/" method="post" enctype="multipart/form-data" id="fileform">
+        <input type="file" name="upload" id="filefield">
         <input type="submit" value="Upload">
       </form>
     </div>
@@ -51,6 +51,24 @@
 
     <script>
       var lobby_id = {{ lobby_instance.id }};
+      var save_form = document.getElementById("fileform");
+      var file_field = document.getElementById("filefield");
+
+      save_form.onsubmit = function(event) {
+        event.preventDefault();
+
+        var data = new FormData();
+        data.append("upload", file_field.files[0])
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', 'load/', true);
+
+        xhr.onload = function () {
+        };
+
+        xhr.send(data);
+      };
+
     </script>
     <script src="{% static "chat.js" %}" type="text/javascript"></script>
     
