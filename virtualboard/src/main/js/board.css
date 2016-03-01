@@ -45,7 +45,7 @@ div#menu
 	background-color: white;
 	position: absolute;
 	z-index: 999;
-	width: 80px;
+	width: 120px;
 	height: auto;
 	background-color: rgba(235,235,235,0.8);
 }
