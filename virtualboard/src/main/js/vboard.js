@@ -75,7 +75,7 @@ var VBoard = VBoard || {};
 
 		ourIndexOf: function(piece){
 			for(var i = 0; i < this.pieces.length; i++){
-				if(this.pieces[i].name == piece.name){
+				if(this.pieces[i].id == piece.id){
 					return i;
 				}
 			}
@@ -149,7 +149,8 @@ var VBoard = VBoard || {};
 			plane.position = new BABYLON.Vector3(pos.x, pos.y, 0);
 
 			var piece = {};
-			piece.name = name + String(vb.pieceCounter);
+			piece.id = vb.pieceCounter;
+			piece.name = name;
 			vb.pieceCounter++;
 			piece.user = user;
 			piece.position = pos;
@@ -161,8 +162,12 @@ var VBoard = VBoard || {};
 			plane.actionManager = new BABYLON.ActionManager(vb.scene);
 			plane.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnLeftPickTrigger,
 			  function (evt) {
-			  		vb.selectedPiece = piece;
+			  		if(piece.static == false){
+			  			vb.selectedPiece = piece;
+			  		}
+
 			  		//vb.board.bringToFront(piece);
+
 			  		piece.pickedUp = true;
 			  		piece.user = vb.users.getLocal();
 			  		//check that the shift key was pressed for the context menu
