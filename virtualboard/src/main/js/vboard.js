@@ -38,6 +38,7 @@ var VBoard = VBoard || {};
 			if(vb.selectedPiece){
 				vb.selectedPiece.pickedUp = false;
 				vb.selectedPiece.user = vb.users.getNone();
+				vb.selectedPiece.outlineMesh.material.alpha = 0;
 				vb.selectedPiece = null;
 			}
 		});
@@ -46,8 +47,18 @@ var VBoard = VBoard || {};
 			if(vb.selectedPiece && !vb.selectedPiece.static){
 				var newPos = vb.board.screenToGameSpace(new BABYLON.Vector2(vb.scene.pointerX, vb.scene.pointerY));
 				vb.selectedPiece.position = new BABYLON.Vector3(newPos.x, newPos.y, vb.selectedPiece.position.z);
-				vb.selectedPiece.mesh.position.x = newPos.x;
-				vb.selectedPiece.mesh.position.y = newPos.y;
+				if (newPos.x < 50 && newPos.x > -50 && newPos.y < 50 && newPos.y > -50) {
+					vb.selectedPiece.mesh.position.x = newPos.x;
+					vb.selectedPiece.mesh.position.y = newPos.y;
+					vb.selectedPiece.outlineMesh.position.x = newPos.x;
+					vb.selectedPiece.outlineMesh.position.y = newPos.y;
+				} else if ((newPos.x > 50 || newPos.x < -50) && (newPos.y < 50 && newPos.y > -50)) {
+					vb.selectedPiece.mesh.position.y = newPos.y;
+					vb.selectedPiece.outlineMesh.position.y = newPos.y;
+				} else if ((newPos.y > 50 || newPos.y < -50) && (newPos.x < 50 && newPos.x > -50)) {
+					vb.selectedPiece.mesh.position.x = newPos.x;
+					vb.selectedPiece.outlineMesh.position.x = newPos.x;
+				}
 			}
 		});
 
@@ -69,8 +80,11 @@ var VBoard = VBoard || {};
 		//should only be called by the generateNewPiece() method
 		add: function (piece) {
 			this.pieces.push(piece);
-			var z = this.getZIndex(this.pieces.length-1);
-			piece.mesh.position.z = z;
+			var pieceZ = this.getZIndex(this.pieces.length - 0.5);
+			piece.mesh.position.z = pieceZ;
+			outlineZ = this.getZIndex(this.pieces.length - 1);
+			piece.outlineMesh.position.z = outlineZ;
+			console.log(pieceZ, outlineZ);
 		},
 
 		ourIndexOf: function(piece){
@@ -144,9 +158,16 @@ var VBoard = VBoard || {};
 			material.diffuseTexture = new BABYLON.Texture(icon, vb.scene);
 			material.diffuseTexture.hasAlpha = true;
 
-			var plane = BABYLON.Mesh.CreatePlane("plane", size, vb.scene);
+			var plane = BABYLON.Mesh.CreatePlane("plane1", size, vb.scene);
 			plane.material = material;
 			plane.position = new BABYLON.Vector3(pos.x, pos.y, 0);
+
+			var outlineMesh = BABYLON.Mesh.CreatePlane("plane2", size*1.1, vb.scene);
+			var outlineMaterial = new BABYLON.StandardMaterial("texture", vb.scene);
+			outlineMaterial.diffuseColor = new BABYLON.Color3(1, 0, 0);
+			outlineMaterial.alpha = 0;
+			outlineMesh.material = outlineMaterial;
+			outlineMesh.position = new BABYLON.Vector3(pos.x, pos.y, 0);
 
 			var piece = {};
 			piece.id = vb.pieceCounter;
@@ -156,6 +177,7 @@ var VBoard = VBoard || {};
 			piece.position = pos;
 			piece.pickedUp = !!user;
 			piece.mesh = plane;
+			piece.outlineMesh = outlineMesh;
 			piece.icon = icon;
 			piece.static = false;
 
@@ -164,6 +186,7 @@ var VBoard = VBoard || {};
 			  function (evt) {
 			  		if(piece.static == false){
 			  			vb.selectedPiece = piece;
+			  			piece.outlineMesh.material.alpha = 0.3;
 			  		}
 
 			  		//vb.board.bringToFront(piece);
@@ -377,17 +400,31 @@ var VBoard = VBoard || {};
 			var dx = mousePos.x - oldCameraPos.x;
 			var dy = mousePos.y - oldCameraPos.y;
 
-			if(delta > 0) {
-				vb.size *= 0.9;
-				dx *= 0.9;
-				dy *= 0.9;
-			} else {
+			if (vb.size < 55 && vb.size > 5) {
+				if(delta > 0) {
+					vb.size *= 0.9;
+					dx *= 0.9;
+					dy *= 0.9;
+				} else {
+					vb.size /= 0.9;
+					dx /= 0.9;
+					dy /= 0.9;
+				}
+				vb.camera.position.x = mousePos.x - dx;
+				vb.camera.position.y = mousePos.y - dy;
+			} else if (vb.size < 5 && delta < 0) { // should be able to zoom out
 				vb.size /= 0.9;
 				dx /= 0.9;
 				dy /= 0.9;
+				vb.camera.position.x = mousePos.x - dx;
+				vb.camera.position.y = mousePos.y - dy;
+			} else if (vb.size > 55 && delta > 0) { // should be able to zoom in 
+				vb.size *= 0.9;
+				dx *= 0.9;
+				dy *= 0.9;
+				vb.camera.position.x = mousePos.x - dx;
+				vb.camera.position.y = mousePos.y - dy;
 			}
-			vb.camera.position.x = mousePos.x - dx;
-			vb.camera.position.y = mousePos.y - dy;
 
 			vb.setCameraPerspective();
 		},
@@ -475,6 +512,11 @@ var VBoard = VBoard || {};
 			//camera.maxCameraSpeed = 80;
 			//camera.cameraAcceleration = 0.1;
 			//camera.rotation = new BABYLON.Vector3(Math.PI/2, 0, 0);
+
+			var ground = BABYLON.Mesh.CreateGround("ground1", 10, 10, 2, scene);
+			var groundMaterial = new BABYLON.StandardMaterial("ground", scene);
+			groundMaterial.specularColor = BABYLON.Color3.Black();
+			ground.material = groundMaterial;
 
 			scene.activeCamera = camera;
 			camera.detachControl(canvas);
