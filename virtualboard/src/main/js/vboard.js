@@ -2,6 +2,7 @@ var VBoard = VBoard || {};
 (function (vb) {
 	//size of the vertical view plane
 	vb.size = 10;
+	vb.viewSize = 50;
 
 	vb.pieceCounter = 0;
 
@@ -36,29 +37,14 @@ var VBoard = VBoard || {};
 
 		window.addEventListener("mouseup", function(evt){
 			if(vb.selectedPiece){
-				vb.selectedPiece.pickedUp = false;
-				vb.selectedPiece.user = vb.users.getNone();
-				vb.selectedPiece.outlineMesh.material.alpha = 0;
-				vb.selectedPiece = null;
+				vb.board.removeSelectedPiece();
 			}
 		});
 
 		window.addEventListener("mousemove", function(evt){
-			if(vb.selectedPiece && !vb.selectedPiece.static){
+			if(vb.selectedPiece){
 				var newPos = vb.board.screenToGameSpace(new BABYLON.Vector2(vb.scene.pointerX, vb.scene.pointerY));
-				vb.selectedPiece.position = new BABYLON.Vector3(newPos.x, newPos.y, vb.selectedPiece.position.z);
-				if (newPos.x < 50 && newPos.x > -50 && newPos.y < 50 && newPos.y > -50) {
-					vb.selectedPiece.mesh.position.x = newPos.x;
-					vb.selectedPiece.mesh.position.y = newPos.y;
-					vb.selectedPiece.outlineMesh.position.x = newPos.x;
-					vb.selectedPiece.outlineMesh.position.y = newPos.y;
-				} else if ((newPos.x > 50 || newPos.x < -50) && (newPos.y < 50 && newPos.y > -50)) {
-					vb.selectedPiece.mesh.position.y = newPos.y;
-					vb.selectedPiece.outlineMesh.position.y = newPos.y;
-				} else if ((newPos.y > 50 || newPos.y < -50) && (newPos.x < 50 && newPos.x > -50)) {
-					vb.selectedPiece.mesh.position.x = newPos.x;
-					vb.selectedPiece.outlineMesh.position.x = newPos.x;
-				}
+				vb.board.movePiece(newPos);
 			}
 		});
 
@@ -84,7 +70,6 @@ var VBoard = VBoard || {};
 			piece.mesh.position.z = pieceZ;
 			outlineZ = this.getZIndex(this.pieces.length - 1);
 			piece.outlineMesh.position.z = outlineZ;
-			console.log(pieceZ, outlineZ);
 		},
 
 		ourIndexOf: function(piece){
@@ -190,43 +175,12 @@ var VBoard = VBoard || {};
 			plane.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnLeftPickTrigger,
 			  function (evt) {
 			  		if(piece.static == false){
-			  			vb.selectedPiece = piece;
-			  			piece.outlineMesh.material.alpha = 0.3;
+			  			vb.board.setSelectedPiece(piece);
 			  		}
 
-			  		//vb.board.bringToFront(piece);
-
-			  		piece.pickedUp = true;
-			  		piece.user = vb.users.getLocal();
 			  		//check that the shift key was pressed for the context menu
 			  		if(vb.inputs.keysPressed.indexOf(16) >= 0){
-			  			//make the context menu appear at your mouse position
-						$("#context-menu").offset({top: vb.scene.pointerY, left: vb.scene.pointerX-5});
-						$("#context-menu").css("visibility", "visible");
-
-						//clear previous onclick function bindings
-						$("#context-delete").off("click");
-						$("#context-back").off("click");
-						$("#context-front").off("click");
-						$("#context-static").off("click");
-
-						//set new onclick function bindings
-						$("#context-delete").on("click", function(){
-							vb.board.remove(piece);
-							$("#context-menu").css("visibility", "hidden");
-						});
-						$("#context-back").on("click", function(){
-							vb.board.pushToBack(piece);
-							$("#context-menu").css("visibility", "hidden");
-						});
-						$("#context-front").on("click", function(){
-							vb.board.bringToFront(piece);
-							$("#context-menu").css("visibility", "hidden");
-						});
-						$("#context-static").on("click" , function(){
-							vb.board.toggleStatic(piece);
-							$("#context-menu").css("visibility", "hidden");
-						});
+			  			vb.board.createContextMenu(piece);
 			  		}
 			  }));
 
@@ -234,8 +188,68 @@ var VBoard = VBoard || {};
 			return piece;
 		},
 
-		movePiece: function (piece, pos, user, instant) {
-			//to do
+		removeSelectedPiece: function(){
+			vb.selectedPiece.pickedUp = false;
+			vb.selectedPiece.user = vb.users.getNone();
+			vb.selectedPiece.outlineMesh.material.alpha = 0;
+			vb.selectedPiece = null;
+		},
+
+		setSelectedPiece: function(piece){
+			vb.selectedPiece = piece;
+			piece.outlineMesh.material.alpha = 0.3;
+			piece.pickedUp = true;
+			piece.user = vb.users.getLocal();
+		},
+
+		createContextMenu: function(piece){
+			//make the context menu appear at your mouse position
+			$("#context-menu").offset({top: vb.scene.pointerY, left: vb.scene.pointerX-5});
+			$("#context-menu").css("visibility", "visible");
+
+			//clear previous onclick function bindings
+			$("#context-delete").off("click");
+			$("#context-back").off("click");
+			$("#context-front").off("click");
+			$("#context-static").off("click");
+
+			//set new onclick function bindings
+			$("#context-delete").on("click", function(){
+				vb.board.remove(piece);
+				$("#context-menu").css("visibility", "hidden");
+			});
+			$("#context-back").on("click", function(){
+				vb.board.pushToBack(piece);
+				$("#context-menu").css("visibility", "hidden");
+			});
+			$("#context-front").on("click", function(){
+				vb.board.bringToFront(piece);
+				$("#context-menu").css("visibility", "hidden");
+			});
+			$("#context-static").on("click" , function(){
+				vb.board.toggleStatic(piece);
+				$("#context-menu").css("visibility", "hidden");
+			});
+		},
+
+		movePiece: function (newPos) {
+			if(!vb.selectedPiece.static){
+				vb.selectedPiece.position = new BABYLON.Vector3(newPos.x, newPos.y, vb.selectedPiece.position.z);
+				if (newPos.x < vb.viewSize && newPos.x > -vb.viewSize && newPos.y < vb.viewSize && newPos.y > -vb.viewSize) {
+					vb.selectedPiece.mesh.position.x = newPos.x;
+					vb.selectedPiece.mesh.position.y = newPos.y;
+					vb.selectedPiece.outlineMesh.position.x = newPos.x;
+					vb.selectedPiece.outlineMesh.position.y = newPos.y;
+				} else if ((newPos.x > vb.viewSize || newPos.x < -vb.viewSize) && (newPos.y < vb.viewSize && newPos.y > -vb.viewSize)) {
+					vb.selectedPiece.mesh.position.y = newPos.y;
+					vb.selectedPiece.outlineMesh.position.y = newPos.y;
+				} else if ((newPos.y > vb.viewSize || newPos.y < -vb.viewSize) && (newPos.x < vb.viewSize && newPos.x > -vb.viewSize)) {
+					vb.selectedPiece.mesh.position.x = newPos.x;
+					vb.selectedPiece.outlineMesh.position.x = newPos.x;
+				}
+				vb.selectedPiece.position.x = vb.selectedPiece.mesh.position.x;
+				vb.selectedPiece.position.y = vb.selectedPiece.mesh.position.y;
+			}
 		},
 
 		clearBoard: function () {
@@ -405,6 +419,12 @@ var VBoard = VBoard || {};
 			var dx = mousePos.x - oldCameraPos.x;
 			var dy = mousePos.y - oldCameraPos.y;
 
+			vb.inputs.setZoom(mousePos, delta, dx, dy);
+
+			vb.setCameraPerspective();
+		},
+
+		setZoom: function(mousePos, delta, dx, dy){
 			if (vb.size < 55 && vb.size > 5) {
 				if(delta > 0) {
 					vb.size *= 0.9;
@@ -430,8 +450,6 @@ var VBoard = VBoard || {};
 				vb.camera.position.x = mousePos.x - dx;
 				vb.camera.position.y = mousePos.y - dy;
 			}
-
-			vb.setCameraPerspective();
 		},
 
 		processInputs: function (elapsed) {
