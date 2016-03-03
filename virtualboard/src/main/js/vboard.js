@@ -111,6 +111,7 @@ var VBoard = VBoard || {};
 			}
 			this.pieces.pop();
 			piece.mesh.dispose();
+			piece.outlineMesh.dispose();
 		},
 
 		//moves a piece to the back of the board (highest z index)
@@ -119,10 +120,12 @@ var VBoard = VBoard || {};
 			if(index == -1) return;
 			for(var i = index; i > 0; i--) {
 				this.pieces[i] = this.pieces[i-1];
-				this.pieces[i].mesh.position.z = this.getZIndex(i);
+				this.pieces[i].mesh.position.z = this.getZIndex(i + 0.5);
+				this.pieces[i].outlineMesh.position.z = this.getZIndex(i);
 			}
 			this.pieces[0] = piece;
-			piece.mesh.position.z = this.getZIndex(0);
+			piece.mesh.position.z = this.getZIndex(0.5);
+			piece.outlineMesh.position.z = this.getZIndex(0);
 		},
 
 		//moves a piece to the front of the board (lowest z index)
@@ -131,10 +134,12 @@ var VBoard = VBoard || {};
 			if(index == -1) return;
 			for(var i = index; i < this.pieces.length-1; i++) {
 				this.pieces[i] = this.pieces[i+1];
-				this.pieces[i].mesh.position.z = this.getZIndex(i);
+				this.pieces[i].mesh.position.z = this.getZIndex(i + 0.5);
+				this.pieces[i].outlineMesh.position.z = this.getZIndex(i);
 			}
 			this.pieces[this.pieces.length-1] = piece;
-			piece.mesh.position.z = this.getZIndex(this.pieces.length-1);
+			piece.mesh.position.z = this.getZIndex(this.pieces.length-0.5);
+			piece.outlineMesh.position.z = this.getZIndex(this.pieces.length - 1);
 		},
 
 		//toggles whether a piece should be static or not
@@ -164,7 +169,7 @@ var VBoard = VBoard || {};
 
 			var outlineMesh = BABYLON.Mesh.CreatePlane("plane2", size*1.1, vb.scene);
 			var outlineMaterial = new BABYLON.StandardMaterial("texture", vb.scene);
-			outlineMaterial.diffuseColor = new BABYLON.Color3(1, 0, 0);
+			outlineMaterial.diffuseColor = new BABYLON.Color3(1, 0, 0); //update to get color from user
 			outlineMaterial.alpha = 0;
 			outlineMesh.material = outlineMaterial;
 			outlineMesh.position = new BABYLON.Vector3(pos.x, pos.y, 0);
