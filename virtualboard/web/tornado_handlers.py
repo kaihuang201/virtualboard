@@ -9,6 +9,7 @@ import os
 from tornado import gen
 from django.utils.timezone import utc
 from modules.message_buffer import MessageBuffer
+from modules.board_state import BoardState
 
 message_buffers = dict()
  
