@@ -90,5 +90,7 @@ class UploadStateHandler(tornado.web.RequestHandler):
             self.write("Incorrect file format, please upload a .vb save file")
             return
 
+        save = savefile['body']
+
         create_board_state(lobby_id)
-        board_states[lobby_id].load_json(savefile['body'])
+        board_states[lobby_id].load_json(save)

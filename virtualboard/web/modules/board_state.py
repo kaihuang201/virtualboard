@@ -73,4 +73,4 @@ class BoardState(object):
         return json.dumps(self.pieces)
 
     def load_json(self, json_string):
-        self.pieces = json.load(json_string)
+        self.pieces = json.loads(json_string)
