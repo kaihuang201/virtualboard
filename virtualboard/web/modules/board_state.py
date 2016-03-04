@@ -18,6 +18,11 @@ class Piece(object):
         self.icon = icon
         self.piece_id = piece_id
 
+    def create_from_dict(dict_obj):
+        ret = Piece()
+        ret.load_from_dict(dict_obj)
+        return ret
+
     def set_name(new_name):
         name = new_name
 
@@ -103,7 +108,11 @@ class BoardState(object):
 
     def load_json(self,json_string):
         try:
-            self.pieces = json.loads(json_string)
+            temp_dict = json.loads(json_string)
+            for each_entry in temp_dict:
+                new_piece = Piece()
+                new_piece.load_from_dict(each_entry)
+                self.pieces.append(new_piece)
         except ValueError:
             print("invalid json")
             #return other sorts of error message BTW
@@ -126,3 +135,8 @@ class BoardState(object):
 
 # board2 = BoardState()
 # print board2
+
+# board3 = BoardState()
+# print board3
+# board3.load_json('[{"name": "a", "user": "sd", "y": 2, "x": 1, "z": 3, "piece_id": 321, "icon": "dddicon"},{"name": "b", "user": "sd", "y": 2, "x": 3, "z": 3, "piece_id": 12, "icon": "bbbbbicon"}]')
+# print board3
