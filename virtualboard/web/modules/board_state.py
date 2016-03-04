@@ -60,17 +60,69 @@ class Piece(object):
     def get_piece_id():
         return piece_id
 
+    def get_dict(self):
+        return self.__dict__
+
+    def load_from_dict(self,dict_obj):
+        self.__dict__.update(dict_obj)
+
+    def load_from_json(self, json_string):
+    	try:
+    		self.load_from_dict(json.loads(json_string))
+    	except ValueError:
+    		print("invalid json for Piece class")
+
+    def get_json(self):
+    	return json.dumps(self.get_dict())
+
+    def __str__(self):
+        return self.get_json()
+
 class BoardState(object):
+
     pieces = []
 
+    def __init__(self):
+        self.pieces = []
+
     def add_piece(self, piece):
-        self.pieces.add(piece)
+        self.pieces.append(piece)
 
     def remove_piece(self, piece):
         self.pieces.remove(piece)
 
     def dump_json(self):
-        return json.dumps(self.pieces)
+    	ret_str = '['
+        for each_piece in self.pieces:
+        	ret_str += each_piece.get_json()
+        	ret_str += ','
+        if len(self.pieces) > 0:
+            ret_str = ret_str[:-1]	# get rid of the last comma
+        ret_str += ']'
+        return ret_str
 
-    def load_json(self, json_string):
-        self.pieces = json.loads(json_string)
+    def load_json(self,json_string):
+        try:
+            self.pieces = json.loads(json_string)
+        except ValueError:
+            print("invalid json")
+            #return other sorts of error message BTW
+
+    def __str__(self):
+    	return self.dump_json()
+
+# a = Piece('a',1,2,3,'sd','abcicon',321)
+# print a
+# a.load_from_json('{"name": "a", "user": "sd", "y": 2, "x": 1, "z": 3, "piece_id": 321, "icon": "dddicon"}')
+# print a
+# print a.get_dict()
+
+# b = Piece('b',3,2,3,'sd','bbbbbicon',12)
+# print b
+# board = BoardState()
+# board.add_piece(a)
+# board.add_piece(b)
+# print board
+
+# board2 = BoardState()
+# print board2
