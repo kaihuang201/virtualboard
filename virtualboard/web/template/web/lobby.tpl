@@ -21,7 +21,7 @@
       If you can see this, your browser may not support HTML 5.
     </canvas>
 
-    <!--
+    
     <div class="container container-table">
       <div class="row vertical-center-row">
         <div class="text-center col-md-4 col-md-offset-4">
@@ -37,7 +37,10 @@
     <div id="savefile">
       <form action="/{{ lobby_instance.id }}/load/" method="post" enctype="multipart/form-data" id="fileform">
         <input type="file" name="upload" id="filefield">
-        <input type="submit" value="Upload">
+        <input type="submit" value="Load Saved Game">
+      </form>
+      <form action="/{{ lobby_instance.id }}/save/" method="post">
+        <input type="submit" value="Save Game">
       </form>
     </div>
 
@@ -83,7 +86,7 @@
 
     </script>
     
-    -->
+    
 
   {% endif %}
 {% endblock %}

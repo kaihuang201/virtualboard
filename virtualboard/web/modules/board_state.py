@@ -61,16 +61,16 @@ class Piece(object):
         return piece_id
 
 class BoardState(object):
-    pieces = set()
+    pieces = []
 
-    def add_piece(piece):
-        pieces.add(piece)
+    def add_piece(self, piece):
+        self.pieces.add(piece)
 
-    def remove_piece(piece):
-        pieces.remove(piece)
+    def remove_piece(self, piece):
+        self.pieces.remove(piece)
 
-    def dump_json():
-        return json.dump(pieces)
+    def dump_json(self):
+        return json.dumps(self.pieces)
 
-    def load_json(json_string):
-        pieces = json.load(json_string)
+    def load_json(self, json_string):
+        self.pieces = json.load(json_string)

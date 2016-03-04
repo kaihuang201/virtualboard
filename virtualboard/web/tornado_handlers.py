@@ -74,12 +74,12 @@ class MessageCacheHandler(tornado.web.RequestHandler):
             self.write(dict(messages=[]))
 
 class DownloadStateHandler(tornado.web.RequestHandler):
-    def get(self, lobby_id):
-        create_board_state(lobby_id)
+    def post(self, lobby_id):
         filename = "save.vb"
         self.set_header('Content-Type', 'application/octet-stream')
         self.set_header('Content-Disposition', 'attachment; filename=' + filename)
-        self.write(board_states[lobby_id].dump_json)
+        create_board_state(lobby_id)
+        self.write(board_states[lobby_id].dump_json())
 
 class UploadStateHandler(tornado.web.RequestHandler):
     def post(self, lobby_id):
