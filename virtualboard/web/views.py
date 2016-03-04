@@ -70,8 +70,12 @@ def signup(request):
             profile = Profile(user=newuser, motto = '', current_lobby = None)
             profile.save()
 
-        # redirect welcome page
-        return HttpResponseRedirect(reverse('web:index'))
+            auth_user = authenticate(username=uname, password=pswd)
+            login(request, auth_user)
+
+            # redirect welcome page
+            return HttpResponseRedirect(reverse('web:index'))
+
     elif request.method=='GET':
         # get request
         form = signupForm()
@@ -144,6 +148,9 @@ def join_lobby(request, lobby_id):
         return render(request, 'web/403.tpl', status=403)
 
 
+def joinlobby(request,lobby_id):
+    return joinlobby_func(request,lobby_id)
+
 # test pages
 def frontendtests(request):
     if request.user.is_authenticated():
@@ -151,4 +158,3 @@ def frontendtests(request):
         # return HttpResponse("TESTS!")
     else:
         return render(request, 'web/403.tpl', status=403)
-    
