@@ -12,10 +12,11 @@ from modules.message_buffer import MessageBuffer
 from modules.board_state import BoardState
 
 message_buffers = dict()
+board_states = dict()
  
-class HelloHandler(tornado.web.RequestHandler):
-  def get(self):
-    self.write('Hello from tornado')
+def create_board_state(lobby_id):
+    if (not board_states.has_key(lobby_id)):
+        board_states[lobby_id] = BoardState()
 
 class MessageNewHandler(tornado.web.RequestHandler):
     def post(self, lobby_id):
@@ -74,10 +75,11 @@ class MessageCacheHandler(tornado.web.RequestHandler):
 
 class DownloadStateHandler(tornado.web.RequestHandler):
     def get(self, lobby_id):
+        create_board_state(lobby_id)
         filename = "save.vb"
         self.set_header('Content-Type', 'application/octet-stream')
         self.set_header('Content-Disposition', 'attachment; filename=' + filename)
-        self.write("This is where the save file data will go, this file was generated from lobby #" + lobby_id)
+        self.write(board_states[lobby_id].dump_json)
 
 class UploadStateHandler(tornado.web.RequestHandler):
     def post(self, lobby_id):
@@ -88,4 +90,5 @@ class UploadStateHandler(tornado.web.RequestHandler):
             self.write("Incorrect file format, please upload a .vb save file")
             return
 
-        self.write(savefile['body'])
+        create_board_state(lobby_id)
+        board_states[lobby_id].load_json(savefile['body'])
