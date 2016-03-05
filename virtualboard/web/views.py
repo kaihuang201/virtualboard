@@ -18,7 +18,7 @@ from django.db import connection
 
 from forms import *
 from web.models import *
-from web.modules.lobby_func import *
+from web.modules.lobby_func import * 
 
 def index(request):
     return render(request, 'web/base.tpl', {})
@@ -67,11 +67,15 @@ def signup(request):
                         {'form':form, 'error':errmsg})
                
             # add the profile 
-            profile = Profile(user=newuser, motto = '', currentLobby = None)
+            profile = Profile(user=newuser, motto = '', current_lobby = None)
             profile.save()
 
-        # redirect welcome page
-        return HttpResponseRedirect(reverse('web:index'))
+            auth_user = authenticate(username=uname, password=pswd)
+            login(request, auth_user)
+
+            # redirect welcome page
+            return HttpResponseRedirect(reverse('web:index'))
+
     elif request.method=='GET':
         # get request
         form = signupForm()
@@ -113,17 +117,44 @@ def signout(request):
 
 # lobby views
 
-def listoflobbies(request):
-    return listoflobbies_func(request)
+def lobby_list(request):
+    if request.user.is_authenticated():
+        return lobby_list_func(request)
+    else:
+        return render(request, 'web/403.tpl', status=403)
 
-def lobby(request,lobby_id):
-    return lobby_func(request,lobby_id)
+def view_lobby(request, lobby_id):
+    if request.user.is_authenticated():
+        return view_lobby_func(request,lobby_id)
+    else:
+        return render(request, 'web/403.tpl', status=403)
 
-def createlobby(request):
-    return createlobby_func(request)
+def create_lobby(request):
+    if request.user.is_authenticated():
+        return create_lobby_func(request)
+    else:
+        return render(request, 'web/403.tpl', status=403)
 
-def leavelobby(request,lobby_id):
-    return leavelobby_func(request,lobby_id)
+def leave_lobby(request, lobby_id):
+    if request.user.is_authenticated():
+        return leave_lobby_func(request,lobby_id)
+    else:
+        return render(request, 'web/403.tpl', status=403)
+
+def join_lobby(request, lobby_id):
+    if request.user.is_authenticated():
+        return join_lobby_func(request, lobby_id)
+    else:
+        return render(request, 'web/403.tpl', status=403)
+
 
 def joinlobby(request,lobby_id):
     return joinlobby_func(request,lobby_id)
+
+# test pages
+def frontendtests(request):
+    if request.user.is_authenticated():
+        return render(request,'web/tests/frontendtests.html',{})
+        # return HttpResponse("TESTS!")
+    else:
+        return render(request, 'web/403.tpl', status=403)
