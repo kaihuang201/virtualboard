@@ -43,15 +43,4 @@ QUnit.module( "QueueTest", function(hooks) {
 
     });
 
-    QUnit.test("Testing Piece Movement Framework", function(assert){
-
-        var piece1 = VBoard.board.generateNewPiece("name", VBoard.users.getNone(), new BABYLON.Vector2(0,0));
-        var moveVec = new BABYLON.Vector2(1,1);
-
-        VBoard.board.movePiece(piece1, moveVec, VBoard.users.getLocal());
-
-        assert.equal(piece1.mesh.position.x, moveVec.x, "We expect the piece to be moved to the desired location - X");
-        assert.equal(piece1.mesh.position.y, moveVec.y, "We expect the piece to be moved to the desired location - Y");
-
-    });
 });

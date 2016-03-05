@@ -8,7 +8,7 @@ QUnit.module( "QueueTest", function(hooks){
         VBoard.board.clearBoard();
     });
 
-    QUnit.test("Testing Generating Pieces", function(assert){
+    QUnit.test("Testing Basic User Get Functions", function(assert){
 
         assert.notEqual(VBoard.users.getLocal(), VBoard.users.getNone(), "We expect the local user to exist");
         

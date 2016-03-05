@@ -2,6 +2,11 @@ var VBoard = VBoard || {};
 (function (vb) {
 	//size of the vertical view plane
 	vb.size = 10;
+	vb.viewSize = 50;
+
+	vb.pieceCounter = 0;
+
+	vb.selectedPiece;
 
 	vb.javascriptInit = function () {
 		vb.simTime = Date.now();
@@ -25,6 +30,25 @@ var VBoard = VBoard || {};
 		window.addEventListener("DOMMouseScroll", function (evt) {
 			vb.inputs.onScroll(Math.max(-1, Math.min(1, (-evt.detail))));
 		});
+
+		$("#canvas").click(function(){
+			$("#context-menu").css("visibility", "hidden");
+		});
+
+		window.addEventListener("mouseup", function(evt){
+			if(vb.selectedPiece){
+				vb.board.removeSelectedPiece();
+			}
+		});
+
+		window.addEventListener("mousemove", function(evt){
+			if(vb.selectedPiece){
+				var newPos = vb.board.screenToGameSpace(new BABYLON.Vector2(vb.scene.pointerX, vb.scene.pointerY));
+				vb.board.movePiece(newPos);
+			}
+		});
+
+
 		vb.renderInit();
 
 		if(!vb.testing) {
@@ -36,70 +60,25 @@ var VBoard = VBoard || {};
 		//members
 		pieces: [], //ordered list
 
-		//this should probably be fetched as a separate file
-		pieceMap: {
-			"chessKingBlack" : {
-				"size" : 2.0,
-				"icon" : "nbking.png"
-			},
-			"chessQueenBlack" : {
-				"size" : 2.0,
-				"icon" : "nbqueen.png"
-			},
-			"chessKnightBlack" : {
-				"size" : 2.0,
-				"icon" : "nbknight.png"
-			},
-			"chessBishopBlack" : {
-				"size" : 2.0,
-				"icon" : "nbbishop.png"
-			},
-			"chessRookBlack" : {
-				"size" : 2.0,
-				"icon" : "nbrook.png"
-			},
-			"chessPawnBlack" : {
-				"size" : 2.0,
-				"icon" : "nbpawn.png"
-			},
-			"chessKingWhite" : {
-				"size" : 2.0,
-				"icon" : "nwking.png"
-			},
-			"chessQueenWhite" : {
-				"size" : 2.0,
-				"icon" : "nwqueen.png"
-			},
-			"chessKnightWhite" : {
-				"size" : 2.0,
-				"icon" : "nwknight.png"
-			},
-			"chessBishopWhite" : {
-				"size" : 2.0,
-				"icon" : "nwbishop.png"
-			},
-			"chessRookWhite" : {
-				"size" : 2.0,
-				"icon" : "nwrook.png"
-			},
-			"chessPawnWhite" : {
-				"size" : 2.0,
-				"icon" : "nwpawn.png"
-			},
-			"chessBoard" : {
-				"size" : 16.0,
-				"icon" : "background.png"
-			}
-		},
-
 		//methods
 
 		//adds a new piece to the front of the board
 		//should only be called by the generateNewPiece() method
 		add: function (piece) {
 			this.pieces.push(piece);
-			var z = this.getZIndex(this.pieces.length-1);
-			piece.mesh.position.z = z;
+			var pieceZ = this.getZIndex(this.pieces.length - 0.5);
+			piece.mesh.position.z = pieceZ;
+			outlineZ = this.getZIndex(this.pieces.length - 1);
+			piece.outlineMesh.position.z = outlineZ;
+		},
+
+		ourIndexOf: function(piece){
+			for(var i = 0; i < this.pieces.length; i++){
+				if(this.pieces[i].id == piece.id){
+					return i;
+				}
+			}
+			return -1;
 		},
 
 		//function to calculate z index given a position in the pieces array
@@ -109,36 +88,51 @@ var VBoard = VBoard || {};
 
 		//removes a piece from the board
 		remove: function (piece) {
-			var index = this.pieces.indexOf(piece);
+			var index = this.ourIndexOf(piece);
+			if(index == -1) return;
 			for(var i = index; i < this.pieces.length-1; i++) {
 				this.pieces[i] = this.pieces[i+1];
 				this.pieces[i].mesh.position.z = this.getZIndex(i);
 			}
 			this.pieces.pop();
 			piece.mesh.dispose();
+			piece.outlineMesh.dispose();
 		},
 
 		//moves a piece to the back of the board (highest z index)
 		pushToBack: function (piece) {
-			var index = this.pieces.indexOf(piece);
-
+			var index = this.ourIndexOf(piece);
+			if(index == -1) return;
 			for(var i = index; i > 0; i--) {
 				this.pieces[i] = this.pieces[i-1];
-				this.pieces[i].mesh.position.z = this.getZIndex(i);
+				this.pieces[i].mesh.position.z = this.getZIndex(i + 0.5);
+				this.pieces[i].outlineMesh.position.z = this.getZIndex(i);
 			}
 			this.pieces[0] = piece;
-			piece.mesh.position.z = this.getZIndex(0);
+			piece.mesh.position.z = this.getZIndex(0.5);
+			piece.outlineMesh.position.z = this.getZIndex(0);
 		},
 
 		//moves a piece to the front of the board (lowest z index)
 		bringToFront: function (piece) {
-			var index = this.pieces.indexOf(piece);
+			var index = this.ourIndexOf(piece);
+			if(index == -1) return;
 			for(var i = index; i < this.pieces.length-1; i++) {
 				this.pieces[i] = this.pieces[i+1];
-				this.pieces[i].mesh.position.z = this.getZIndex(i);
+				this.pieces[i].mesh.position.z = this.getZIndex(i + 0.5);
+				this.pieces[i].outlineMesh.position.z = this.getZIndex(i);
 			}
 			this.pieces[this.pieces.length-1] = piece;
-			piece.mesh.position.z = this.getZIndex(this.pieces.length-1);
+			piece.mesh.position.z = this.getZIndex(this.pieces.length-0.5);
+			piece.outlineMesh.position.z = this.getZIndex(this.pieces.length - 1);
+		},
+
+		//toggles whether a piece should be static or not
+		toggleStatic: function(piece){
+			piece.static = !piece.static;
+			if(piece.static){
+				this.pushToBack(piece);
+			}
 		},
 
 		generateNewPiece: function (name, user, pos) {
@@ -147,31 +141,115 @@ var VBoard = VBoard || {};
 			var icon = "crown.png";
 			var size = 3.0;
 
-			if(this.pieceMap.hasOwnProperty(name)) {
-				icon = this.pieceMap[name].icon;
-				size = this.pieceMap[name].size;
+			if(PieceMap.pieces.hasOwnProperty(name)) {
+				icon = PieceMap.pieces[name].icon;
+				size = PieceMap.pieces[name].size;
 			}
 			material.diffuseTexture = new BABYLON.Texture(icon, vb.scene);
 			material.diffuseTexture.hasAlpha = true;
 
-			var plane = BABYLON.Mesh.CreatePlane("plane", size, vb.scene);
+			var plane = BABYLON.Mesh.CreatePlane("plane1", size, vb.scene);
 			plane.material = material;
 			plane.position = new BABYLON.Vector3(pos.x, pos.y, 0);
 
+			var outlineMesh = BABYLON.Mesh.CreatePlane("plane2", size*1.1, vb.scene);
+			var outlineMaterial = new BABYLON.StandardMaterial("texture", vb.scene);
+			outlineMaterial.diffuseColor = new BABYLON.Color3(1, 0, 0); //update to get color from user
+			outlineMaterial.alpha = 0;
+			outlineMesh.material = outlineMaterial;
+			outlineMesh.position = new BABYLON.Vector3(pos.x, pos.y, 0);
+
 			var piece = {};
+			piece.id = vb.pieceCounter;
 			piece.name = name;
+			vb.pieceCounter++;
 			piece.user = user;
 			piece.position = pos;
 			piece.pickedUp = !!user;
 			piece.mesh = plane;
+			piece.outlineMesh = outlineMesh;
 			piece.icon = icon;
+			piece.static = false;
+
+			plane.actionManager = new BABYLON.ActionManager(vb.scene);
+			plane.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnLeftPickTrigger,
+			  function (evt) {
+			  		if(piece.static == false){
+			  			vb.board.setSelectedPiece(piece);
+			  		}
+
+			  		//check that the shift key was pressed for the context menu
+			  		if(vb.inputs.keysPressed.indexOf(16) >= 0){
+			  			vb.board.createContextMenu(piece);
+			  		}
+			  }));
 
 			this.add(piece);
 			return piece;
 		},
 
-		movePiece: function (piece, pos, user, instant) {
-			//to do
+		removeSelectedPiece: function(){
+			vb.selectedPiece.pickedUp = false;
+			vb.selectedPiece.user = vb.users.getNone();
+			vb.selectedPiece.outlineMesh.material.alpha = 0;
+			vb.selectedPiece = null;
+		},
+
+		setSelectedPiece: function(piece){
+			vb.selectedPiece = piece;
+			piece.outlineMesh.material.alpha = 0.3;
+			piece.pickedUp = true;
+			piece.user = vb.users.getLocal();
+		},
+
+		createContextMenu: function(piece){
+			//make the context menu appear at your mouse position
+			$("#context-menu").offset({top: vb.scene.pointerY, left: vb.scene.pointerX-5});
+			$("#context-menu").css("visibility", "visible");
+
+			//clear previous onclick function bindings
+			$("#context-delete").off("click");
+			$("#context-back").off("click");
+			$("#context-front").off("click");
+			$("#context-static").off("click");
+
+			//set new onclick function bindings
+			$("#context-delete").on("click", function(){
+				vb.board.remove(piece);
+				$("#context-menu").css("visibility", "hidden");
+			});
+			$("#context-back").on("click", function(){
+				vb.board.pushToBack(piece);
+				$("#context-menu").css("visibility", "hidden");
+			});
+			$("#context-front").on("click", function(){
+				vb.board.bringToFront(piece);
+				$("#context-menu").css("visibility", "hidden");
+			});
+			$("#context-static").on("click" , function(){
+				vb.board.toggleStatic(piece);
+				$("#context-menu").css("visibility", "hidden");
+			});
+		},
+
+		movePiece: function (newPos) {
+			if(!vb.selectedPiece.static){
+				vb.selectedPiece.position = new BABYLON.Vector3(newPos.x, newPos.y, vb.selectedPiece.position.z);
+				if (newPos.x < vb.viewSize && newPos.x > -vb.viewSize && newPos.y < vb.viewSize && newPos.y > -vb.viewSize) {
+					vb.selectedPiece.mesh.position.x = newPos.x;
+					vb.selectedPiece.mesh.position.y = newPos.y;
+					vb.selectedPiece.outlineMesh.position.x = newPos.x;
+					vb.selectedPiece.outlineMesh.position.y = newPos.y;
+				} else if ((newPos.x > vb.viewSize || newPos.x < -vb.viewSize) && (newPos.y < vb.viewSize && newPos.y > -vb.viewSize)) {
+					vb.selectedPiece.mesh.position.y = newPos.y;
+					vb.selectedPiece.outlineMesh.position.y = newPos.y;
+				} else if ((newPos.y > vb.viewSize || newPos.y < -vb.viewSize) && (newPos.x < vb.viewSize && newPos.x > -vb.viewSize)) {
+					vb.selectedPiece.mesh.position.x = newPos.x;
+					vb.selectedPiece.outlineMesh.position.x = newPos.x;
+				}
+				vb.selectedPiece.position.x = vb.selectedPiece.mesh.position.x;
+				vb.selectedPiece.position.y = vb.selectedPiece.mesh.position.y;
+			}
 		},
 
 		clearBoard: function () {
@@ -341,19 +419,37 @@ var VBoard = VBoard || {};
 			var dx = mousePos.x - oldCameraPos.x;
 			var dy = mousePos.y - oldCameraPos.y;
 
-			if(delta > 0) {
-				vb.size *= 0.9;
-				dx *= 0.9;
-				dy *= 0.9;
-			} else {
+			vb.inputs.setZoom(mousePos, delta, dx, dy);
+
+			vb.setCameraPerspective();
+		},
+
+		setZoom: function(mousePos, delta, dx, dy){
+			if (vb.size < 55 && vb.size > 5) {
+				if(delta > 0) {
+					vb.size *= 0.9;
+					dx *= 0.9;
+					dy *= 0.9;
+				} else {
+					vb.size /= 0.9;
+					dx /= 0.9;
+					dy /= 0.9;
+				}
+				vb.camera.position.x = mousePos.x - dx;
+				vb.camera.position.y = mousePos.y - dy;
+			} else if (vb.size < 5 && delta < 0) { // should be able to zoom out
 				vb.size /= 0.9;
 				dx /= 0.9;
 				dy /= 0.9;
+				vb.camera.position.x = mousePos.x - dx;
+				vb.camera.position.y = mousePos.y - dy;
+			} else if (vb.size > 55 && delta > 0) { // should be able to zoom in 
+				vb.size *= 0.9;
+				dx *= 0.9;
+				dy *= 0.9;
+				vb.camera.position.x = mousePos.x - dx;
+				vb.camera.position.y = mousePos.y - dy;
 			}
-			vb.camera.position.x = mousePos.x - dx;
-			vb.camera.position.y = mousePos.y - dy;
-
-			vb.setCameraPerspective();
 		},
 
 		processInputs: function (elapsed) {
@@ -439,6 +535,11 @@ var VBoard = VBoard || {};
 			//camera.maxCameraSpeed = 80;
 			//camera.cameraAcceleration = 0.1;
 			//camera.rotation = new BABYLON.Vector3(Math.PI/2, 0, 0);
+
+			var ground = BABYLON.Mesh.CreateGround("ground1", 10, 10, 2, scene);
+			var groundMaterial = new BABYLON.StandardMaterial("ground", scene);
+			groundMaterial.specularColor = BABYLON.Color3.Black();
+			ground.material = groundMaterial;
 
 			scene.activeCamera = camera;
 			camera.detachControl(canvas);
