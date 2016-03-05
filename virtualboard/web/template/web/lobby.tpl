@@ -21,7 +21,7 @@
       If you can see this, your browser may not support HTML 5.
     </canvas>
 
-    <!--
+    
     <div class="container container-table">
       <div class="row vertical-center-row">
         <div class="text-center col-md-4 col-md-offset-4">
@@ -32,6 +32,16 @@
           <a href="{% url 'web:leavelobby' lobby_instance.id %}" class="btn btn-danger">leave</a>
         </div>
       </div>
+    </div>
+
+    <div id="savefile">
+      <form action="/{{ lobby_instance.id }}/load/" method="post" enctype="multipart/form-data" id="fileform">
+        <input type="file" name="upload" id="filefield">
+        <input type="submit" value="Load Saved Game">
+      </form>
+      <form action="/{{ lobby_instance.id }}/save/" method="post">
+        <input type="submit" value="Save Game">
+      </form>
     </div>
 
 
@@ -56,9 +66,27 @@
 
     <script>
       var lobby_id = {{ lobby_instance.id }};
+      var save_form = document.getElementById("fileform");
+      var file_field = document.getElementById("filefield");
+
+      save_form.onsubmit = function(event) {
+        event.preventDefault();
+
+        var data = new FormData();
+        data.append("upload", file_field.files[0])
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', 'load/', true);
+
+        xhr.onload = function () {
+        };
+
+        xhr.send(data);
+      };
+
     </script>
     
-    -->
+    
 
   {% endif %}
 {% endblock %}

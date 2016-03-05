@@ -23,6 +23,8 @@ def main():
             (r'^/([0-9]+)/message/new/$', MessageNewHandler),
             (r'^/([0-9]+)/message/updates/$', MessageUpdatesHandler),
             (r'^/([0-9]+)/message/loadcache/$', MessageCacheHandler),
+            (r'^/([0-9]+)/save/$', DownloadStateHandler),
+            (r'^/([0-9]+)/load/$', UploadStateHandler),
             ('.*', tornado.web.FallbackHandler, dict(fallback=django_wsgi_app)),
         ], **settings)
     tornado.options.parse_command_line()
