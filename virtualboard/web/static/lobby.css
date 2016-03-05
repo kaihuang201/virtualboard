@@ -1,16 +1,25 @@
 h1#welcome {
     padding-top: 70px;
 }
+
+#savefile {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+}
+
 #chatbox {
     max-height:300px; 
     position: absolute;
     left: 10px;
     bottom: 10px;
 }
+
 #inbox {
     max-height: 245px;
     overflow-y: scroll;
 }
+
 #text-entry {
 }
 
