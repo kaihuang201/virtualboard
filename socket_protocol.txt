@@ -1,11 +1,17 @@
 //initialization
 
 //client to server
-//TODO: color
+//TODO: maybe there is a general chat for people not yet in a lobby
+
 {
 	"type" : "initJoin",
 	"data" : {
 		"name" : "fred",
+		"color" : [
+			0,
+			255,
+			0
+		],
 		"gameID" : 2,
 		"password" : "12345"
 	}
@@ -15,6 +21,11 @@
 	"type" : "initHost",
 	"data" : {
 		"name" : "sam",
+		"color" : [
+			255,
+			0,
+			0
+		],
 		"gameName" : "coolville",
 		"password" : "12345"
 	}
@@ -26,6 +37,8 @@
 
 {
 	"type" : "ping",
+
+	//data can be literally anything
 	"data" : {
 		"msg" : "sequence number or something"
 	}
@@ -40,12 +53,22 @@
 			{
 				"id" : 0,
 				"name" : "sam",
+				"color" : [
+					255,
+					0,
+					0
+				],
 				"host" : 1,
 				"local" : 0
 			},
 			{
 				"id" : 3,
 				"name": "fred",
+				"color" : [
+					0,
+					255,
+					0
+				],
 				"host" : 0,
 				"local" : 1
 			}
@@ -76,9 +99,20 @@
 	"type" : "pong",
 
 	//data can be literally anything
-	"data" : {
-		"seq" : 5235
-	}
+	"data" : [
+		{
+			"seq" : 5235
+		}
+	]
+}
+
+{
+	"type" : "error",
+	"data" : [
+		{
+			"msg" : "bad input"
+		}
+	]
 }
 
 //TODO: retexturing
@@ -96,6 +130,19 @@
 			"user" : 2,
 			"time" : 802983477648,
 			"msg" : "more actual text here"
+		}
+	]
+}
+
+//pinging the board at a position to notify other users
+//maybe we add different kinds of pings in the future (!, ?, X, etc)
+{
+	"type" : "beacon",
+	"data" : [
+		{
+			"user" : 1,
+			"x" : 54.352,
+			"y" : 65.454
 		}
 	]
 }
@@ -162,7 +209,24 @@
 	"data" : [
 		{
 			"user" : 5,
-			"message" : "lost connection"
+			"msg" : "lost connection"
+		}
+	]
+}
+
+{
+	"type" : "changeHost",
+	"data" : {
+		"user" : 2,
+		"msg" : "previous host disconnected"
+	}
+}
+
+{
+	"type" : "announcement",
+	"data" : [
+		{
+			"msg" : "words go here"
 		}
 	]
 }
@@ -204,6 +268,14 @@
 }
 
 {
+	"type" : "beacon",
+	"data" : {
+		"x" : 54.5435,
+		"y" : 0.534
+	}
+}
+
+{
 	"type" : "pieceTransform",
 	"data" :  {
 		"piece" : 3,
@@ -215,6 +287,8 @@
 		"s" : 1.0
 	}
 }
+
+//TODO: piece pickup/drop?
 
 {
 	"type" : "pieceAdd",
@@ -245,6 +319,38 @@
 
 {
 	"type" : "listClients"
+}
+
+//host only client commands
+{
+	"type" : "changeHost",
+	"data" : {
+		"user" : 2,
+		"msg" : "he paid me $5 to make him host"
+	}
+}
+
+{
+	"type" : "announcement",
+	"data" : {
+		"msg" : "this is important"
+	}
+}
+
+{
+	"type" : "changeServerInfo",
+	"data" : {
+		"name" : "coolville 2",
+		"password" : "542512"
+	}
+}
+
+{
+	"type" : "kickUser",
+	"data" : {
+		"user" : 1,
+		"msg" : "stop scribbling everywhere"
+	}
 }
 
 

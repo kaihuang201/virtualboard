@@ -4,6 +4,19 @@ var VBoard = VBoard || {};
 	vb.size = 10;
 
 	vb.javascriptInit = function () {
+		//networking
+		vb.socket = new WebSocket("ws://" + window.location.host + window.location.pathname + "game");
+
+		vb.socket.onopen = function () {
+			//fetch game list
+		};
+		vb.socket.onmessage = vb.limboIO.messageHandler;
+		vb.socket.onclose = function () {
+			console.log("rip socket");
+		};
+	};
+
+	vb.launchCanvas = function () {
 		vb.simTime = Date.now();
 		window.addEventListener("resize", vb.setCameraPerspective);
 		window.addEventListener("keydown", function (evt) {
@@ -262,29 +275,38 @@ var VBoard = VBoard || {};
 		//members
 		local: null,
 		host: null,
-		userList: [],	//unordered list
+		userList: {},	//unordered list
 						//we may want to consider replacing this with an object that maps names to User objects
 
 		//constructor for internal object
-		User: function (name, color) {
+		User: function (id, name, color, isLocal, isHost) {
 			//the downside to this construction is that accessing vb.user's methods is not as clean
+			this.id = id;
 			this.name = name;
 			this.color = color;
+			this.isLocal = isLocal;
+			this.isHost = isHost;
 			this.ping = -1;
 		},
 
 		//methods
 		add: function (user) {
-			this.userList.push(user);
+			this.userList[user.id] = user;
 		},
 
 		remove: function (user) {
-			var index = this.userList.indexOf(user);
+			//var index = this.userList.indexOf(user);
 
-			this.userList[index] = this.userList[this.userList.length-1];
-			this.userList.pop();
+			//this.userList[index] = this.userList[this.userList.length-1];
+			//this.userList.pop();
+			delete userList[user.id];
 		},
 
+		removeID: function (id) {
+			delete userList[id];
+		},
+
+		//to do: actual implementation
 		setLocal: function (user) {
 			this.local = user;
 		},
@@ -301,13 +323,17 @@ var VBoard = VBoard || {};
 			return this.host;
 		},
 
-		createNewUser: function (name, color) {
-			var user = new this.User(name, color);
-			this.add(user);
+		createNewUser: function (id, name, color, isLocal, isHost) {
+			var user = new this.User(id, name, color, isLocal, isHost);
 
-			if(!this.getLocal()) {
-				this.setLocal(user);
+			if(isLocal) {
+				this.local = user;
 			}
+
+			if(isHost) {
+				this.host = user;
+			}
+			this.add(user);
 		}
 	};
 
@@ -411,15 +437,168 @@ var VBoard = VBoard || {};
 		},
 	};
 
-	vb.socket = new WebSocket("ws://" + window.location.host + window.location.pathname + "game");
-	vb.socket.onopen = function () {
-		//vb.socket.send("testing 123");
+	//socket IO before user is in a game
+	vb.limboIO = {
+		send: function (data) {
+			vb.socket.send(JSON.stringify(data));
+		},
+
+		listGames: function () {
+			var data = {
+				"type" : "listGames"
+			};
+			this.send(data);
+		},
+
+		joinGame: function (userName, userColor, gameID, password) {
+			var data = {
+				"type" : "initJoin",
+				"data" : {
+					"name" : userName,
+					"color" : userColor,
+					"gameID" : gameID,
+					"password" : password
+				}
+			};
+			this.send(data);
+		},
+
+		hostGame: function (userName, userColor, gameName, password) {
+			var data = {
+				"type" : "initHost",
+				"data" : {
+					"name" : userName,
+					"color" : userColor,
+					"gameName" : gameName,
+					"password" : password
+				}
+			};
+			this.send(data);
+		},
+
+		messageHandler: function (event) {
+			console.log("websocket server response: " + event.data);
+			var data = JSON.parse(event.data);
+
+			//TODO: most of this stuff
+			switch(data["type"]) {
+				case "pong":
+					break;
+				case "error":
+					break;
+				case "initSuccess":
+					console.log("Coming to you live from " + data["data"]["gameName"]);
+					var users = data["data"]["users"];
+
+					for(var index in users) {
+						var user = users[index];
+						vb.users.createNewUser(user.id, user.name, user.color, user.local, user.host);
+					}
+					vb.socket.onmessage = vb.sessionIO.messageHandler;
+					vb.launchCanvas();
+					break;
+				case "initFailure":
+					break;
+				case "listGames":
+					break;
+				default:
+					//console.log("unhandled server message");
+			}
+		}
 	};
-	vb.socket.onmessage = function (event) {
-		console.log("websocket server response: " + event.data);
-	};
-	vb.socket.onclose = function () {
-		console.log("rip socket");
+
+	//socket IO while in a game session
+	vb.sessionIO = {
+		sendChatMessage: function (message) {
+			var data = {
+				"type" : "chat",
+				"data" : {
+					"msg" : message
+				}
+			};
+			this.send(data);
+		},
+
+		send: function (data) {
+			vb.socket.send(JSON.stringify(data));
+		},
+
+		disconnect: function (reason) {
+			var data = {
+				"type" : "disconnect",
+				"data" : {
+					"msg" : reason
+				}
+			};
+			this.send(data);
+		},
+
+		getClientList: function () {
+			var data = {
+				"type" : "listClients"
+			};
+			this.send(data);
+		},
+
+		sendBeacon: function (x, y) {
+			var data = {
+				"type" : "beacon",
+				"data" : {
+					"x" : x,
+					"y" : y
+				}
+			};
+			this.send(data);
+		},
+
+		messageHandler: function (event) {
+			console.log("websocket server response: " + event.data);
+			var data = JSON.parse(event.data);
+
+			//TODO: most of this stuff
+			switch(data["type"]) {
+				case "pong":
+					break;
+				case "error":
+					break;
+				case "chat":
+					break;
+				case "beacon":
+					break;
+				case "pieceTransform":
+					break;
+				case "pieceAdd":
+					break;
+				case "pieceRemove":
+					break;
+				case "userConnect":
+					var users = data["data"];
+
+					for(var index in users) {
+						var user = users[index];
+						vb.users.createNewUser(user.user, user.name, user.color, 0, 0);
+					}
+					break;
+				case "userDisconnect":
+					var users = data["data"];
+
+					for(var index in users) {
+						var user = users[index];
+						vb.users.removeID(user.user);
+					}
+					break;
+				case "changeHost":
+					break;
+				case "announcement":
+					break;
+				case "createPrivateZone":
+					break;
+				case "listClients":
+					break;
+				default:
+					//console.log("unhandled server message");
+			}
+		}
 	};
 
 	vb.renderInit = function () {

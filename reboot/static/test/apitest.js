@@ -68,7 +68,7 @@ QUnit.module("APITest", function(hooks) {
 			assert.ok(socket.isConnected, "socket should not have died");
 		}, function (data) {
 			assert.equal(data["type"], "pong", "assert response to ping");
-			assert.equal(data["data"]["seq"], 6534, "server should echo our data back to us");
+			assert.equal(data["data"][0]["seq"], 6534, "server should echo our data back to us");
 			socket.close();
 			done();
 		});
@@ -97,7 +97,8 @@ QUnit.module("APITest", function(hooks) {
 				"data" : {
 					"name" : "sam",
 					"gameName" : "coolville673465",
-					"password" : "12345"
+					"password" : "12345",
+					"color" : [255, 0, 0]
 				}
 			}));
 			assert.ok(socket1.isConnected, "socket should not have died");
@@ -138,7 +139,8 @@ QUnit.module("APITest", function(hooks) {
 				"data" : {
 					"name" : "sam",
 					"gameName" : "coolville" + gameStr,
-					"password" : "12345"
+					"password" : "12345",
+					"color" : [255, 0, 0]
 				}
 			}));
 			assert.ok(socket1.isConnected, "socket should not have died");
@@ -224,7 +226,8 @@ QUnit.module("APITest", function(hooks) {
 							"data" : {
 								"name" : "fred",
 								"gameID" : id,
-								"password" : 12345
+								"password" : 12345,
+								"color" : [0, 255, 0]
 							}
 						};
 						socket2.send(JSON.stringify(request));
