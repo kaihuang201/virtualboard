@@ -52,6 +52,10 @@ var PieceMap = PieceMap || {};
 			"chessBoard" : {
 				"size" : 16.0,
 				"icon" : "background.png"
+			},
+			"penTool" : {
+				"size" : 2.0,
+				"icon" : "pen.png"
 			}
 		};
 })(PieceMap);
