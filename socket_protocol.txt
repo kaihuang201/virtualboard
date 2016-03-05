@@ -1,11 +1,95 @@
+//initialization
+
+//client to server
+//TODO: color
+{
+	"type" : "initJoin",
+	"data" : {
+		"name" : "fred",
+		"gameID" : 2,
+		"password" : "12345"
+	}
+}
+
+{
+	"type" : "initHost",
+	"data" : {
+		"name" : "sam",
+		"gameName" : "coolville",
+		"password" : "12345"
+	}
+}
+
+{
+	"type" : "listGames",
+}
+
+{
+	"type" : "ping",
+	"data" : {
+		"msg" : "sequence number or something"
+	}
+}
+
+//server to client
+{
+	"type" : "initSuccess",
+	"data" : {
+		"gameName" : "coolville",
+		"users" : [
+			{
+				"id" : 0,
+				"name" : "sam",
+				"host" : 1,
+				"local" : 0
+			},
+			{
+				"id" : 3,
+				"name": "fred",
+				"host" : 0,
+				"local" : 1
+			}
+		]
+	}
+}
+
+{
+	"type" : "initFailure",
+	"data" : {
+		"msg" : "wrong password"
+	}
+}
+
+{
+	"type" : "listGames",
+	"data" : [
+		{
+			"id" : 2,
+			"name" : "coolville",
+			"players" : 1,
+			"password" : 1
+		}
+	]
+}
+
+{
+	"type" : "pong",
+
+	//data can be literally anything
+	"data" : {
+		"seq" : 5235
+	}
+}
+
 //TODO: retexturing
 
+//server to client protocol
 {
 	"type" : "chat",
 	"data" : [
 		{
 			"user" : 1,
-			"time" : 802983477643,
+			"time" : 802983477.643, //seconds since epoc
 			"msg" : "actual text here"
 		},
 		{
@@ -92,5 +176,76 @@
 		}
 	]
 }
+
+{
+	"type" : "listClients",
+	"data" : [
+		{
+			"id" : 0,
+			"name" : "sam",
+			"host" : 1,
+			"local" : 0
+		},
+		{
+			"id" : 3,
+			"name": "fred",
+			"host" : 0,
+			"local" : 1
+		}
+	]
+}
+
+//client to server protocol
+{
+	"type" : "chat",
+	"data" : {
+		"msg" : "actual text here"
+	}
+}
+
+{
+	"type" : "pieceTransform",
+	"data" :  {
+		"piece" : 3,
+    
+		//optional parameters
+		"x" : 6.98721345,
+		"y" : 90.6532,
+		"r" : 0.45656,
+		"s" : 1.0
+	}
+}
+
+{
+	"type" : "pieceAdd",
+	"data" : {
+		"piece" : 6,
+		"name" : "my piece",
+		"url" : "/res/img.png",
+		"x" : 6.6435,
+		"y" : 65.2543,
+		"r" : 0.45656,
+		"s" : 1.0
+	}
+}
+
+{
+	"type" : "pieceRemove",
+	"data" : {
+		"piece" : 6,
+	}
+}
+
+{
+	"type" : "disconnect",
+	"data" : {
+		"msg" : "brb food"
+	}
+}
+
+{
+	"type" : "listClients"
+}
+
 
 
