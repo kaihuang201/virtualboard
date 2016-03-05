@@ -8,6 +8,11 @@ var VBoard = VBoard || {};
 
 	vb.selectedPiece;
 
+	vb.scribbles = [];
+	var i = 0;
+	var lines;
+	var enableScribble = false;
+
 	vb.javascriptInit = function () {
 		vb.simTime = Date.now();
 		window.addEventListener("resize", vb.setCameraPerspective);
@@ -249,6 +254,12 @@ var VBoard = VBoard || {};
 				}
 				vb.selectedPiece.position.x = vb.selectedPiece.mesh.position.x;
 				vb.selectedPiece.position.y = vb.selectedPiece.mesh.position.y;
+
+				if(vb.enableScribble && vb.selectedPiece.name == "penTool") {
+					lines = BABYLON.Mesh.CreateLines("lines", vb.scribbles, vb.scene);
+					vb.scribbles[i] = new BABYLON.Vector3(vb.selectedPiece.mesh.position.x, vb.selectedPiece.mesh.position.y, vb.selectedPiece.mesh.position.z);
+					i++;
+				}
 			}
 		},
 
@@ -501,6 +512,12 @@ var VBoard = VBoard || {};
 						vb.camera.upVector.y = 1;
 						vb.size = 10; //may need to be updated in the future
 						vb.setCameraPerspective();
+						break;
+					case 80: //p
+						//Toggles whether moving the pen tool object creates scribbles
+						if(vb.enableScribble == false) {
+							vb.enableScribble = true;
+						} else vb.enableScribble = false;
 						break;
 				}
 			}

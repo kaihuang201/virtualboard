@@ -23,6 +23,12 @@ var Menu = Menu || {};
 			VBoard.board.loadChessGame();
 		});
 
+		$("#penTool").on("click", function() {
+			var user = null;
+			var pos = {x:0, y:0};
+			VBoard.board.generateNewPiece("penTool", user, pos);
+		});		
+
 		$("#submit-add-piece").click(function() {
 			var selectedName = $("#add-piece-list").val();
 			var user = null;
