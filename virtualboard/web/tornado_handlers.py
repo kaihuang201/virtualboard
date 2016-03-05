@@ -4,16 +4,19 @@ import json
 import logging
 import tornado.websocket
 import uuid
+import os
  
 from tornado import gen
 from django.utils.timezone import utc
 from modules.message_buffer import MessageBuffer
+from modules.board_state import BoardState
 
 message_buffers = dict()
+board_states = dict()
  
-class HelloHandler(tornado.web.RequestHandler):
-  def get(self):
-    self.write('Hello from tornado')
+def create_board_state(lobby_id):
+    if (not board_states.has_key(lobby_id)):
+        board_states[lobby_id] = BoardState()
 
 class MessageNewHandler(tornado.web.RequestHandler):
     def post(self, lobby_id):
@@ -69,3 +72,27 @@ class MessageCacheHandler(tornado.web.RequestHandler):
             self.write(dict(messages=message_buffers[lobby_id].cache))
         else:
             self.write(dict(messages=[]))
+
+class DownloadStateHandler(tornado.web.RequestHandler):
+    def post(self, lobby_id):
+        filename = "save.vb"
+        self.set_header('Content-Type', 'application/octet-stream')
+        self.set_header('Content-Disposition', 'attachment; filename=' + filename)
+        create_board_state(lobby_id)
+        self.write(board_states[lobby_id].dump_json())
+
+class UploadStateHandler(tornado.web.RequestHandler):
+    def post(self, lobby_id):
+        savefile = self.request.files['upload'][0]
+        filename = savefile['filename']
+        extn = os.path.splitext(filename)[1]
+        if (not extn == '.vb'):
+            self.write("Incorrect file format, please upload a .vb save file")
+            return
+
+        save = savefile['body']
+
+        create_board_state(lobby_id)
+        success = board_states[lobby_id].load_json(save)
+        if (not success):
+            self.write("Save file is improperly formatted, VirtualBoard could not load the saved game")
