@@ -18,47 +18,56 @@ class Piece(object):
         self.icon = icon
         self.piece_id = piece_id
 
-    def set_name(new_name):
-        name = new_name
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.__dict__ == other.__dict__
+        else:
+            return False
 
-    def set_x(new_x):
-        x = new_x
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
-    def set_y(new_y):
-        y = new_y
+    def set_name(self, new_name):
+        self.name = new_name
 
-    def set_z(new_z):
-        z = new_z
+    def set_x(self, new_x):
+        self.x = new_x
 
-    def set_user(new_user):
-        user = new_user
+    def set_y(self, new_y):
+        self.y = new_y
 
-    def set_icon(new_icon):
-        icon = new_icon
+    def set_z(self, new_z):
+        self.z = new_z
 
-    def set_piece_id(new_id):
-        piece_id = new_id
+    def set_user(self, new_user):
+        self.user = new_user
 
-    def get_name():
-        return name
+    def set_icon(self, new_icon):
+        self.icon = new_icon
 
-    def get_x():
-        return x
+    def set_piece_id(self, new_id):
+        self.piece_id = new_id
 
-    def get_y():
-        return y
+    def get_name(self):
+        return self.name
 
-    def get_z():
-        return z
+    def get_x(self):
+        return self.x
 
-    def get_user():
-        return user
+    def get_y(self):
+        return self.y
 
-    def get_icon():
-        return icon
+    def get_z(self):
+        return self.z
 
-    def get_piece_id():
-        return piece_id
+    def get_user(self):
+        return self.user
+
+    def get_icon(self):
+        return self.icon
+
+    def get_piece_id(self):
+        return self.piece_id
 
     def get_dict(self):
         return self.__dict__
@@ -85,6 +94,9 @@ class BoardState(object):
     def __init__(self):
         self.pieces = []
 
+    def get_pieces(self):
+        return self.pieces
+
     def add_piece(self, piece):
         self.pieces.append(piece)
 
@@ -108,8 +120,10 @@ class BoardState(object):
                 new_piece = Piece()
                 new_piece.load_from_dict(each_entry)
                 self.add_piece(new_piece)
+            return True
         except ValueError:
             print("invalid json")
+            return False
             #return other sorts of error message BTW
 
     def __str__(self):

@@ -93,4 +93,6 @@ class UploadStateHandler(tornado.web.RequestHandler):
         save = savefile['body']
 
         create_board_state(lobby_id)
-        board_states[lobby_id].load_json(save)
+        success = board_states[lobby_id].load_json(save)
+        if (not success):
+            self.write("Save file is improperly formatted, VirtualBoard could not load the saved game")
