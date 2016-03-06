@@ -3,6 +3,8 @@ import tornado.websocket
 import json
 import time
 
+from board_state.py import *
+
 games = {}
 next_game_id = 0
 
@@ -14,6 +16,7 @@ class Game:
 		self.next_user_id = 0
 		self.host = host
 		self.game_id = id
+		selg.board_state = BoardState()
 
 	def get_abridged_clients(self, local):
 		abridged_users = []
@@ -155,3 +158,9 @@ class Game:
 			]
 		}
 		self.message_all(response)
+
+	def dump_json(self):
+		return self.board_state.dump_json()
+
+	def load_json(self, json_string):
+		self.board_state.load_json(json_string)
