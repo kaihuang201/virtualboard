@@ -3,7 +3,7 @@ import tornado.websocket
 import json
 import time
 
-from board_state.py import *
+from board_state_reboot.py import *
 
 games = {}
 next_game_id = 0
@@ -16,7 +16,7 @@ class Game:
 		self.next_user_id = 0
 		self.host = host
 		self.game_id = id
-		selg.board_state = BoardState()
+		self.board_state = BoardState()
 
 	def get_abridged_clients(self, local):
 		abridged_users = []
@@ -144,6 +144,14 @@ class Game:
 			self.password = password
 
 			self.announce(None, "Server Information updated.");
+
+	def loadBoardState(self, client, boardInfo):
+		if client is None or self.host.user_id == client.user_id:
+			#TODO
+
+	def clearBoard(self, client):
+		if client is None or self.host.user_id == client.user_id:
+			#TODO
 
 	#general commands
 	def chat(self, client, message):
