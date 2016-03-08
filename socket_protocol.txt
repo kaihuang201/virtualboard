@@ -1,6 +1,8 @@
 //initialization
 
-//client to server
+//==========
+//client to server (pre-game)
+//==========
 //TODO: maybe there is a general chat for people not yet in a lobby
 
 {
@@ -44,7 +46,10 @@
 	}
 }
 
-//server to client
+//==========
+//server to client (pre-game)
+//==========
+
 {
 	"type" : "initSuccess",
 	"data" : {
@@ -115,9 +120,8 @@
 
 {
 	"type" : "pong",
-
-	//data can be literally anything
 	"data" : [
+		//data can be literally anything
 		{
 			"seq" : 5235
 		}
@@ -133,9 +137,12 @@
 	]
 }
 
-//TODO: retexturing
+//TODO: retexturing?
 
+//==========
 //server to client protocol
+//==========
+
 {
 	"type" : "chat",
 	"data" : [
@@ -246,6 +253,7 @@
 	]
 }
 
+//this one doesn't use array format since only last one matters
 {
 	"type" : "changeHost",
 	"data" : {
@@ -307,6 +315,30 @@
 }
 
 {
+	"type" : "drawScribble",
+	"data" : [
+		{
+			"user" : 4,
+			"ttl" : 10,
+			"points" : [
+				[
+					-6.573456,
+					1.54352
+				],
+				[
+					-6.4652,
+					1.462453
+				],
+				[
+					-6.4642,
+					1.41877
+				]
+			]
+		}
+	]
+}
+
+{
 	"type" : "listClients",
 	"data" : [
 		{
@@ -324,55 +356,98 @@
 	]
 }
 
+//==========
 //client to server protocol
+//==========
+
 {
 	"type" : "chat",
-	"data" : {
-		"msg" : "actual text here"
-	}
+	"data" : [
+		{
+			"msg" : "actual text here"
+		}
+	]
 }
 
 {
 	"type" : "beacon",
-	"data" : {
-		"x" : 54.5435,
-		"y" : 0.534
-	}
+	"data" : [
+		{
+			"x" : 54.5435,
+			"y" : 0.534
+		}
+	]
 }
 
 {
 	"type" : "pieceTransform",
-	"data" :  {
-		"piece" : 3,
-    
-		//optional parameters
-		"x" : 6.98721345,
-		"y" : 90.6532,
-		"r" : 0.45656,
-		"s" : 1.0
-	}
+	"data" :  [
+		{
+			"piece" : 3,
+
+			//optional parameters
+			"x" : 6.98721345,
+			"y" : 90.6532,
+			"r" : 0.45656,
+			"s" : 1.0
+		}
+	]
 }
 
 //TODO: piece pickup/drop?
+//alternatively we can just have clients infer pickup/drop based on piece movement
+//and have some timeout for the highlight to go away
 
 {
 	"type" : "pieceAdd",
-	"data" : {
-		"piece" : 6,
-		"name" : "my piece",
-		"url" : "/res/img.png",
-		"x" : 6.6435,
-		"y" : 65.2543,
-		"r" : 0.45656,
-		"s" : 1.0
-	}
+	"data" : [
+		{
+			"piece" : 6,
+			"name" : "my piece",
+			"url" : "/res/img.png",
+			"x" : 6.6435,
+			"y" : 65.2543,
+			"r" : 0.45656,
+			"s" : 1.0
+		}
+	]
 }
 
 {
 	"type" : "pieceRemove",
-	"data" : {
-		"piece" : 6,
-	}
+	"data" : [
+		{
+			"piece" : 6,
+		}
+	]
+}
+
+//scribbles will not be saved by the server and exist only temporarily.
+//we can add support for having scribbles stay indefinitely (ttl of -1)
+//but if someone new joins they will not see previous scribbles
+{
+	"type" : "drawScribble",
+	"data" : [
+		{
+			"ttl" : 10,
+			"points" : [
+				//first index is x, second is y
+				//this seems better than { "x" : 5.364, "y" : 77.76}
+				[
+					-6.573456,
+					1.54352
+				],
+				[
+					-6.4652,
+					1.462453
+				],
+				[
+					-6.4642,
+					1.41877
+				]
+			]
+		}
+	]
 }
 
 {
@@ -386,7 +461,11 @@
 	"type" : "listClients"
 }
 
-//host only client commands
+//==========
+//host only client to server commands
+//==========
+//maybe these can be made into array formats for consistency with other protocols
+
 {
 	"type" : "changeHost",
 	"data" : {
@@ -422,6 +501,8 @@
 	"type" : "clearBoard"
 }
 
+//this will add a set of pieces and private zones to the existing board state
+//host can clear the board first if desired
 {
 	"type" : "loadBoardState",
 	"data" : {
