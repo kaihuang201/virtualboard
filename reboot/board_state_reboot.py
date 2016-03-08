@@ -1,12 +1,12 @@
 import json
 
 class Piece:
-    def __init__(self, name, x, y, icon, color, piece_id):
-        self.name = name
-        self.x = x
-        self.y = y
-        self.icon = icon
-        self.piece_id = piece_id
+	def __init__(self, name, x, y, icon, color, piece_id):
+		self.name = name
+		self.x = x
+		self.y = y
+		self.icon = icon
+		self.piece_id = piece_id
 		self.color = color
 		self.static = False
 
@@ -32,7 +32,7 @@ class BoardState:
 		self.next_piece_id = 0
 
 	#returns the newly generated piece
-	def generate_new_piece(self, name="", x=0, y=0, icon="", color):
+	def generate_new_piece(self, name="", x=0, y=0, icon="", color=''):
 		piece = Piece(name, x, y, icon, color, self.next_piece_id)
 		self.piecemap[self.next_piece_id] = len(self.pieces)
 		self.pieces.append(piece)
@@ -46,7 +46,7 @@ class BoardState:
 			piece = self.pieces[index]
 			self.bring_to_front(index)
 			self.pieces.pop()
-			del self.piecemap(piece.piece_id)
+			del self.piecemap[piece.piece_id]
 			return True
 		else:
 			return False

@@ -3,7 +3,7 @@ import tornado.websocket
 import json
 import time
 
-from board_state_reboot.py import *
+from board_state_reboot import *
 
 games = {}
 next_game_id = 0
@@ -147,10 +147,12 @@ class Game:
 
 	def loadBoardState(self, client, boardInfo):
 		if client is None or self.host.user_id == client.user_id:
+			return
 			#TODO
 
 	def clearBoard(self, client):
 		if client is None or self.host.user_id == client.user_id:
+			return
 			#TODO
 
 	#general commands

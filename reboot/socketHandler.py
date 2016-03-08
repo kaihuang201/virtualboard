@@ -111,7 +111,7 @@ class SaveGameHandler(tornado.web.RequestHandler):
 		filename = "save.vb"
 		self.set_header('Content-Type', 'application/octet-stream')
 		self.set_header('Content-Disposition', 'attachment; filename=' + filename)
-		if (games.has_key(lobby_id)
+		if (games.has_key(lobby_id)):
 			self.write(games[lobby_id].dump_json())
 
 class LoadGameHandler(tornado.web.RequestHandler):
@@ -126,7 +126,7 @@ class LoadGameHandler(tornado.web.RequestHandler):
 
 		save = savefile['body']
 
-		if (games.has_key(lobby_id))
+		if (games.has_key(lobby_id)):
 			success = games[lobby_id].load_json(save)
 			if (not success):
 				self.write("Save file is improperly formatted, VirtualBoard could not load the saved game")
