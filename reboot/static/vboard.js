@@ -2,6 +2,8 @@ var VBoard = VBoard || {};
 (function (vb) {
 	//size of the vertical view plane
 	vb.size = 10;
+	vb.maxSize = 50;
+	vb.minSize = 5;
 
 	vb.javascriptInit = function () {
 		//networking
@@ -491,8 +493,8 @@ var VBoard = VBoard || {};
 					var users = data["data"]["users"];
 
 					for(var index in users) {
-						var user = users[index];
-						vb.users.createNewUser(user.id, user.name, user.color, user.local, user.host);
+						var userData = users[index];
+						vb.users.createNewUser(userData);
 					}
 					vb.socket.onmessage = vb.sessionIO.messageHandler;
 					vb.launchCanvas();
@@ -566,17 +568,34 @@ var VBoard = VBoard || {};
 				case "beacon":
 					break;
 				case "pieceTransform":
+					var pieces = data["data"];
+
+					for(index in pieces) {
+						var pieceData = pieces[index];
+						vb.board.transformPiece(pieceData);
+					}
 					break;
 				case "pieceAdd":
+					var pieces = data["data"];
+
+					for(index in pieces) {
+						var pieceData = pieces[index];
+						vb.board.generateNewPiece(pieceData);
+					}
 					break;
 				case "pieceRemove":
+					var pieces = data["data"];
+
+					for(index in pieces) {
+						var pieceData = pieces[index];
+						vb.board.removePiece(pieceData);
 					break;
 				case "userConnect":
 					var users = data["data"];
 
 					for(var index in users) {
-						var user = users[index];
-						vb.users.createNewUser(user.user, user.name, user.color, 0, 0);
+						var userData = users[index];
+						vb.users.createNewUser(userData);
 					}
 					break;
 				case "userDisconnect":
