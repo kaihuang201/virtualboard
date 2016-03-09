@@ -50,6 +50,7 @@ var VBoard = VBoard || {};
 	vb.board = {
 		//members
 		pieces: [], //ordered list
+		pieceHash: {}, //unordered hash map of pieces
 
 		//this should probably be fetched as a separate file
 		pieceMap: {
@@ -113,6 +114,7 @@ var VBoard = VBoard || {};
 		//should only be called by the generateNewPiece() method
 		add: function (piece) {
 			this.pieces.push(piece);
+			this.pieceHash[piece.id] = piece;
 			var z = this.getZIndex(this.pieces.length-1);
 			piece.mesh.position.z = z;
 		},
@@ -130,6 +132,7 @@ var VBoard = VBoard || {};
 				this.pieces[i].mesh.position.z = this.getZIndex(i);
 			}
 			this.pieces.pop();
+			delete this.pieceHash[piece.id];
 			piece.mesh.dispose();
 		},
 
@@ -156,27 +159,65 @@ var VBoard = VBoard || {};
 			piece.mesh.position.z = this.getZIndex(this.pieces.length-1);
 		},
 
-		generateNewPiece: function (name, user, pos) {
+		transformPiece: function(pieceData){
+			piece = pieceHash[pieceData.piece];
+			piece.user = pieceData.user;
+
+			this.highlightPiece(piece);
+
+			if(pieceData.hasOwnProperty("color")){
+				piece.mesh.material.diffuseColor = new BABYLON.Color3(pieceData.color[0], pieceData.color[1], pieceData.color[2]);
+			}
+
+			if(pieceData.hasOwnProperty("pos")){
+				piece.position.x = pieceData.pos[0];
+				piece.position.y = pieceData.pos[1];
+				if (!vb.users.userList[piece.user].isLocal){
+					piece.mesh.position.x = pieceData.pos[0];
+					piece.mesh.position.y = pieceData.pos[1];
+				}
+			}
+
+			if(pieceData.hasOwnProperty("r")){
+				piece.mesh.rotation.z = pieceData.r;
+			}
+
+			if(pieceData.hasOwnProperty("s")){
+				piece.mesh.scaling.x = pieceData.s;
+				piece.mesh.scaling.y = pieceData.s;
+			}
+		},
+
+		hightlightPiece: function(piece){
+			//to do: highlight the piece with piece.user's color when moving
+		},
+
+		generateNewPiece: function (pieceData) {
 			//to do: create a proper piece "class" with a constructor and methods
 			var material = new BABYLON.StandardMaterial("std", vb.scene);
 			var icon = "/static/img/crown.png";
 			var size = 3.0;
 
-			if(this.pieceMap.hasOwnProperty(name)) {
+			/*if(this.pieceMap.hasOwnProperty(name)) {
 				icon = this.pieceMap[name].icon;
 				size = this.pieceMap[name].size;
-			}
+			}*/
+			icon = pieceData.icon;
+			size = pieceData.s;
+
 			material.diffuseTexture = new BABYLON.Texture(icon, vb.scene);
+			material.diffuseColor = new BABYLON.Color3(pieceData.color[0], pieceData.color[1], pieceData.color[2]);
 			material.diffuseTexture.hasAlpha = true;
 
 			var plane = BABYLON.Mesh.CreatePlane("plane", size, vb.scene);
 			plane.material = material;
-			plane.position = new BABYLON.Vector3(pos.x, pos.y, 0);
+			plane.position = new BABYLON.Vector3(pieceData.pos[0], pieceData.pos[1], 0);
+			plane.rotation.z = pieceData.r;
 
 			var piece = {};
-			piece.name = name;
-			piece.user = user;
-			piece.position = pos;
+			piece.id = pieceData.piece;
+			piece.user = pieceData.user;
+			piece.position = new BABYLON.Vector2(pieceData.pos[0], pieceData.pos[1]);
 			piece.pickedUp = !!user;
 			piece.mesh = plane;
 			piece.icon = icon;
