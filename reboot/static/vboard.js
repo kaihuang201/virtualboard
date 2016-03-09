@@ -2,6 +2,8 @@ var VBoard = VBoard || {};
 (function (vb) {
 	//size of the vertical view plane
 	vb.size = 10;
+	vb.maxSize = 50;
+	vb.minSize = 5;
 
 	vb.javascriptInit = function () {
 		//networking
@@ -118,6 +120,12 @@ var VBoard = VBoard || {};
 		//function to calculate z index given a position in the pieces array
 		getZIndex: function (index) {
 			return 1 + (10/(0.2*index + 1));
+		},
+
+		//takes JSON formatted data from web handler
+		removePiece: function (pieceData) {
+			var piece = this.pieceHash[pieceData["piece"]];
+			this.remove(piece);
 		},
 
 		//removes a piece from the board
@@ -302,8 +310,10 @@ var VBoard = VBoard || {};
 			delete userList[user.id];
 		},
 
-		removeID: function (id) {
-			delete userList[id];
+		removeUser: function (userData) {
+			var id = userData["user"];
+			var user = userList[id];
+			this.remove(user);
 		},
 
 		//to do: actual implementation
@@ -323,7 +333,13 @@ var VBoard = VBoard || {};
 			return this.host;
 		},
 
-		createNewUser: function (id, name, color, isLocal, isHost) {
+		createNewUser: function (userData) {
+			var id = userData["id"];
+			var name = userData["name"];
+			var color = new BABYLON.Color3(userData["color"][0], userData["color"][1], userData["color"][2]);
+			var isLocal = userData["local"] == 1;
+			var isHost = userData["host"] == 1;
+			
 			var user = new this.User(id, name, color, isLocal, isHost);
 
 			if(isLocal) {
@@ -363,22 +379,27 @@ var VBoard = VBoard || {};
 				x: vb.scene.pointerX,
 				y: vb.scene.pointerY
 			});
-			var oldCameraPos = vb.camera.position;
-			var dx = mousePos.x - oldCameraPos.x;
-			var dy = mousePos.y - oldCameraPos.y;
+			this.adjustZoom(mousePos, delta);
+		},
 
-			if(delta > 0) {
-				vb.size *= 0.9;
-				dx *= 0.9;
-				dy *= 0.9;
-			} else {
+		adjustZoom: function (focusPos, delta) {
+			var oldCameraPos = vb.camera.position;
+			var dx = focusPos.x - oldCameraPos.x;
+			var dy = focusPos.y - oldCameraPos.y;
+
+			if (vb.size < 55 && delta < 0) { // should be able to zoom out
 				vb.size /= 0.9;
 				dx /= 0.9;
 				dy /= 0.9;
+				vb.camera.position.x = focusPos.x - dx;
+				vb.camera.position.y = focusPos.y - dy;
+			} else if (vb.size > 5 && delta > 0) { // should be able to zoom in 
+				vb.size *= 0.9;
+				dx *= 0.9;
+				dy *= 0.9;
+				vb.camera.position.x = focusPos.x - dx;
+				vb.camera.position.y = focusPos.y - dy;
 			}
-			vb.camera.position.x = mousePos.x - dx;
-			vb.camera.position.y = mousePos.y - dy;
-
 			vb.setCameraPerspective();
 		},
 
@@ -491,8 +512,8 @@ var VBoard = VBoard || {};
 					var users = data["data"]["users"];
 
 					for(var index in users) {
-						var user = users[index];
-						vb.users.createNewUser(user.id, user.name, user.color, user.local, user.host);
+						var userData = users[index];
+						vb.users.createNewUser(userData);
 					}
 					vb.socket.onmessage = vb.sessionIO.messageHandler;
 					vb.launchCanvas();
@@ -544,8 +565,7 @@ var VBoard = VBoard || {};
 			var data = {
 				"type" : "beacon",
 				"data" : {
-					"x" : x,
-					"y" : y
+					"pos" : [x, y]
 				}
 			};
 			this.send(data);
@@ -566,17 +586,34 @@ var VBoard = VBoard || {};
 				case "beacon":
 					break;
 				case "pieceTransform":
+					var pieces = data["data"];
+
+					for(index in pieces) {
+						var pieceData = pieces[index];
+						vb.board.transformPiece(pieceData);
+					}
 					break;
 				case "pieceAdd":
+					var pieces = data["data"];
+
+					for(index in pieces) {
+						var pieceData = pieces[index];
+						vb.board.generateNewPiece(pieceData);
+					}
 					break;
 				case "pieceRemove":
+					var pieces = data["data"];
+
+					for(index in pieces) {
+						var pieceData = pieces[index];
+						vb.board.removePiece(pieceData);
 					break;
 				case "userConnect":
 					var users = data["data"];
 
 					for(var index in users) {
-						var user = users[index];
-						vb.users.createNewUser(user.user, user.name, user.color, 0, 0);
+						var userData = users[index];
+						vb.users.createNewUser(userData);
 					}
 					break;
 				case "userDisconnect":
@@ -584,10 +621,11 @@ var VBoard = VBoard || {};
 
 					for(var index in users) {
 						var user = users[index];
-						vb.users.removeID(user.user);
+						vb.users.removeID(user.user); //TO FIX
 					}
 					break;
 				case "changeHost":
+					vb.users.changeHost(data["data"]);
 					break;
 				case "announcement":
 					break;
