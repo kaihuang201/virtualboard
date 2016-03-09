@@ -1,6 +1,7 @@
 import tornado.web
 import tornado.websocket
 import json
+import jsonschema
 
 from lobby import *
 
@@ -26,6 +27,15 @@ class WebSocketGameHandler(tornado.websocket.WebSocketHandler):
 			}
 			self.write_message(json.dumps(response));
 			return
+
+		#Checking whether the message follows the protocol
+		schema = open("socket_protocol_schema.json").read()
+		try:
+		    jsonschema.validate(data, json.loads(schema))
+		except jsonschema.ValidationError as e:
+    		print e.message
+		except jsonschema.SchemaError as e:
+    		print e
 
 		if data["type"] == "ping":
 			response = {
@@ -77,9 +87,18 @@ class WebSocketGameHandler(tornado.websocket.WebSocketHandler):
 				self.write_message(json.dumps(response))
 		else:
 			game = self.game;
-			#TODO: probably should use a switch statement instead
 			if data["type"] == "chat":
 				game.chat(self, data["data"]["msg"])
+			elif data["type"] == "beacon"
+				#Todo: Needs to be implemented
+			elif data["type"] == "pieceTransform"
+				#Todo: Needs to be implemented
+			elif data["type"] == "pieceAdd"
+				#Todo: Needs to be implemented
+			elif data["type"] == "pieceRemove"
+				#Todo: Needs to be implemented
+			elif data["type"] == "drawScribble"
+				#Todo: Needs to be implemented
 			elif data["type"] == "disconnect":
 				game.disconnect(self, data["data"]["msg"])
 				self.close() #maybe keep connection open instead for other stuff
