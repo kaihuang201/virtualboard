@@ -4,6 +4,9 @@ var VBoard = VBoard || {};
 	vb.size = 10;
 	vb.maxSize = 50;
 	vb.minSize = 5;
+	vb.viewSize = 50;
+
+	vb.selectedPiece;
 
 	vb.javascriptInit = function () {
 		//networking
@@ -40,6 +43,15 @@ var VBoard = VBoard || {};
 		window.addEventListener("DOMMouseScroll", function (evt) {
 			vb.inputs.onScroll(Math.max(-1, Math.min(1, (-evt.detail))));
 		});
+
+		window.addEventListener("mouseup", function(evt){
+			vb.board.removeSelectedPiece();
+		});
+
+		window.addEventListener("mousemove", function(evt){
+			vb.board.dragPiece();
+		});
+
 		vb.renderInit();
 
 		if(!vb.testing) {
@@ -119,6 +131,15 @@ var VBoard = VBoard || {};
 			piece.mesh.position.z = z;
 		},
 
+		ourIndexOf: function(piece){
+			for(var i = 0; i < this.pieces.length; i++){
+				if(this.pieces[i].id == piece.id){
+					return i;
+				}
+			}
+			return -1;
+		},
+
 		//function to calculate z index given a position in the pieces array
 		getZIndex: function (index) {
 			return 1 + (10/(0.2*index + 1));
@@ -132,7 +153,7 @@ var VBoard = VBoard || {};
 
 		//removes a piece from the board
 		remove: function (piece) {
-			var index = this.pieces.indexOf(piece);
+			var index = this.pieces.ourIndexOf(piece);
 			for(var i = index; i < this.pieces.length-1; i++) {
 				this.pieces[i] = this.pieces[i+1];
 				this.pieces[i].mesh.position.z = this.getZIndex(i);
@@ -144,7 +165,7 @@ var VBoard = VBoard || {};
 
 		//moves a piece to the back of the board (highest z index)
 		pushToBack: function (piece) {
-			var index = this.pieces.indexOf(piece);
+			var index = this.pieces.ourIndexOf(piece);
 
 			for(var i = index; i > 0; i--) {
 				this.pieces[i] = this.pieces[i-1];
@@ -156,13 +177,21 @@ var VBoard = VBoard || {};
 
 		//moves a piece to the front of the board (lowest z index)
 		bringToFront: function (piece) {
-			var index = this.pieces.indexOf(piece);
+			var index = this.pieces.ourIndexOf(piece);
 			for(var i = index; i < this.pieces.length-1; i++) {
 				this.pieces[i] = this.pieces[i+1];
 				this.pieces[i].mesh.position.z = this.getZIndex(i);
 			}
 			this.pieces[this.pieces.length-1] = piece;
 			piece.mesh.position.z = this.getZIndex(this.pieces.length-1);
+		},
+
+		//toggles whether a piece should be static or not
+		toggleStatic: function(piece){
+			piece.static = !piece.static;
+			if(piece.static){
+				this.pushToBack(piece);
+			}
 		},
 
 		transformPiece: function(pieceData){
@@ -228,8 +257,92 @@ var VBoard = VBoard || {};
 			piece.mesh = plane;
 			piece.icon = icon;
 
+			piece.static = false;
+
+			plane.actionManager = new BABYLON.ActionManager(vb.scene);
+			plane.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnLeftPickTrigger,
+			  function (evt) {
+			  		if(piece.static == false){
+			  			vb.board.setSelectedPiece(piece);
+			  		}
+
+			  		//check that the shift key was pressed for the context menu
+			  		if(vb.inputs.keysPressed.indexOf(16) >= 0){
+			  			vb.board.createContextMenu(piece);
+			  		}
+			  }));
+
 			this.add(piece);
 			return piece;
+		},
+
+		removeSelectedPiece: function(){
+			if(vb.selectedPiece){
+				vb.selectedPiece.pickedUp = false;
+				vb.selectedPiece.user = vb.users.getNone();
+				vb.selectedPiece = null;
+				//todo: disable the highlight
+			}
+		},
+
+		setSelectedPiece: function(piece){
+			vb.selectedPiece = piece;
+			piece.pickedUp = true;
+			piece.user = vb.users.getLocal();
+			//todo: enable the highlight
+		},
+
+		createContextMenu: function(piece){
+			//make the context menu appear at your mouse position
+			$("#context-menu").offset({top: vb.scene.pointerY, left: vb.scene.pointerX-5});
+			$("#context-menu").css("visibility", "visible");
+
+			//clear previous onclick function bindings
+			$("#context-delete").off("click");
+			$("#context-back").off("click");
+			$("#context-front").off("click");
+			$("#context-static").off("click");
+
+			//set new onclick function bindings
+			$("#context-delete").on("click", function(){
+				vb.board.remove(piece);
+				$("#context-menu").css("visibility", "hidden");
+			});
+			$("#context-back").on("click", function(){
+				vb.board.pushToBack(piece);
+				$("#context-menu").css("visibility", "hidden");
+			});
+			$("#context-front").on("click", function(){
+				vb.board.bringToFront(piece);
+				$("#context-menu").css("visibility", "hidden");
+			});
+			$("#context-static").on("click" , function(){
+				vb.board.toggleStatic(piece);
+				$("#context-menu").css("visibility", "hidden");
+			});
+		},
+
+		dragPiece: function () {
+
+			if(vb.selectedPiece){
+
+				var newPos = vb.board.screenToGameSpace(new BABYLON.Vector2(vb.scene.pointerX, vb.scene.pointerY));
+
+				if(!vb.selectedPiece.static){
+					vb.selectedPiece.position = new BABYLON.Vector3(newPos.x, newPos.y, vb.selectedPiece.position.z);
+					if (newPos.x < vb.viewSize && newPos.x > -vb.viewSize && newPos.y < vb.viewSize && newPos.y > -vb.viewSize) {
+						vb.selectedPiece.mesh.position.x = newPos.x;
+						vb.selectedPiece.mesh.position.y = newPos.y;
+					} else if ((newPos.x > vb.viewSize || newPos.x < -vb.viewSize) && (newPos.y < vb.viewSize && newPos.y > -vb.viewSize)) {
+						vb.selectedPiece.mesh.position.y = newPos.y;
+					} else if ((newPos.y > vb.viewSize || newPos.y < -vb.viewSize) && (newPos.x < vb.viewSize && newPos.x > -vb.viewSize)) {
+						vb.selectedPiece.mesh.position.x = newPos.x;
+					}
+
+					vb.SessionIO.movePiece(vb.selectedPiece.id, newPos.x, newPos.y);
+					//todo: set timeout
+				}
+			}
 		},
 
 		movePiece: function (piece, pos, user, instant) {
