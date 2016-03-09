@@ -374,6 +374,14 @@ var VBoard = VBoard || {};
 			return this.host;
 		},
 
+		changeHost: function (id) {
+			this.userList[this.host].isHost = false;
+			this.userList[id].isHost = true;
+			this.host = id;
+
+			//TODO: message to local user?
+		},
+
 		createNewUser: function (userData) {
 			var id = userData["id"];
 			var name = userData["name"];
@@ -611,6 +619,22 @@ var VBoard = VBoard || {};
 			};
 			this.send(data);
 		},
+
+		movePiece: function (id, x, y) {
+			//TODO: aggregate move data to reduce socket usage
+			var data = {
+				"type" : "pieceTransform",
+				"data" : [
+					"pos" : [x, y]
+				]
+			};
+			this.send(data);
+		},
+
+		//TODO: implement
+		rotatePiece: function () {},
+		resizePiece: function () {},
+		recolorPiece: function () {},
 
 		messageHandler: function (event) {
 			console.log("websocket server response: " + event.data);

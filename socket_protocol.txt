@@ -82,7 +82,7 @@
 			//note: piece array is ordered with bottom element first, and top element last
 			"pieces" : [
 				{
-					"name" : "somepiece",
+					//"name" : "somepiece",
 					"pos" : [
 						5.734,
 						3.64
@@ -423,7 +423,7 @@
 	"data" : [
 		{
 			"piece" : 6,
-			"name" : "my piece",
+			//"name" : "my piece",
 			"url" : "/res/img.png",
 			"pos" : [
 				6.6435,
@@ -548,7 +548,7 @@
 		],
 		"pieces" : [
 			{
-				"name" : "somepiece",
+				//"name" : "somepiece",
 				"pos" : [
 					5.734,
 					3.64
