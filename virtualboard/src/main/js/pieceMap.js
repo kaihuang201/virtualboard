@@ -59,3 +59,14 @@ var PieceMap = PieceMap || {};
 			}
 		};
 })(PieceMap);
+
+var CardMap = CardMap || {};
+(function (cardMap) {
+	cardMap.pieces =  {
+			"joker" : {
+				"size" : 4.0,
+				"icon" : "cardback.png",
+				"fronticon" : "cardfront.png"
+			}
+		};
+})(CardMap);
