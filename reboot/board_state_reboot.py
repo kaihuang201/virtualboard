@@ -32,7 +32,8 @@ class BoardState:
 		self.next_piece_id = 0
 
 	#returns the newly generated piece
-	def generate_new_piece(self, name="", x=0, y=0, icon="", color=''):
+	#color is an array, but if you define an array as a default parameter it is static to the class, not the object
+	def generate_new_piece(self, name="", x=0, y=0, icon="", color):
 		piece = Piece(name, x, y, icon, color, self.next_piece_id)
 		self.piecemap[self.next_piece_id] = len(self.pieces)
 		self.pieces.append(piece)

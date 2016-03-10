@@ -346,12 +346,12 @@ var VBoard = VBoard || {};
 
 				if(!vb.selectedPiece.static){
 					vb.selectedPiece.position = new BABYLON.Vector3(newPos.x, newPos.y, vb.selectedPiece.position.z);
-					if (newPos.x < vb.boardSize && newPos.x > -vb.boardSize && newPos.y < vb.viewSize && newPos.y > -vb.viewSize) {
+					if (newPos.x < vb.boardSize && newPos.x > -vb.boardSize && newPos.y < vb.boardSize && newPos.y > -vb.boardSize) {
 						vb.selectedPiece.mesh.position.x = newPos.x;
 						vb.selectedPiece.mesh.position.y = newPos.y;
-					} else if ((newPos.x > vb.boardSize || newPos.x < -vb.boardSize) && (newPos.y < vb.viewSize && newPos.y > -vb.viewSize)) {
+					} else if ((newPos.x > vb.boardSize || newPos.x < -vb.boardSize) && (newPos.y < vb.boardSize && newPos.y > -vb.boardSize)) {
 						vb.selectedPiece.mesh.position.y = newPos.y;
-					} else if ((newPos.y > vb.boardSize || newPos.y < -vb.boardSize) && (newPos.x < vb.viewSize && newPos.x > -vb.viewSize)) {
+					} else if ((newPos.y > vb.boardSize || newPos.y < -vb.boardSize) && (newPos.x < vb.boardSize && newPos.x > -vb.boardSize)) {
 						vb.selectedPiece.mesh.position.x = newPos.x;
 					}
 
@@ -571,13 +571,13 @@ var VBoard = VBoard || {};
 			var dx = focusPos.x - oldCameraPos.x;
 			var dy = focusPos.y - oldCameraPos.y;
 
-			if (vb.size < 55 && delta < 0) { // should be able to zoom out
+			if (vb.size < vb.maxSize && delta < 0) { // should be able to zoom out
 				vb.size /= 0.9;
 				dx /= 0.9;
 				dy /= 0.9;
 				vb.camera.position.x = focusPos.x - dx;
 				vb.camera.position.y = focusPos.y - dy;
-			} else if (vb.size > 5 && delta > 0) { // should be able to zoom in 
+			} else if (vb.size > vb.minSize && delta > 0) { // should be able to zoom in 
 				vb.size *= 0.9;
 				dx *= 0.9;
 				dy *= 0.9;
