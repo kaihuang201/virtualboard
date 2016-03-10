@@ -2,9 +2,11 @@ var VBoard = VBoard || {};
 (function (vb) {
 	//size of the vertical view plane
 	vb.size = 10;
+
+	//max/min/view size should be bound to VBoard.board
 	vb.maxSize = 50;
 	vb.minSize = 5;
-	vb.viewSize = 50;
+	vb.BoardSize = 50;
 
 	vb.selectedPiece;
 
@@ -62,6 +64,8 @@ var VBoard = VBoard || {};
 	vb.board = {
 		//members
 		pieces: [], //ordered list
+					//we may want to keep separate lists for static and non-static pieces
+					//or we can just not push static pieces to the back
 		pieceHash: {}, //unordered hash map of pieces
 
 		//this should probably be fetched as a separate file
@@ -189,44 +193,48 @@ var VBoard = VBoard || {};
 		//toggles whether a piece should be static or not
 		toggleStatic: function(piece){
 			piece.static = !piece.static;
-			if(piece.static){
-				this.pushToBack(piece);
-			}
+			//if(piece.static){
+				//TODO: should not push new static element behind existing static elements
+			//	this.pushToBack(piece);
+			//}
 		},
 
-		transformPiece: function(pieceData){
+		//called by web socket handler upon receiving an update
+		transformPiece: function (pieceData) {
 			piece = pieceHash[pieceData.piece];
 			piece.user = pieceData.user;
 
 			this.highlightPiece(piece);
 
-			if(pieceData.hasOwnProperty("color")){
+			if(pieceData.hasOwnProperty("color")) {
 				piece.mesh.material.diffuseColor = new BABYLON.Color3(pieceData.color[0], pieceData.color[1], pieceData.color[2]);
 			}
 
-			if(pieceData.hasOwnProperty("pos")){
+			if(pieceData.hasOwnProperty("pos")) {
 				piece.position.x = pieceData.pos[0];
 				piece.position.y = pieceData.pos[1];
-				if (!vb.users.userList[piece.user].isLocal){
+				if (!vb.users.userList[piece.user].isLocal) {
 					piece.mesh.position.x = pieceData.pos[0];
 					piece.mesh.position.y = pieceData.pos[1];
 				}
 			}
 
-			if(pieceData.hasOwnProperty("r")){
+			if(pieceData.hasOwnProperty("r")) {
 				piece.mesh.rotation.z = pieceData.r;
 			}
 
-			if(pieceData.hasOwnProperty("s")){
+			if(pieceData.hasOwnProperty("s")) {
 				piece.mesh.scaling.x = pieceData.s;
 				piece.mesh.scaling.y = pieceData.s;
 			}
 		},
 
-		hightlightPiece: function(piece){
+		//takes a piece object from the board.pieces array
+		hightlightPiece: function (piece) {
 			//to do: highlight the piece with piece.user's color when moving
 		},
 
+		//takes JSON formatted data from socket handler
 		generateNewPiece: function (pieceData) {
 			//to do: create a proper piece "class" with a constructor and methods
 			var material = new BABYLON.StandardMaterial("std", vb.scene);
@@ -260,17 +268,22 @@ var VBoard = VBoard || {};
 			piece.static = false;
 
 			plane.actionManager = new BABYLON.ActionManager(vb.scene);
-			plane.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnLeftPickTrigger,
-			  function (evt) {
-			  		if(piece.static == false){
-			  			vb.board.setSelectedPiece(piece);
-			  		}
 
-			  		//check that the shift key was pressed for the context menu
-			  		if(vb.inputs.keysPressed.indexOf(16) >= 0){
-			  			vb.board.createContextMenu(piece);
-			  		}
-			  }));
+			//TODO: instead of attaching a code action to each piece
+			//		we should just have a scene.pick trigger in a global event listener
+			//		We also should be able to right click anywhere to bring up a menu
+			//		that lets us add a piece at that location.
+			plane.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnLeftPickTrigger,
+			function (evt) {
+					if(piece.static == false) {
+						vb.board.setSelectedPiece(piece);
+					}
+
+					//check that the shift key was pressed for the context menu
+					if(vb.inputs.keysPressed.indexOf(16) >= 0) {
+						vb.board.createContextMenu(piece);
+					}
+			}));
 
 			this.add(piece);
 			return piece;
@@ -292,7 +305,10 @@ var VBoard = VBoard || {};
 			//todo: enable the highlight
 		},
 
-		createContextMenu: function(piece){
+		//TODO: instead of hard coding the menu options
+		//		we should query the piece itself for relevant options
+		//		if piece is null, we should bring up a menu with "add a piece"
+		createContextMenu: function (piece) {
 			//make the context menu appear at your mouse position
 			$("#context-menu").offset({top: vb.scene.pointerY, left: vb.scene.pointerX-5});
 			$("#context-menu").css("visibility", "visible");
@@ -330,25 +346,30 @@ var VBoard = VBoard || {};
 
 				if(!vb.selectedPiece.static){
 					vb.selectedPiece.position = new BABYLON.Vector3(newPos.x, newPos.y, vb.selectedPiece.position.z);
-					if (newPos.x < vb.viewSize && newPos.x > -vb.viewSize && newPos.y < vb.viewSize && newPos.y > -vb.viewSize) {
+					if (newPos.x < vb.boardSize && newPos.x > -vb.boardSize && newPos.y < vb.viewSize && newPos.y > -vb.viewSize) {
 						vb.selectedPiece.mesh.position.x = newPos.x;
 						vb.selectedPiece.mesh.position.y = newPos.y;
-					} else if ((newPos.x > vb.viewSize || newPos.x < -vb.viewSize) && (newPos.y < vb.viewSize && newPos.y > -vb.viewSize)) {
+					} else if ((newPos.x > vb.boardSize || newPos.x < -vb.boardSize) && (newPos.y < vb.viewSize && newPos.y > -vb.viewSize)) {
 						vb.selectedPiece.mesh.position.y = newPos.y;
-					} else if ((newPos.y > vb.viewSize || newPos.y < -vb.viewSize) && (newPos.x < vb.viewSize && newPos.x > -vb.viewSize)) {
+					} else if ((newPos.y > vb.boardSize || newPos.y < -vb.boardSize) && (newPos.x < vb.viewSize && newPos.x > -vb.viewSize)) {
 						vb.selectedPiece.mesh.position.x = newPos.x;
 					}
 
 					vb.SessionIO.movePiece(vb.selectedPiece.id, newPos.x, newPos.y);
 					//todo: set timeout
+					//more TODO: keep track of where piece is released
+					//then override the local ignore when that final position arrives
+					//this fixes a race condition where 2 users move the same piece at the same time
 				}
 			}
 		},
 
+		//we may not need this function, replaced by transformPiece()
 		movePiece: function (piece, pos, user, instant) {
 			//to do
 		},
 
+		//triggered by network call
 		clearBoard: function () {
 			while(this.pieces.length > 0) {
 				this.remove(this.pieces[this.pieces.length-1]);
@@ -545,6 +566,7 @@ var VBoard = VBoard || {};
 		},
 
 		adjustZoom: function (focusPos, delta) {
+			//TODO: remove magic numbers
 			var oldCameraPos = vb.camera.position;
 			var dx = focusPos.x - oldCameraPos.x;
 			var dy = focusPos.y - oldCameraPos.y;

@@ -32,6 +32,7 @@ var Menu = Menu || {};
         $("#submit-add-piece").click(function() {
             var selectedName = $("#add-piece-list").val();
             var user = null;
+			//TODO: use VBoard.camera.position.x/y instead of board center
             var pos = {x:0, y:0};
             VBoard.board.generateNewPiece(selectedName, user, pos);
             $("#add-piece-modal").modal("toggle");
