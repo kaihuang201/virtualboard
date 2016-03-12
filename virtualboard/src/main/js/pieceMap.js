@@ -62,7 +62,7 @@ var PieceMap = PieceMap || {};
 
 var CardMap = CardMap || {};
 (function (cardMap) {
-	cardMap.pieces =  {
+	cardMap.cards =  {
 			"joker" : {
 				"size" : 4.0,
 				"icon" : "cardback.png",
@@ -70,3 +70,18 @@ var CardMap = CardMap || {};
 			}
 		};
 })(CardMap);
+
+var DieMap = DieMap || {};
+(function (dieMap) {
+	dieMap.dice = {
+		"d6" : {
+			"size" : 2.0,
+			1 : "die_face_1.png",
+			2 : "die_face_2.png",
+			3 : "die_face_3.png",
+			4 : "die_face_4.png",
+			5 : "die_face_5.png",
+			6 : "die_face_6.png"
+		}
+	};
+})(DieMap);

@@ -153,6 +153,13 @@ var VBoard = VBoard || {};
             this.add(card);
         },
 
+        generateNewDie: function (name, user, pos, max) {
+            //to do: create a proper piece "class" with a constructor and methods
+            var die = new Die(name, user, pos, max);
+
+            this.add(die);
+        },
+
         removeSelectedPiece: function(){
             vb.selectedPiece.pickedUp = false;
             vb.selectedPiece.user = vb.users.getNone();
@@ -614,13 +621,57 @@ function Piece(name, user, pos, icon="crown.png", size=3.0) {
     }));
 }
 
-function Die(name, user, pos, max) {
+function Die(name, user, pos, max, size=2.0) {
     this.base = Piece;
     this.base(name, user, pos);
+
     this.max = max;
+    this.value = 1;
+
+    var scene = VBoard.scene;
+    var diffuseTexture;
+    if (DieMap.dice.hasOwnProperty(name)) {
+        this.icons = [];
+        for (key in DieMap.dice[name]) {
+            if (key != "size") {
+                this.icons[key] = DieMap.dice[name][key];
+            }
+        }
+
+        diffuseTexture = new BABYLON.Texture(this.icons[this.value], scene);
+        diffuseTexture.hasAlpha = true;
+    }
+    else {
+        diffuseTexture = new BABYLON.DynamicTexture("DynamicTexture", 50, scene, true);
+        diffuseTexture.hasAlpha = true;
+        diffuseTexture.drawText(1, 5, 40, "bold 36px Arial", "black" , "white", true);
+    }
+
+    this.mesh.material.diffuseTexture = diffuseTexture;
+
+    this.roll = function() {
+        this.value = Math.floor(Math.random() * (this.max)) + 1;
+
+        if (this.icons) {
+            diffuseTexture = new BABYLON.Texture(this.icons[this.value], scene);
+            diffuseTexture.hasAlpha = true;
+        }
+        else {
+            diffuseTexture = new BABYLON.DynamicTexture("DynamicTexture", 50, scene, true);
+            diffuseTexture.hasAlpha = true;
+            diffuseTexture.drawText(this.value, 5, 40, "bold 36px Arial", "black" , "white", true);
+        }
+
+        this.mesh.material.diffuseTexture = diffuseTexture;
+    }
 }
 
 function Card(name, user, pos, icon="cardback.png", size=4.0, fronticon="cardfront.png") {
+    if(CardMap.cards.hasOwnProperty(name)) {
+        icon = CardMap.cards[name].icon;
+        size = CardMap.cards[name].size;
+    }
+
     this.base = Piece;
     this.base(name, user, pos, icon, size);
 

@@ -5,7 +5,7 @@ var Menu = Menu || {};
 		for (var key in PieceMap.pieces) {
 			$("#add-piece-list").append( new Option(key, key) );
 		}
-		for (var key in CardMap.pieces) {
+		for (var key in CardMap.cards) {
 			$("#add-card-list").append( new Option(key, key) );
 		}
 		$("#viewMenuHover").mouseover(function() {
