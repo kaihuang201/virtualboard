@@ -2,11 +2,12 @@ var VBoard = VBoard || {};
 (function (vb) {
 	//size of the vertical view plane
 	vb.size = 10;
-	vb.maxSize = 50;
-	vb.minSize = 5;
-	vb.viewSize = 50;
 
-	vb.selectedPiece;
+	//max/min/view size should be bound to VBoard.board
+	vb.maxSize = 55;
+	vb.minSize = 5;
+	vb.BoardHeight = 50;
+	vb.BoardWidth = 50;
 
 	vb.javascriptInit = function () {
 		//networking
@@ -62,63 +63,18 @@ var VBoard = VBoard || {};
 	vb.board = {
 		//members
 		pieces: [], //ordered list
+					//we may want to keep separate lists for static and non-static pieces
+					//or we can just not push static pieces to the back
+
 		pieceHash: {}, //unordered hash map of pieces
 
+		//a map from private zone id's to private zone objects
+		privateZones: {},
+
 		//this should probably be fetched as a separate file
-		pieceMap: {
-			"chessKingBlack" : {
-				"size" : 2.0,
-				"icon" : "nbking.png"
-			},
-			"chessQueenBlack" : {
-				"size" : 2.0,
-				"icon" : "nbqueen.png"
-			},
-			"chessKnightBlack" : {
-				"size" : 2.0,
-				"icon" : "nbknight.png"
-			},
-			"chessBishopBlack" : {
-				"size" : 2.0,
-				"icon" : "nbbishop.png"
-			},
-			"chessRookBlack" : {
-				"size" : 2.0,
-				"icon" : "nbrook.png"
-			},
-			"chessPawnBlack" : {
-				"size" : 2.0,
-				"icon" : "nbpawn.png"
-			},
-			"chessKingWhite" : {
-				"size" : 2.0,
-				"icon" : "nwking.png"
-			},
-			"chessQueenWhite" : {
-				"size" : 2.0,
-				"icon" : "nwqueen.png"
-			},
-			"chessKnightWhite" : {
-				"size" : 2.0,
-				"icon" : "nwknight.png"
-			},
-			"chessBishopWhite" : {
-				"size" : 2.0,
-				"icon" : "nwbishop.png"
-			},
-			"chessRookWhite" : {
-				"size" : 2.0,
-				"icon" : "nwrook.png"
-			},
-			"chessPawnWhite" : {
-				"size" : 2.0,
-				"icon" : "nwpawn.png"
-			},
-			"chessBoard" : {
-				"size" : 16.0,
-				"icon" : "background.png"
-			}
-		},
+		pieceNameMap: {},
+
+		selectedPieces: [],
 
 		//methods
 
@@ -131,7 +87,7 @@ var VBoard = VBoard || {};
 			piece.mesh.position.z = z;
 		},
 
-		ourIndexOf: function(piece){
+		ourIndexOf: function (piece) {
 			for(var i = 0; i < this.pieces.length; i++){
 				if(this.pieces[i].id == piece.id){
 					return i;
@@ -153,11 +109,15 @@ var VBoard = VBoard || {};
 
 		//removes a piece from the board
 		remove: function (piece) {
+			//we should call bringToFront instead of doing this probably
 			var index = this.pieces.ourIndexOf(piece);
 			for(var i = index; i < this.pieces.length-1; i++) {
 				this.pieces[i] = this.pieces[i+1];
 				this.pieces[i].mesh.position.z = this.getZIndex(i);
 			}
+
+			//TODO: disable highlight on piece if it exists
+
 			this.pieces.pop();
 			delete this.pieceHash[piece.id];
 			piece.mesh.dispose();
@@ -187,55 +147,67 @@ var VBoard = VBoard || {};
 		},
 
 		//toggles whether a piece should be static or not
-		toggleStatic: function(piece){
+		toggleStatic: function (piece) {
 			piece.static = !piece.static;
-			if(piece.static){
-				this.pushToBack(piece);
-			}
+			//if(piece.static){
+				//TODO: should not push new static element behind existing static elements
+			//	this.pushToBack(piece);
+			//}
 		},
 
-		transformPiece: function(pieceData){
-			piece = pieceHash[pieceData.piece];
-			piece.user = pieceData.user;
+		//called by web socket handler upon receiving an update
+		transformPiece: function (pieceData) {
+			var piece = pieceHash[pieceData.piece];
+			var user = vb.users.userList[pieceData.user];
+			//piece.user = pieceData.user;
 
-			this.highlightPiece(piece);
+			this.highlightPiece(piece, new BABYLON.Color3(
+				user.color[0],
+				user.color[1],
+				user.color[2]));
 
-			if(pieceData.hasOwnProperty("color")){
+			if(pieceData.hasOwnProperty("color")) {
 				piece.mesh.material.diffuseColor = new BABYLON.Color3(pieceData.color[0], pieceData.color[1], pieceData.color[2]);
 			}
 
-			if(pieceData.hasOwnProperty("pos")){
+			if(pieceData.hasOwnProperty("pos")) {
 				piece.position.x = pieceData.pos[0];
 				piece.position.y = pieceData.pos[1];
-				if (!vb.users.userList[piece.user].isLocal){
+
+				if (!user.isLocal) {
 					piece.mesh.position.x = pieceData.pos[0];
 					piece.mesh.position.y = pieceData.pos[1];
+				} else {
+					//TODO: check to see if piece.mesh.position agrees with piece.position and update timeout
 				}
 			}
 
-			if(pieceData.hasOwnProperty("r")){
+			if(pieceData.hasOwnProperty("r")) {
 				piece.mesh.rotation.z = pieceData.r;
 			}
 
-			if(pieceData.hasOwnProperty("s")){
+			if(pieceData.hasOwnProperty("s")) {
 				piece.mesh.scaling.x = pieceData.s;
 				piece.mesh.scaling.y = pieceData.s;
 			}
 		},
 
-		hightlightPiece: function(piece){
+		//takes a piece object from the board.pieces array
+		highlightPiece: function (piece, color) {
 			//to do: highlight the piece with piece.user's color when moving
+			//should time out after 500 ms probably if this is not called again
 		},
 
+		//takes JSON formatted data from socket handler
 		generateNewPiece: function (pieceData) {
 			//to do: create a proper piece "class" with a constructor and methods
 			var material = new BABYLON.StandardMaterial("std", vb.scene);
 			var icon = "/static/img/crown.png";
 			var size = 3.0;
 
-			/*if(this.pieceMap.hasOwnProperty(name)) {
-				icon = this.pieceMap[name].icon;
-				size = this.pieceMap[name].size;
+			/*if(this.pieceNameMap.hasOwnProperty(name)) {
+				icon = this.pieceNameMap[name].icon;
+				size = this.pieceNameMap[name].size;
 			}*/
 			icon = pieceData.icon;
 			size = pieceData.s;
@@ -251,104 +223,108 @@ var VBoard = VBoard || {};
 
 			var piece = {};
 			piece.id = pieceData.piece;
-			piece.user = pieceData.user;
+			//piece.user = pieceData.user;
 			piece.position = new BABYLON.Vector2(pieceData.pos[0], pieceData.pos[1]);
 			piece.pickedUp = !!user;
 			piece.mesh = plane;
 			piece.icon = icon;
 
-			piece.static = false;
+			piece.static = pieceData.static == 1;
 
 			plane.actionManager = new BABYLON.ActionManager(vb.scene);
-			plane.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnLeftPickTrigger,
-			  function (evt) {
-			  		if(piece.static == false){
-			  			vb.board.setSelectedPiece(piece);
-			  		}
 
-			  		//check that the shift key was pressed for the context menu
-			  		if(vb.inputs.keysPressed.indexOf(16) >= 0){
-			  			vb.board.createContextMenu(piece);
-			  		}
-			  }));
+			//TODO: instead of attaching a code action to each piece
+			//		we should just have a scene.pick trigger in a global event listener
+			//		We also should be able to right click anywhere to bring up a menu
+			//		that lets us add a piece at that location.
+			plane.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnLeftPickTrigger,
+			function (evt) {
+				if(piece.static == false) {
+					this.setSelectedPiece(piece);
+				}
+
+				//check that the shift key was pressed for the context menu
+				if(vb.inputs.keysPressed.indexOf(16) >= 0) {
+					vb.menu.createContextMenu(piece);
+				}
+			}));
 
 			this.add(piece);
+
+			var user = vb.users.userList[pieceData.user];
+			this.highlightPiece(piece, new BABYLON.Color3(
+				user.color[0],
+				user.color[1],
+				user.color[2]));
 			return piece;
 		},
 
-		removeSelectedPiece: function(){
-			if(vb.selectedPiece){
-				vb.selectedPiece.pickedUp = false;
-				vb.selectedPiece.user = vb.users.getNone();
-				vb.selectedPiece = null;
-				//todo: disable the highlight
+		removeSelectedPieces: function () {
+			if(this.selectedPieces.length > 0) {
+				for(index in this.selectedPieces) {
+					this.selectedPieces[index].pickedUp = false;
+					//this.selectedPieces[index].user = vb.users.getNone();
+
+					//todo: disable the highlight
+				}
+				this.selectedPieces = [];
 			}
 		},
 
-		setSelectedPiece: function(piece){
-			vb.selectedPiece = piece;
+		setSelectedPiece: function (piece) {
+			//maybe this should be called first?
+			//this.removeSelectedPieces();
+
+			this.selectedPiece = [piece];
 			piece.pickedUp = true;
-			piece.user = vb.users.getLocal();
+			//piece.user = vb.users.getLocal();
 			//todo: enable the highlight
 		},
 
-		createContextMenu: function(piece){
-			//make the context menu appear at your mouse position
-			$("#context-menu").offset({top: vb.scene.pointerY, left: vb.scene.pointerX-5});
-			$("#context-menu").css("visibility", "visible");
-
-			//clear previous onclick function bindings
-			$("#context-delete").off("click");
-			$("#context-back").off("click");
-			$("#context-front").off("click");
-			$("#context-static").off("click");
-
-			//set new onclick function bindings
-			$("#context-delete").on("click", function(){
-				vb.board.remove(piece);
-				$("#context-menu").css("visibility", "hidden");
-			});
-			$("#context-back").on("click", function(){
-				vb.board.pushToBack(piece);
-				$("#context-menu").css("visibility", "hidden");
-			});
-			$("#context-front").on("click", function(){
-				vb.board.bringToFront(piece);
-				$("#context-menu").css("visibility", "hidden");
-			});
-			$("#context-static").on("click" , function(){
-				vb.board.toggleStatic(piece);
-				$("#context-menu").css("visibility", "hidden");
-			});
-		},
-
 		dragPiece: function () {
+			for(index in this.selectedPieces) {
+				var piece = this.selectedPieces[index];
 
-			if(vb.selectedPiece){
+				//we should use a difference in mouse position instead of having the piece's center snap to the mouse
+				//if a corner is clicked and dragged, then the mouse should stay relative to that corner
+				var newPos = this.screenToGameSpace(new BABYLON.Vector2(vb.scene.pointerX, vb.scene.pointerY));
 
-				var newPos = vb.board.screenToGameSpace(new BABYLON.Vector2(vb.scene.pointerX, vb.scene.pointerY));
+				if(!piece.static) {
+					//only the server gets to set the piece's position
 
-				if(!vb.selectedPiece.static){
-					vb.selectedPiece.position = new BABYLON.Vector3(newPos.x, newPos.y, vb.selectedPiece.position.z);
-					if (newPos.x < vb.viewSize && newPos.x > -vb.viewSize && newPos.y < vb.viewSize && newPos.y > -vb.viewSize) {
-						vb.selectedPiece.mesh.position.x = newPos.x;
-						vb.selectedPiece.mesh.position.y = newPos.y;
-					} else if ((newPos.x > vb.viewSize || newPos.x < -vb.viewSize) && (newPos.y < vb.viewSize && newPos.y > -vb.viewSize)) {
-						vb.selectedPiece.mesh.position.y = newPos.y;
-					} else if ((newPos.y > vb.viewSize || newPos.y < -vb.viewSize) && (newPos.x < vb.viewSize && newPos.x > -vb.viewSize)) {
-						vb.selectedPiece.mesh.position.x = newPos.x;
+					if(newPos.x > vb.boardWidth) {
+						newPos.x = vb.boardWidth;
 					}
 
+					if(newPos.x < -vb.boardWidth) {
+						newPos.x = -vb.boardWidth;
+					}
+
+					if(newPos.y > vb.boardHeight) {
+						newPos.y = vb.boardHeight;
+					}
+
+					if(newPos.y < -vb.boardHeight) {
+						newPos.y = -vb.boardHeight;
+					}
+
+					vb.selectedPiece.mesh.position.x = newPos.x;
+					vb.selectedPiece.mesh.position.y = newPos.y;
 					vb.SessionIO.movePiece(vb.selectedPiece.id, newPos.x, newPos.y);
 					//todo: set timeout
+					//more TODO: keep track of where piece is released
+					//then override the local ignore when that final position arrives
+					//this fixes a race condition where 2 users move the same piece at the same time
 				}
 			}
 		},
 
+		//we may not need this function, replaced by transformPiece()
 		movePiece: function (piece, pos, user, instant) {
 			//to do
 		},
 
+		//triggered by network call
 		clearBoard: function () {
 			while(this.pieces.length > 0) {
 				this.remove(this.pieces[this.pieces.length-1]);
@@ -359,6 +335,7 @@ var VBoard = VBoard || {};
 			return new BABYLON.Vector2(0, 0);
 		},
 
+		//TODO: this seems to break when opening/closing the developer console
 		screenToGameSpace: function (position) {
 			//screen space
 			//also equals to the camera coordinates
@@ -390,7 +367,7 @@ var VBoard = VBoard || {};
 			return new BABYLON.Vector2(totalX, totalY);
 		},
 
-		loadChessGame: function() {
+		loadChessGame: function () {
 			//var chessMap = {
 			//	"Rook": 7,
 			//	"Knight": 5,
@@ -437,8 +414,9 @@ var VBoard = VBoard || {};
 		//members
 		local: null,
 		host: null,
-		userList: {},	//unordered list
-						//we may want to consider replacing this with an object that maps names to User objects
+		userList: {},	//unordered
+						//maps ids to user objects
+
 
 		//constructor for internal object
 		User: function (id, name, color, isLocal, isHost) {
@@ -485,6 +463,14 @@ var VBoard = VBoard || {};
 
 		getHost: function () {
 			return this.host;
+		},
+
+		changeHost: function (id) {
+			this.userList[this.host].isHost = false;
+			this.userList[id].isHost = true;
+			this.host = id;
+
+			//TODO: message to local user?
 		},
 
 		createNewUser: function (userData) {
@@ -537,17 +523,18 @@ var VBoard = VBoard || {};
 		},
 
 		adjustZoom: function (focusPos, delta) {
+			//TODO: remove magic numbers
 			var oldCameraPos = vb.camera.position;
 			var dx = focusPos.x - oldCameraPos.x;
 			var dy = focusPos.y - oldCameraPos.y;
 
-			if (vb.size < 55 && delta < 0) { // should be able to zoom out
+			if (vb.size < vb.maxSize && delta < 0) { // should be able to zoom out
 				vb.size /= 0.9;
 				dx /= 0.9;
 				dy /= 0.9;
 				vb.camera.position.x = focusPos.x - dx;
 				vb.camera.position.y = focusPos.y - dy;
-			} else if (vb.size > 5 && delta > 0) { // should be able to zoom in 
+			} else if (vb.size > vb.minSize && delta > 0) { // should be able to zoom in 
 				vb.size *= 0.9;
 				dx *= 0.9;
 				dy *= 0.9;
@@ -724,6 +711,52 @@ var VBoard = VBoard || {};
 			};
 			this.send(data);
 		},
+
+		//input data is an object that maps properties to values (see pieceData for an example)
+		addPiece: function (inputData) {
+			//default values
+			var pieceData = {
+				"icon" : "/static/img/crown.png",
+				"pos" [0, 0],
+				"r" : 0,
+				"s" : 1,
+				"static" : 0
+			};
+
+			//update with input values
+			for(var property in inputData) {
+				if(inputData.hasOwnProperty(property)) {
+					pieceData[property] = inputData[property];
+				}
+			}
+
+			var data = {
+				"type" : "pieceAdd",
+				"data" : [
+					pieceData
+				]
+			};
+			this.send(data);
+		},
+
+		movePiece: function (id, x, y) {
+			//TODO: aggregate move data to reduce socket usage
+			var data = {
+				"type" : "pieceTransform",
+				"data" : [
+					{
+						"piece" : id,
+						"pos" : [x, y]
+					}
+				]
+			};
+			this.send(data);
+		},
+
+		//TODO: implement
+		rotatePiece: function () {},
+		resizePiece: function () {},
+		recolorPiece: function () {},
 
 		messageHandler: function (event) {
 			console.log("websocket server response: " + event.data);

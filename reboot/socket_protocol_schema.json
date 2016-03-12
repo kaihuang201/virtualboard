@@ -1,0 +1,200 @@
+{
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"type": "object",
+	"oneOf": [
+		{ "$ref": "#/defintions/data_object"},
+		{ "$ref": "#/defintions/data_array"},
+		{ "$ref": "#/defintions/data_nonexistent"}
+	],
+	"defintions": {
+		"data_object": {
+			"properties": {
+				"type": {
+					"type": { "enum": [ "initJoin", "initHost", "ping", "initSuccess", "initFailure", "changeHost", "disconnect", "changeHost", "announcement", "changeServerInfo", "kickUser", "loadBoardState"]}
+				},
+				"data": {
+					"type": "object",
+					"oneOf": [
+						{ "$ref": "#/defintions/initJoin"},
+						{ "$ref": "#/defintions/"},
+						{ "$ref": "#/defintions/"},
+						{ "$ref": "#/defintions/"},
+						{ "$ref": "#/defintions/"},
+						{ "$ref": "#/defintions/"},
+						{ "$ref": "#/defintions/"},
+					]
+				}
+			},
+			"required": [ "type", "data" ]
+		},
+		"data_array": {
+			"properties": {
+				"type": {
+					"type": { "enum": [ "listGames", "pong", "error", "chat", "beacon", "pieceTransform", "pieceAdd", "pieceRemove", "userConnect", "userDisconnect", "announcement", "createPrivateZone", "transformPrivateZone", "drawScribble", "listClients"]}
+				},
+				"data": {
+					"type": "object",
+					"oneOf": [
+						{ "$ref": "#/defintions/"},
+						{ "$ref": "#/defintions/"},
+						{ "$ref": "#/defintions/"},
+						{ "$ref": "#/defintions/"},
+						{ "$ref": "#/defintions/"},
+						{ "$ref": "#/defintions/"},
+						{ "$ref": "#/defintions/"},
+					]
+				}
+			},
+			"required": [ "type", "data" ]
+		},
+		"data_nonexistent": {
+			"properties": {
+				"type": {
+					"type": { "enum": [ "listGames", "clearBoard", "listClients"]}
+				}
+			},
+			"required": [ "type" ]
+		},
+		"initJoin": {
+    		"properties": {
+       			"name": {
+        			"type": "string"
+        		},
+        		"color": {
+        			"type": "array",
+        			"items": {
+            			"type": "integer"
+            		},
+            		"minItems": 3
+        		},
+        		"gameID": {
+        			"type": "integer"
+        		},
+        		"password": {
+        			"type": "string"
+    			}
+    		},
+    		"required": [ "name", "color", "gameID", "password" ]
+		},
+		"initHost": {
+			
+		},
+		"listGames": {
+			
+		},
+		"ping": {
+			
+		},
+		"initSuccess": {
+			
+		},
+		"initFailure": {
+			
+		},
+		//Todo: listGames is repeated?!
+		"listGames": {
+			
+		},
+		"pong": {
+			
+		},
+		"error": {
+			
+		},
+		"chat": {
+			
+		},
+		"beacon": {
+			
+		},
+		"pieceTransform": {
+			
+		},
+		"pieceAdd": {
+			
+		},
+		"pieceRemove": {
+			
+		},
+		"clearBoard": {
+			
+		},
+		"userConnect": {
+			
+		},
+		"userDisconnect": {
+			
+		},
+		"changeHost": {
+			
+		},
+		"announcement": {
+			
+		},
+		"createPrivateZone": {
+			
+		},
+		"transformPrivateZone": {
+			
+		},
+		"drawScribble": {
+			
+		},
+		"listClients": {
+			
+		},
+		//Todo: chat is repeated?!	
+		"chat": {
+			
+		},
+		//Todo: beacon is repeated?!	
+		"beacon": {
+			
+		},
+		//Todo: pieceTransform is repeated?!	
+		"pieceTransform": {
+			
+		},
+		//Todo: pieceAdd is repeated?!	
+		"pieceAdd": {
+			
+		},
+		//Todo: pieceRemove is repeated?!	
+		"pieceRemove": {
+			
+		},
+		//Todo: drawScribble is repeated?!
+		"drawScribble": {
+			
+		},
+		"disconnect": {
+			
+		},
+		//Todo: listClients is repeated?!
+		"listClients": {
+			
+		},
+		"changeHost": {
+			
+		},
+		"announcement": {
+			
+		},
+		"changeServerInfo": {
+			
+		},
+		"kickUser": {
+			
+		},
+		"clearBoard": {
+			
+		},
+		"loadBoardState": {
+			
+		}
+		//},
+		//"initJoin": {
+		//	
+		//},
+	}
+}

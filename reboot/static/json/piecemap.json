@@ -1,0 +1,58 @@
+{
+	"chessKingBlack" : {
+		"size" : 2,
+		"icon" : "/static/img/nbking.png"
+	},
+	"chessQueenBlack" : {
+		"size" : 2,
+		"icon" : "/static/img/nbqueen.png"
+	},
+	"chessKnightBlack" : {
+		"size" : 2,
+		"icon" : "/static/img/nbknight.png"
+	},
+	"chessBishopBlack" : {
+		"size" : 2,
+		"icon" : "/static/img/nbbishop.png"
+	},
+	"chessRookBlack" : {
+		"size" : 2,
+		"icon" : "/static/img/nbrook.png"
+	},
+	"chessPawnBlack" : {
+		"size" : 2,
+		"icon" : "/static/img/nbpawn.png"
+	},
+	"chessKingWhite" : {
+		"size" : 2,
+		"icon" : "/static/img/nwking.png"
+	},
+	"chessQueenWhite" : {
+		"size" : 2,
+		"icon" : "/static/img/nwqueen.png"
+	},
+	"chessKnightWhite" : {
+		"size" : 2,
+		"icon" : "/static/img/nwknight.png"
+	},
+	"chessBishopWhite" : {
+		"size" : 2,
+		"icon" : "/static/img/nwbishop.png"
+	},
+	"chessRookWhite" : {
+		"size" : 2,
+		"icon" : "/static/img/nwrook.png"
+	},
+	"chessPawnWhite" : {
+		"size" : 2,
+		"icon" : "/static/img/nwpawn.png"
+	},
+	"chessBoard" : {
+		"size" : 16,
+		"icon" : "/static/img/background.png"
+	},
+	"crown" : {
+		"size" : 2,
+		"icon" : "/static/img/crown.png"
+	}
+}
