@@ -186,12 +186,20 @@ var VBoard = VBoard || {};
             $("#context-static").off("click");
             $("#context-flip").off("click");
 
-            //only show flip option if piece can flip (i.e. is a card)
+            //only show flip option if piece is a card
             if (piece instanceof Card) {
                 $("#context-flip").show();
             }
             else {
                 $("#context-flip").hide();
+            }
+
+            //only show roll option if piece is a die
+            if (piece instanceof Die) {
+                $("#context-roll").show();
+            }
+            else {
+                $("#context-roll").hide();
             }
 
             //set new onclick function bindings
@@ -214,7 +222,26 @@ var VBoard = VBoard || {};
             $("#context-flip").on("click" , function(){
 
                 if (piece instanceof Card) {
-                    piece.flip();
+                    // TODO send request to server to get the image for the front of the card
+
+                    /****** Temperary Code ******/
+                    var icon = "cardfront.png";
+                    /****************************/
+
+                    piece.flip(icon);
+                }
+                $("#context-menu").css("visibility", "hidden");
+            });
+            $("#context-roll").on("click" , function(){
+
+                if (piece instanceof Die) {
+                    // TODO send request to server to get the value of the roll
+
+                    /****** Temperary Code ******/
+                    var value = Math.floor(Math.random() * (piece.max)) + 1;
+                    /****************************/
+
+                    piece.roll(value);
                 }
                 $("#context-menu").css("visibility", "hidden");
             });
@@ -649,10 +676,10 @@ function Die(name, user, pos, max, size=2.0) {
 
     this.mesh.material.diffuseTexture = diffuseTexture;
 
-    this.roll = function() {
-        this.value = Math.floor(Math.random() * (this.max)) + 1;
+    this.roll = function(value) {
+        this.value = value;
 
-        if (this.icons) {
+        if (this.icons[this.value]) {
             diffuseTexture = new BABYLON.Texture(this.icons[this.value], scene);
             diffuseTexture.hasAlpha = true;
         }
@@ -666,7 +693,7 @@ function Die(name, user, pos, max, size=2.0) {
     }
 }
 
-function Card(name, user, pos, icon="cardback.png", size=4.0, fronticon="cardfront.png") {
+function Card(name, user, pos, icon="cardback.png", size=4.0) {
     if(CardMap.cards.hasOwnProperty(name)) {
         icon = CardMap.cards[name].icon;
         size = CardMap.cards[name].size;
@@ -675,10 +702,9 @@ function Card(name, user, pos, icon="cardback.png", size=4.0, fronticon="cardfro
     this.base = Piece;
     this.base(name, user, pos, icon, size);
 
-
     this.facedown = true;
 
-    this.flip = function() {
+    this.flip = function(fronticon="cardquestion.png") {
         this.facedown = !this.facedown;
 
         var scene = VBoard.scene;
