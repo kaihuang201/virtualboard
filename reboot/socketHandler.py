@@ -58,10 +58,22 @@ class WebSocketGameHandler(tornado.websocket.WebSocketHandler):
 				next_game_id += 1
 				game.connect(self)
 			elif data["type"] == "initJoin":
-				self.name = data["data"]["name"]
-				self.color = data["data"]["color"]
-				game = games[data["data"]["gameID"]]
-				game.connect(self)
+				game_id = data["data"]["gameID"];
+
+				if game_id in games:
+					self.name = data["data"]["name"]
+					self.color = data["data"]["color"]
+					game = games[game_id]
+					game.connect(self)
+				else:
+					response = {
+						"type" : "error",
+						"data" : [
+							{
+								"msg" : "Invalid game id"
+							}
+						]
+					}
 			elif data["type"] == "listGames":
 				game_list = []
 

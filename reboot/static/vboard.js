@@ -10,6 +10,7 @@ var VBoard = VBoard || {};
 	vb.BoardWidth = 50;
 	vb.moveHighlightDuration = 500; //milliseconds
 	vb.addHighlightDuration = 500; //milliseconds
+	vb.predictionTimeout = 500; //delay until we roll back the client sided prediction
 
 	vb.quickStart = function () {
 		vb.limboIO.hostGame("bill", [0, 0, 255], "chess deathmatch", "12345");
@@ -149,27 +150,49 @@ var VBoard = VBoard || {};
 
 		//called by web socket handler upon receiving an update
 		transformPiece: function (pieceData) {
-			var piece = this.pieceHash[pieceData.piece];
-			var user = vb.users.userList[pieceData.user];
-			//piece.user = pieceData.user;
+			var piece = this.pieceHash[pieceData["piece"]];
+			var user = vb.users.userList[pieceData["user"]];
 
 			this.highlightPiece(piece, user.color, vb.moveHighlightDuration);
 
 			if(pieceData.hasOwnProperty("color")) {
-				piece.mesh.material.diffuseColor = new BABYLON.Color3(pieceData.color[0], pieceData.color[1], pieceData.color[2]);
+				piece.mesh.material.diffuseColor = new BABYLON.Color3(pieceData["color"][0], pieceData["color"][1], pieceData["color"][2]);
 			}
 
 			if(pieceData.hasOwnProperty("pos")) {
-				piece.position.x = pieceData.pos[0];
-				piece.position.y = pieceData.pos[1];
+				this.bringToFront(piece);
+				piece.position.x = pieceData["pos"][0];
+				piece.position.y = pieceData["pos"][1];
 
-				if (!user.isLocal) {
-					piece.mesh.position.x = pieceData.pos[0];
-					piece.mesh.position.y = pieceData.pos[1];
+				if(piece.predictTimeout === null) {
+					//if we have no expectation for this piece's position
+					//then we should update the mesh's position immediately, regardless of who moved it
 
-					//TODO: we should remove piece from our selectedPieces if present since someone else is moving it
+					piece.mesh.position.x = pieceData["pos"][0];
+					piece.mesh.position.y = pieceData["pos"][1];
 				} else {
-					//TODO: check to see if piece.mesh.position agrees with piece.position and update timeout
+					clearTimeout(piece.predictTimeout);
+
+					if(!user.isLocal) {
+						//if we have an expectation for this piece's position but another user has moved it
+						//then we need to throw out our predictions
+						piece.predictTimeout = null;
+						piece.mesh.position.x = pieceData["pos"][0];
+						piece.mesh.position.y = pieceData["pos"][1];
+					} else {
+						//hopefully this motion is part of what we have already predicted
+
+						//check to see if this is the end of the motion
+						if(piece.position.x == piece.mesh.position.x && piece.position.y == piece.mesh.position.y) {
+							piece.predictTimeout = null;
+						} else {
+							//all we need to do is extend the timeout
+							piece.predictTimeout = setTimeout(function () {
+								vb.board.undoPrediction(piece);
+								piece.predictTimeout = null;
+							}, vb.predictionTimeout);
+						}
+					}
 				}
 			}
 
@@ -194,6 +217,7 @@ var VBoard = VBoard || {};
 			piece.mesh.renderOverlay = true;
 			piece.highlightTimeout = setTimeout(function () {
 				piece.mesh.renderOverlay = false;
+				piece.highlightTimeout = null;
 			}, duration);
 		},
 
@@ -201,34 +225,26 @@ var VBoard = VBoard || {};
 		generateNewPiece: function (pieceData) {
 			//to do: create a proper piece "class" with a constructor and methods
 			var material = new BABYLON.StandardMaterial("std", vb.scene);
-			//var icon = "/static/img/crown.png";
-			//var size = 3.0;
 
-			/*if(this.pieceNameMap.hasOwnProperty(name)) {
-				icon = this.pieceNameMap[name].icon;
-				size = this.pieceNameMap[name].size;
-			}*/
-			icon = pieceData.icon;
-			size = pieceData.s;
-
-			material.diffuseTexture = new BABYLON.Texture(icon, vb.scene);
-			material.diffuseColor = new BABYLON.Color3(pieceData.color[0], pieceData.color[1], pieceData.color[2]);
+			material.diffuseTexture = new BABYLON.Texture(pieceData["icon"], vb.scene);
+			material.diffuseColor = new BABYLON.Color3(pieceData["color"][0], pieceData["color"][1], pieceData["color"][2]);
 			material.diffuseTexture.hasAlpha = true;
 
-			var plane = BABYLON.Mesh.CreatePlane("plane", size, vb.scene);
+			var plane = BABYLON.Mesh.CreatePlane("plane", pieceData["s"], vb.scene);
 			plane.material = material;
 			plane.position = new BABYLON.Vector3(pieceData.pos[0], pieceData.pos[1], 0);
 			plane.rotation.z = pieceData.r;
 
-			var piece = {};
-			piece.id = pieceData.piece;
-			//piece.user = pieceData.user;
-			piece.position = new BABYLON.Vector2(pieceData.pos[0], pieceData.pos[1]);
-			//piece.pickedUp = !!user;
-			piece.mesh = plane;
-			piece.icon = icon;
-
-			piece.static = pieceData.static == 1;
+			var piece = {
+				"id" : pieceData["piece"],
+				"position" : new BABYLON.Vector2(pieceData["pos"][0], pieceData["pos"][1]),
+				"mesh" : plane,
+				"icon" : pieceData["icon"],
+				"static" : pieceData["static"] == 1,
+				"size" : pieceData["s"],
+				"highlightTimeout" : null,
+				"predictTimeout" : null
+			};
 
 			plane.actionManager = new BABYLON.ActionManager(vb.scene);
 
@@ -238,7 +254,10 @@ var VBoard = VBoard || {};
 			//		that lets us add a piece at that location.
 			plane.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnLeftPickTrigger, function (evt) {
 				if(piece.static == false) {
-					vb.board.setSelectedPiece(piece);
+					vb.board.setSelectedPieces([piece]);
+					var pos = vb.board.screenToGameSpace(new BABYLON.Vector2(vb.scene.pointerX, vb.scene.pointerY));
+					vb.lastDragX = pos.x;
+					vb.lastDragY = pos.y;
 				}
 
 				//check that the shift key was pressed for the context menu
@@ -268,54 +287,26 @@ var VBoard = VBoard || {};
 			}
 		},
 
-		setSelectedPiece: function (piece) {
+		//TODO: make sure piece is not already in selection
+		setSelectedPieces: function (pieces) {
 			//maybe this should be called first?
-			//this.removeSelectedPieces();
+			this.removeSelectedPieces();
 
-			this.selectedPieces.push(piece);
-			piece.pickedUp = true;
+			this.selectedPieces = pieces;
+			//piece.pickedUp = true;
 			//piece.user = vb.users.getLocal();
 			//todo: enable the highlight
 		},
 
-		//we should use the data from the mouse event rather than scene.pointer
-		dragPiece: function () {
+		addSelectedPiece: function (piece) {
+			//TODO
+			//needs to make sure that piece is not already contained in this.selectedPieces
+		},
 
-			for(index in this.selectedPieces) {
-				var piece = this.selectedPieces[index];
-
-				//we should use a difference in mouse position instead of having the piece's center snap to the mouse
-				//if a corner is clicked and dragged, then the mouse should stay relative to that corner
-				var newPos = this.screenToGameSpace(new BABYLON.Vector2(vb.scene.pointerX, vb.scene.pointerY));
-
-				if(!piece.static) {
-					//only the server gets to set the piece's position
-
-					if(newPos.x > vb.boardWidth) {
-						newPos.x = vb.boardWidth;
-					}
-
-					if(newPos.x < -vb.boardWidth) {
-						newPos.x = -vb.boardWidth;
-					}
-
-					if(newPos.y > vb.boardHeight) {
-						newPos.y = vb.boardHeight;
-					}
-
-					if(newPos.y < -vb.boardHeight) {
-						newPos.y = -vb.boardHeight;
-					}
-
-					piece.mesh.position.x = newPos.x;
-					piece.mesh.position.y = newPos.y;
-					vb.sessionIO.movePiece(piece.id, newPos.x, newPos.y);
-					//todo: set timeout
-					//more TODO: keep track of where piece is released
-					//then override the local ignore when that final position arrives
-					//this fixes a race condition where 2 users move the same piece at the same time
-				}
-			}
+		undoPrediction: function (piece) {
+			//set a timeout to revert back to last confirmed server position in case of desync
+			piece.mesh.position.x = piece.position.x;
+			piece.mesh.position.y = piece.position.y;
 		},
 
 		//triggered by network call
@@ -331,6 +322,7 @@ var VBoard = VBoard || {};
 
 		//TODO: this seems to break when opening/closing the developer console
 		screenToGameSpace: function (position) {
+			//console.log("input pos: " + position.x + " " + position.y);
 			//screen space
 			//also equals to the camera coordinates
 
@@ -360,6 +352,7 @@ var VBoard = VBoard || {};
 			var totalX = cameraX + dx;
 			var totalY = cameraY + dy;
 
+			console.log("   output pos: " + totalX + " " + totalY);
 			return new BABYLON.Vector2(totalX, totalY);
 		},
 
@@ -399,7 +392,7 @@ var VBoard = VBoard || {};
 		//	this.isLocal = isLocal;
 		//	this.isHost = isHost;
 		//	this.ping = -1;
-		//},
+		// },
 
 		//methods
 		add: function (user) {
@@ -438,9 +431,10 @@ var VBoard = VBoard || {};
 		},
 
 		changeHost: function (id) {
-			this.userList[this.host].isHost = false;
-			this.userList[id].isHost = true;
-			this.host = id;
+			var newHost = this.userList[id];
+			this.userList[this.host.id].isHost = false;
+			newHost.isHost = true;
+			this.host = newHost;
 
 			//TODO: message to local user?
 			//probably not in this function
@@ -481,7 +475,12 @@ var VBoard = VBoard || {};
 		keysPressed: [],
 
 		initialize: function () {
-			window.addEventListener("resize", vb.setCameraPerspective);
+			window.addEventListener("resize", function () {
+				vb.canvas.height = window.innerHeight;
+				vb.canvas.width = window.innerWidth;
+				vb.setCameraPerspective()
+			});
+
 			window.addEventListener("keydown", function (evt) {
 				vb.inputs.onKeyDown(evt.keyCode);
 				//if(!evt.metaKey) {
@@ -507,12 +506,15 @@ var VBoard = VBoard || {};
 				vb.inputs.onScroll(Math.max(-1, Math.min(1, (-evt.detail))));
 			});
 
-			window.addEventListener("mouseup", function(evt){
+			window.addEventListener("mouseup", function (evt) {
 				vb.board.removeSelectedPieces();
 			});
 
-			window.addEventListener("mousemove", function(evt){
-				vb.board.dragPiece();
+			window.addEventListener("mousemove", function (evt) {
+				var mousePos = vb.board.screenToGameSpace(new BABYLON.Vector2(vb.scene.pointerX, vb.scene.pointerY));
+				vb.inputs.onDrag(mousePos.x - vb.lastDragX, mousePos.y - vb.lastDragY);
+				vb.lastDragX = mousePos.x;
+				vb.lastDragY = mousePos.y;
 			});
 		},
 
@@ -561,6 +563,56 @@ var VBoard = VBoard || {};
 				vb.camera.position.y = focusPos.y - dy;
 			}
 			vb.setCameraPerspective();
+		},
+
+		//we should use the data from the mouse event rather than scene.pointer
+		onDrag: function (dx, dy) {
+			for(index in vb.board.selectedPieces) {
+				var piece = vb.board.selectedPieces[index];
+				clearTimeout(piece.predictTimeout);
+
+				//we should use a difference in mouse position instead of having the piece's center snap to the mouse
+				//if a corner is clicked and dragged, then the mouse should stay relative to that corner
+				//var newPos = this.screenToGameSpace(new BABYLON.Vector2(vb.scene.pointerX, vb.scene.pointerY));
+
+				//static pieces should simply not beadded to selectedPieces in the first place
+				//if(!piece.static) {
+					//only the server gets to set the piece's position
+					var newX = piece.mesh.position.x + dx;
+					var newY = piece.mesh.position.y + dy;
+
+					if(newX > vb.boardWidth) {
+						newX = vb.boardWidth;
+					}
+
+					if(newX < -vb.boardWidth) {
+						newX = -vb.boardWidth;
+					}
+
+					if(newY > vb.boardHeight) {
+						newY = vb.boardHeight;
+					}
+
+					if(newY < -vb.boardHeight) {
+						newY = -vb.boardHeight;
+					}
+
+					piece.mesh.position.x = newX;
+					piece.mesh.position.y = newY;
+
+					//todo: send one update for all pieces rather than call this for each selected piece
+					vb.sessionIO.movePiece(piece.id, newX, newY);
+
+					piece.predictTimeout = setTimeout(function () {
+						vb.board.undoPrediction(piece);
+						piece.predictTimeout = null;
+					}, vb.predictionTimeout);
+					//todo: set timeout
+					//more TODO: keep track of where piece is released
+					//then override the local ignore when that final position arrives
+					//this fixes a race condition where 2 users move the same piece at the same time
+				// }
+			}
 		},
 
 		processInputs: function (elapsed) {
@@ -1066,7 +1118,7 @@ var VBoard = VBoard || {};
 					}
 					break;
 				case "changeHost":
-					vb.users.changeHost(data["data"]);
+					vb.users.changeHost(data["data"]["user"]);
 					break;
 				case "announcement":
 					break;
