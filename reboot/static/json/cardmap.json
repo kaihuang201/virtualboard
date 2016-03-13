@@ -1,0 +1,7 @@
+{
+    "joker" : {
+        "size" : 4,
+        "back" : "/static/img/cardback.png",
+        "front": "/static/img/cardfront.png"
+    }
+}
