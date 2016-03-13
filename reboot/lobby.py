@@ -2,6 +2,7 @@ import tornado.web
 import tornado.websocket
 import json
 import time
+import random
 
 from board_state_reboot import *
 
@@ -372,6 +373,32 @@ class Game:
 			"data" : response_data
 		}
 		self.message_all(response);
+
+
+	#==========
+	# special pieces
+	#==========
+
+	def rollDie(self, client, pieces):
+		response_data = []
+		for pieceData in pieces:
+			piece_id = pieceData["piece"]
+			piece = self.board_state.get_piece(piece_id)
+			if piece.isDie:
+				max_value = piece.max_roll
+				new_value = random.randint(1, max_roll)
+				response_data.append({
+					"user": client.user_id,
+					"piece": piece_id,
+					"result": new_value
+				})
+
+		response = {
+			"type": "rollDice",
+			"data": response_data
+		}
+		self.message_all(response)
+
 
 	#def toggleStatic(self, client, pieces):
 	#	#TODO
