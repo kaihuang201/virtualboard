@@ -60,6 +60,8 @@ var VBoard = VBoard || {};
 
 		//this should probably be fetched as a separate file
 		pieceNameMap: {},
+		cardNameMap: {},
+		dieNameMap: {},
 
 		selectedPieces: [],
 
@@ -197,53 +199,16 @@ var VBoard = VBoard || {};
 
 		//takes JSON formatted data from socket handler
 		generateNewPiece: function (pieceData) {
-			//to do: create a proper piece "class" with a constructor and methods
-			var material = new BABYLON.StandardMaterial("std", vb.scene);
-			//var icon = "/static/img/crown.png";
-			//var size = 3.0;
-
-			/*if(this.pieceNameMap.hasOwnProperty(name)) {
-				icon = this.pieceNameMap[name].icon;
-				size = this.pieceNameMap[name].size;
-			}*/
-			icon = pieceData.icon;
-			size = pieceData.s;
-
-			material.diffuseTexture = new BABYLON.Texture(icon, vb.scene);
-			material.diffuseColor = new BABYLON.Color3(pieceData.color[0], pieceData.color[1], pieceData.color[2]);
-			material.diffuseTexture.hasAlpha = true;
-
-			var plane = BABYLON.Mesh.CreatePlane("plane", size, vb.scene);
-			plane.material = material;
-			plane.position = new BABYLON.Vector3(pieceData.pos[0], pieceData.pos[1], 0);
-			plane.rotation.z = pieceData.r;
-
-			var piece = {};
-			piece.id = pieceData.piece;
-			//piece.user = pieceData.user;
-			piece.position = new BABYLON.Vector2(pieceData.pos[0], pieceData.pos[1]);
-			//piece.pickedUp = !!user;
-			piece.mesh = plane;
-			piece.icon = icon;
-
-			piece.static = pieceData.static == 1;
-
-			plane.actionManager = new BABYLON.ActionManager(vb.scene);
-
-			//TODO: instead of attaching a code action to each piece
-			//		we should just have a scene.pick trigger in a global event listener
-			//		We also should be able to right click anywhere to bring up a menu
-			//		that lets us add a piece at that location.
-			plane.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnLeftPickTrigger, function (evt) {
-				if(piece.static == false) {
-					vb.board.setSelectedPiece(piece);
-				}
-
-				//check that the shift key was pressed for the context menu
-				if(vb.inputs.keysPressed.indexOf(16) >= 0) {
-					vb.menu.createContextMenu(piece);
-				}
-			}));
+			var piece;
+			if (pieceData.fronticon){
+				piece = new Card(pieceData);
+			}
+			else if (pieceData.maxroll) {
+				piece = new Die(pieceData);
+			}
+			else {
+				piece = new Piece(pieceData);
+			}
 
 			this.add(piece);
 
@@ -251,7 +216,6 @@ var VBoard = VBoard || {};
 				var user = vb.users.userList[pieceData.user];
 				this.highlightPiece(piece, user.color, vb.addHighlightDuration);
 			}
-			return piece;
 		},
 
 		removeSelectedPieces: function () {
@@ -1172,6 +1136,115 @@ var VBoard = VBoard || {};
 		vb.scene.render();
 	};
 })(VBoard);
+
+function Piece(pieceData)
+{
+	var me = this;
+
+	var material = new BABYLON.StandardMaterial("std", VBoard.scene);
+	//var icon = "/static/img/crown.png";
+	//var size = 3.0;
+
+	/*if(this.pieceNameMap.hasOwnProperty(name)) {
+		icon = this.pieceNameMap[name].icon;
+		size = this.pieceNameMap[name].size;
+	}*/
+	icon = pieceData.icon;
+	size = pieceData.s;
+
+	material.diffuseTexture = new BABYLON.Texture(icon, VBoard.scene);
+	material.diffuseColor = new BABYLON.Color3(pieceData.color[0], pieceData.color[1], pieceData.color[2]);
+	material.diffuseTexture.hasAlpha = true;
+
+	var plane = BABYLON.Mesh.CreatePlane("plane", size, VBoard.scene);
+	plane.material = material;
+	plane.position = new BABYLON.Vector3(pieceData.pos[0], pieceData.pos[1], 0);
+	plane.rotation.z = pieceData.r;
+
+	this.id = pieceData.piece;
+	//piece.user = pieceData.user;
+	this.position = new BABYLON.Vector2(pieceData.pos[0], pieceData.pos[1]);
+	//piece.pickedUp = !!user;
+	this.mesh = plane;
+	this.icon = icon;
+
+	this.static = pieceData.static == 1;
+
+	plane.actionManager = new BABYLON.ActionManager(VBoard.scene);
+
+	//TODO: instead of attaching a code action to each piece
+	//		we should just have a scene.pick trigger in a global event listener
+	//		We also should be able to right click anywhere to bring up a menu
+	//		that lets us add a piece at that location.
+	plane.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnLeftPickTrigger, function (evt) {
+		if(this.static == false) {
+			VBoard.board.setSelectedPiece(me);
+		}
+
+		//check that the shift key was pressed for the context menu
+		if(VBoard.inputs.keysPressed.indexOf(16) >= 0) {
+			VBoard.menu.createContextMenu(me);
+		}
+	}));
+
+	return this;
+}
+
+function Card(pieceData) {
+	this.base = Piece;
+	this.base(pieceData);
+
+	this.facedown = true;
+
+	this.flip = function (fronticon) {
+		this.facedown = !this.facedown;
+
+		var scene = VBoard.scene;
+		var material = new BABYLON.StandardMaterial("std", scene);
+
+		if (this.facedown) {
+			material.diffuseTexture = new BABYLON.Texture(icon, scene);
+		}
+		else {
+			material.diffuseTexture = new BABYLON.Texture(fronticon, scene);
+		}
+
+		material.diffuseTexture.hasAlpha = true;
+
+		this.mesh.material = material;
+	}
+
+	return this;
+}
+
+function Die(pieceData) {
+	this.base = Piece;
+	this.base(pieceData);
+
+	this.max = pieceData.maxroll;
+
+	var scene = VBoard.scene;
+	var diffuseTexture;
+
+	diffuseTexture = new BABYLON.DynamicTexture("DynamicTexture", 50, scene, true);
+	diffuseTexture.hasAlpha = true;
+	diffuseTexture.drawText(1, 5, 40, "bold 36px Arial", "black" , "white", true);
+
+	this.mesh.material.diffuseTexture = diffuseTexture;
+
+	this.roll = function(value) {
+		this.value = value;
+
+		diffuseTexture = new BABYLON.DynamicTexture("DynamicTexture", 50, scene, true);
+		diffuseTexture.hasAlpha = true;
+		diffuseTexture.drawText(this.value, 5, 40, "bold 36px Arial", "black" , "white", true);
+
+		this.mesh.material.diffuseTexture = diffuseTexture;
+	}
+
+	return this;
+}
+
 $(document).ready(function () {
 	console.log("document ready");
 	VBoard.javascriptInit();

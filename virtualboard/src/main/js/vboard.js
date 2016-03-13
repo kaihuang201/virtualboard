@@ -185,6 +185,7 @@ var VBoard = VBoard || {};
             $("#context-front").off("click");
             $("#context-static").off("click");
             $("#context-flip").off("click");
+            $("#context-roll").off("click");
 
             //only show flip option if piece is a card
             if (piece instanceof Card) {

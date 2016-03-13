@@ -3,33 +3,35 @@ class Piece:
 		#TODO: check for reasonable values
 
 		self.pos = pieceData["pos"]
-		self.icon = pieceData["icon"]
 		self.piece_id = id
 		self.color = pieceData["color"]
 		self.static = pieceData["static"] == 1
 		self.rotation = pieceData["r"]
 		self.size = pieceData["s"]
 
-		if "cardData" in pieceData:
+		if "fronticon" in pieceData:
 			#TODO
 			self.isCard = True
-			self.cardData = pieceData.cardData
+			self.fronticon = pieceData["fronticon"]
 		else:
 			self.isCard = False
 
-		#I know dice is plural but "isDie" sounds awkward here
-		if "diceData" in pieceData:
+		#I know dice is plural but "isDie" sounds awkward here, but still, it's proper english
+		if "maxroll" in pieceData:
 			#TODO
-			self.isDice = True
-			self.diceData = pieceData.diceData
+			self.isDie = True
+			self.maxroll = pieceData["maxroll"]
 		else:
-			self.isDice = False
+			self.isDie = False
+
+		#We don't save the icon of a die because depending on its max value we may use text for it
+		if not self.isDie:
+			self.icon = pieceData["icon"]
 
 	def get_json_obj(self):
 		data = {
 			"pos" : self.pos,
 			"piece" : self.piece_id,
-			"icon" : self.icon,
 			"color" : self.color,
 			"static" : 1 if self.static else 0,
 			"r" : self.rotation,
@@ -37,10 +39,14 @@ class Piece:
 		}
 
 		if self.isCard:
-			data["cardData"] = self.cardData
+			data["fronticon"] = self.fronticon
 
-		if self.isDice:
-			data["diceData"] = self.diceData
+		if self.isDie:
+			data["maxroll"] = self.maxroll
+
+		if not self.isDie:
+			data["icon"] = self.icon
+
 		return data
 
 class BoardState:
