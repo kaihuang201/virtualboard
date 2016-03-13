@@ -160,7 +160,7 @@ class BoardState:
 		pieces_json = []
 
 		for piece in self.pieces:
-			pieces_json.append(piece.get_json())
+			pieces_json.append(piece.get_json_obj())
 
 		return {
 			"background" : self.background,
