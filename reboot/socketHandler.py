@@ -66,7 +66,7 @@ class WebSocketGameHandler(tornado.websocket.WebSocketHandler):
 				game_list = []
 
 				for game_id, game in games.iteritems():
-					game_list.append(game.getBasicInfo())
+					game_list.append(game.get_basic_info())
 				response = {
 					"type" : "listGames",
 					"data" : game_list
