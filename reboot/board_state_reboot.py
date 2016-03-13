@@ -17,10 +17,10 @@ class Piece:
 			self.isCard = False
 
 		#I know dice is plural but "isDie" sounds awkward here, but still, it's proper english
-		if "maxroll" in pieceData:
+		if "max_roll" in pieceData:
 			#TODO
 			self.isDie = True
-			self.maxroll = pieceData["maxroll"]
+			self.max_roll = pieceData["max_roll"]
 		else:
 			self.isDie = False
 
@@ -42,7 +42,7 @@ class Piece:
 			data["fronticon"] = self.fronticon
 
 		if self.isDie:
-			data["maxroll"] = self.maxroll
+			data["max_roll"] = self.max_roll
 
 		if not self.isDie:
 			data["icon"] = self.icon

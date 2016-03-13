@@ -205,7 +205,7 @@ var VBoard = VBoard || {};
 			if (pieceData.fronticon){
 				piece = new Card(pieceData);
 			}
-			else if (pieceData.maxroll) {
+			else if (pieceData.max_roll) {
 				piece = new Die(pieceData);
 			}
 			else {
@@ -1237,7 +1237,7 @@ function Die(pieceData) {
 	this.base = Piece;
 	this.base(pieceData);
 
-	this.max = pieceData.maxroll;
+	this.max = pieceData.max_roll;
 
 	var scene = VBoard.scene;
 	var diffuseTexture;
