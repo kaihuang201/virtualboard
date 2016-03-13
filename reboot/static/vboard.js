@@ -41,6 +41,8 @@ var VBoard = VBoard || {};
 
 		vb.renderInit();
 
+		$("#menu").css("visibility", "visible");
+
 		if(vb.quickStarted) {
 			vb.sessionIO.loadChessGame();
 		}
@@ -117,7 +119,7 @@ var VBoard = VBoard || {};
 
 		//moves a piece to the back of the board (highest z index)
 		pushToBack: function (piece) {
-			var index = this.pieces.ourIndexOf(piece);
+			var index = this.ourIndexOf(piece);
 
 			for(var i = index; i > 0; i--) {
 				this.pieces[i] = this.pieces[i-1];
@@ -129,7 +131,7 @@ var VBoard = VBoard || {};
 
 		//moves a piece to the front of the board (lowest z index)
 		bringToFront: function (piece) {
-			var index = this.pieces.ourIndexOf(piece);
+			var index = this.ourIndexOf(piece);
 			for(var i = index; i < this.pieces.length-1; i++) {
 				this.pieces[i] = this.pieces[i+1];
 				this.pieces[i].mesh.position.z = this.getZIndex(i);
@@ -234,7 +236,7 @@ var VBoard = VBoard || {};
 			//maybe this should be called first?
 			//this.removeSelectedPieces();
 
-			this.selectedPiece = [piece];
+			this.selectedPieces.push(piece);
 			piece.pickedUp = true;
 			//piece.user = vb.users.getLocal();
 			//todo: enable the highlight
@@ -242,6 +244,7 @@ var VBoard = VBoard || {};
 
 		//we should use the data from the mouse event rather than scene.pointer
 		dragPiece: function () {
+
 			for(index in this.selectedPieces) {
 				var piece = this.selectedPieces[index];
 
@@ -268,9 +271,9 @@ var VBoard = VBoard || {};
 						newPos.y = -vb.boardHeight;
 					}
 
-					vb.selectedPiece.mesh.position.x = newPos.x;
-					vb.selectedPiece.mesh.position.y = newPos.y;
-					vb.SessionIO.movePiece(vb.selectedPiece.id, newPos.x, newPos.y);
+					piece.mesh.position.x = newPos.x;
+					piece.mesh.position.y = newPos.y;
+					vb.sessionIO.movePiece(piece.id, newPos.x, newPos.y);
 					//todo: set timeout
 					//more TODO: keep track of where piece is released
 					//then override the local ignore when that final position arrives
@@ -440,6 +443,11 @@ var VBoard = VBoard || {};
 				//if(!evt.metaKey) {
 				//	evt.preventDefault();
 				// }
+			});
+
+			//hide context menu when clicking on the canvas
+			$("#canvas").click(function(){
+				$("#context-menu").css("visibility", "hidden");
 			});
 
 			window.addEventListener("keyup", function (evt) {
