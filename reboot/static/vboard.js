@@ -447,14 +447,14 @@ var VBoard = VBoard || {};
 		},
 
 		createNewUser: function (userData) {
-			var id = userData["id"];
+			var id = userData["user"];
 			var name = userData["name"];
 			var color = new BABYLON.Color3(	userData["color"][0]/255,
 											userData["color"][1]/255,
 											userData["color"][2]/255 );
 			var isLocal = userData["local"] == 1;
 			var isHost = userData["host"] == 1;
-			
+
 			//var user = new this.User(id, name, color, isLocal, isHost);
 			var user = {
 				"id" : id,
@@ -844,7 +844,7 @@ var VBoard = VBoard || {};
 				"type" : "pieceTransform",
 				"data" : [
 					{
-						"piece" : "id",
+						"piece" : id,
 						"s" : size
 					}
 				]
