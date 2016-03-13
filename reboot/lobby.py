@@ -18,6 +18,15 @@ class Game:
 		self.game_id = id
 		self.board_state = BoardState()
 
+	def get_basic_info(self):
+		data = {
+			"id" : self.game_id,
+			"name" : self.name,
+			"players" : len(self.clients),
+			"password" : 0 if self.password == "" else 1
+		}
+		return data
+
 	def get_abridged_clients(self, local):
 		abridged_users = []
 
@@ -31,6 +40,7 @@ class Game:
 			})
 		return abridged_users
 
+	#an unfortunate mix of camelCase and snake_case
 	def getClientFromID(self, id):
 		for client in self.clients:
 			if client.user_id == id:
@@ -56,11 +66,13 @@ class Game:
 		self.clients.append(new_client)
 
 		abridged_users = self.get_abridged_clients(new_client)
+		board_data = self.board_state.get_json_obj()
 		mainResponse = {
 			"type" : "initSuccess",
 			"data" : {
 				"gameName" : self.name,
-				"users" : abridged_users
+				"users" : abridged_users,
+				"board" : board_data
 			}
 		}
 		new_client.write_message(json.dumps(mainResponse))
@@ -99,12 +111,15 @@ class Game:
 		for client in self.clients:
 			client.write_message(json.dumps(response))
 
-	#host only commands
+	#==========
+	# host only commands
+	#==========
+
 	def changeHost(self, client, target, message):
 		if self.host.user_id == client.user_id:
 			new_host = self.getClientFromID(target)
 
-			if new_host is None:
+			if new_host is None or new_host.user_id == self.host.user_id:
 				return
 			self.host = new_host
 			newHostMessage = {
@@ -115,6 +130,16 @@ class Game:
 				}
 			}
 			self.message_all(newHostMessage)
+		else:
+			response = {
+				"type" : "error",
+				"data" : [
+					{
+						"msg" : "Only the host can use that command"
+					}
+				]
+			}
+			client.write_message(json.dumps(response))
 
 	def announce(self, client, message):
 		if client is None or self.host.user_id == client.user_id:
@@ -127,6 +152,16 @@ class Game:
 				]
 			}
 			self.message_all(announcement)
+		else:
+			response = {
+				"type" : "error",
+				"data" : [
+					{
+						"msg" : "Only the host can use that command"
+					}
+				]
+			}
+			client.write_message(json.dumps(response))
 
 	def kickUser(self, client, target, message):
 		if client is None or self.host.user_id == client.user_id:
@@ -137,6 +172,16 @@ class Game:
 				return
 			self.disconnect(victim, "Kicked by host: " + message)
 			victim.close()
+		else:
+			response = {
+				"type" : "error",
+				"data" : [
+					{
+						"msg" : "Only the host can use that command"
+					}
+				]
+			}
+			client.write_message(json.dumps(response))
 
 	def changeInfo(self, client, name, password):
 		if client is None or self.host.user_id == client.user_id:
@@ -144,33 +189,195 @@ class Game:
 			self.password = password
 
 			self.announce(None, "Server Information updated.");
+		else:
+			response = {
+				"type" : "error",
+				"data" : [
+					{
+						"msg" : "Only the host can use that command"
+					}
+				]
+			}
+			client.write_message(json.dumps(response))
 
-	def loadBoardState(self, client, boardInfo):
+	def loadBoardState(self, client, boardData):
 		if client is None or self.host.user_id == client.user_id:
-			return
-			#TODO
+			#set background
+			self.setBackground(self.host, {
+				"icon" : boardData["background"]
+			})
+
+			#load pieces
+			pieces = boardData["pieces"]
+			self.pieceAdd(self.host, pieces);
+
+			#TODO: private zones
+		else:
+			response = {
+				"type" : "error",
+				"data" : [
+					{
+						"msg" : "Only the host can use that command"
+					}
+				]
+			}
+			client.write_message(json.dumps(response))
 
 	def clearBoard(self, client):
 		if client is None or self.host.user_id == client.user_id:
 			return
 			#TODO
 
-	#general commands
-	def chat(self, client, message):
+	def closeServer(self, client):
+		if client is None or self.host.user_id == client.user_id:
+			return
+			#TODO
+		else:
+			response = {
+				"type" : "error",
+				"data" : [
+					{
+						"msg" : "Only the host can use that command"
+					}
+				]
+			}
+			client.write_message(json.dumps(response))
+
+	#==========
+	# general commands
+	#==========
+
+	def chat(self, client, messages):
+		response_data = []
+		current_time = time.time()
+
+		for message_data in messages:
+			response_data.append({
+				"user" : client.user_id,
+				"time" : current_time,
+				"msg" : message_data["msg"]
+			})
+
 		response = {
 			"type" : "chat",
-			"data" : [
-				{
-					"user" : client.user_id,
-					"time" : time.time(),
-					"msg" : message
-				}
-			]
+			"data" : response_data
 		}
 		self.message_all(response)
+
+	def beacon(self, client, beacons):
+		response_data = []
+
+		for beacon_data in beacons:
+			response_data.append({
+				"user" : client.user_id,
+				"pos" : beacon_data["pos"]
+			})
+
+		response = {
+			"type" : "beacon",
+			"data" : response_data
+		}
+		self.message_all(response)
+
+	def pieceTransform(self, client, pieces):
+		response_data = []
+
+		for pieceData in pieces:
+			if self.board_state.transform_piece(pieceData):
+				piece = self.board_state.get_piece(pieceData["piece"])
+				data_entry = {
+					"user" : client.user_id,
+					"piece" : piece.piece_id
+				}
+
+				if "pos" in pieceData:
+					data_entry["pos"] = piece.pos
+
+				if "r" in pieceData:
+					data_entry["r"] = piece.rotation
+
+				if "s" in pieceData:
+					data_entry["s"] = piece.size
+
+				response_data.append(data_entry)
+			else:
+				error_data = {
+					"type" : "error",
+					"data" : [
+						{
+							"msg" : "invalid piece id " + id
+						}
+					]
+				}
+				client.write_message(json.dumps(error_data))
+
+		response = {
+			"type" : "pieceTransform",
+			"data" : response_data
+		}
+		self.message_all(response);
+
+	def pieceAdd(self, client, pieces):
+		response_data = []
+
+		for pieceData in pieces:
+			piece = self.board_state.generate_new_piece(pieceData)
+			data_entry = piece.get_json_obj()
+			data_entry["user"] = client.user_id
+			response_data.append(data_entry)
+
+		response = {
+			"type" : "pieceAdd",
+			"data" : response_data
+		}
+		self.message_all(response)
+
+	def removePiece(self, client, pieces):
+		response_data = []
+
+		for pieceData in pieces:
+			id = pieceData["piece"]
+
+			if self.board_state.remove_piece(id):
+				response_data.append({
+					"user" : client.user_id,
+					"piece" : id
+				})
+			else:
+				error_data = {
+					"type" : "error",
+					"data" : [
+						{
+							"msg" : "invalid piece id " + id
+						}
+					]
+				}
+				client.write_message(json.dumps(error_data))
+
+		response = {
+			"type" : "pieceRemove",
+			"data" : response_data
+		}
+		self.message_all(response);
+
+	def toggleStatic(self, client, pieces):
+		#TODO
+		return
+
+	def setBackground(self, client, backgroundData):
+		self.board_state.background = backgroundData["icon"];
+
+		response = {
+			"type" : "setBackground",
+			"data" : {
+				"icon" : self.board_state.background
+			}
+		}
+		self.message_all(response);
 
 	def dump_json(self):
 		return self.board_state.dump_json()
 
 	def load_json(self, json_string):
 		self.board_state.load_json(json_string)
+

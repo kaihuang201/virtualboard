@@ -49,7 +49,7 @@
 	},
 	"chessBoard" : {
 		"size" : 16,
-		"icon" : "/static/img/background.png"
+		"icon" : "/static/img/checkerboard.png"
 	},
 	"crown" : {
 		"size" : 2,

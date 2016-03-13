@@ -670,6 +670,7 @@
 	]
 }
 
+//maybe make this part of pieceTransform instead of an independent command
 {
 	"type" : "toggleStatic",
 	"data" : [

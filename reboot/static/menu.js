@@ -2,11 +2,12 @@ var VBoard = VBoard || {};
 (function (vb) {
 	vb.menu = {
 		init: function () {
+			//TODO: menu should not be active until we are in a game session
 			$.getJSON("/static/json/piecemap.json", function (data) {
 				$.each(data, function(key, value) {
 					vb.board.pieceNameMap[key] = value;
 				});
-				this.loadOptions();
+				vb.menu.loadOptions();
 			});
 
 			$("#viewMenuHover").mouseover(function () {

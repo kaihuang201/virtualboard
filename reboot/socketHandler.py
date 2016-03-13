@@ -29,13 +29,15 @@ class WebSocketGameHandler(tornado.websocket.WebSocketHandler):
 			return
 
 		#Checking whether the message follows the protocol
-		schema = open("socket_protocol_schema.json").read()
-		try:
-		    jsonschema.validate(data, json.loads(schema))
-		except jsonschema.ValidationError as e:
-    		print e.message
-		except jsonschema.SchemaError as e:
-    		print e
+		#schema = open("socket_protocol_schema.json").read()
+		#try:
+		#    jsonschema.validate(data, json.loads(schema))
+		#except:
+		#	print "bad json input, continuing anyway"
+		#except jsonschema.ValidationError as e:
+    	#	print e.message
+		#except jsonschema.SchemaError as e:
+    	#	print e
 
 		if data["type"] == "ping":
 			response = {
@@ -64,12 +66,7 @@ class WebSocketGameHandler(tornado.websocket.WebSocketHandler):
 				game_list = []
 
 				for game_id, game in games.iteritems():
-					game_list.append({
-						"id" : game_id,
-						"name" : game.name,
-						"players" : len(game.clients),
-						"password" : 1 #to do clearly
-					})
+					game_list.append(game.getBasicInfo())
 				response = {
 					"type" : "listGames",
 					"data" : game_list
@@ -87,17 +84,26 @@ class WebSocketGameHandler(tornado.websocket.WebSocketHandler):
 				self.write_message(json.dumps(response))
 		else:
 			game = self.game;
+
 			if data["type"] == "chat":
 				game.chat(self, data["data"]["msg"])
-			elif data["type"] == "beacon"
+			elif data["type"] == "beacon":
+				print "todo"
 				#Todo: Needs to be implemented
-			elif data["type"] == "pieceTransform"
+			elif data["type"] == "pieceTransform":
+				print "todo"
 				#Todo: Needs to be implemented
-			elif data["type"] == "pieceAdd"
+			elif data["type"] == "pieceAdd":
+				print "todo"
 				#Todo: Needs to be implemented
-			elif data["type"] == "pieceRemove"
+			elif data["type"] == "pieceRemove":
+				print "todo"
 				#Todo: Needs to be implemented
-			elif data["type"] == "drawScribble"
+			elif data["type"] == "toggleStatic":
+				print "todo"
+				#Todo: Needs to be implemented
+			elif data["type"] == "setBackground":
+				print "todo"
 				#Todo: Needs to be implemented
 			elif data["type"] == "disconnect":
 				game.disconnect(self, data["data"]["msg"])
@@ -109,6 +115,61 @@ class WebSocketGameHandler(tornado.websocket.WebSocketHandler):
 					"data" : abridged_clients
 				}
 				self.write_message(json.dumps(response))
+
+			#special piece interactions
+
+			elif data["type"] == "rollDice":
+				print "todo"
+				#Todo: Needs to be implemented
+			elif data["type"] == "flipCard":
+				print "todo"
+				#Todo: Needs to be implemented
+			elif data["type"] == "createDeck":
+				print "todo"
+				#Todo: Needs to be implemented
+			elif data["type"] == "addCardPieceToDeck":
+				print "todo"
+				#Todo: Needs to be implemented
+			elif data["type"] == "addCardTypeToDeck":
+				print "todo"
+				#Todo: Needs to be implemented
+			elif data["type"] == "drawCard":
+				print "todo"
+				#Todo: Needs to be implemented
+			elif data["type"] == "createPrivateZone":
+				print "todo"
+				#Todo: Needs to be implemented
+			elif data["type"] == "removePrivateZone":
+				print "todo"
+				#Todo: Needs to be implemented
+			elif data["type"] == "drawScribble":
+				print "todo"
+				#Todo: Needs to be implemented
+
+			#host only commands
+			#do not need to determine if client is host in this function, that is handled by the Game class
+
+			elif data["type"] == "changeHost":
+				print "todo"
+				#Todo: Needs to be implemented
+			elif data["type"] == "announcement":
+				print "todo"
+				#Todo: Needs to be implemented
+			elif data["type"] == "changeServerInfo":
+				print "todo"
+				#Todo: Needs to be implemented
+			elif data["type"] == "kickUser":
+				print "todo"
+				#Todo: Needs to be implemented
+			elif data["type"] == "clearBoard":
+				print "todo"
+				#Todo: Needs to be implemented
+			elif data["type"] == "closeServer":
+				print "todo"
+				#Todo: Needs to be implemented
+			elif data["type"] == "loadBoardState":
+				boardData = data["data"];
+				game.loadBoardState(self, boardData);
 			else:
 				response = {
 					"type" : "error",
