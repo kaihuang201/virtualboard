@@ -5,7 +5,7 @@ var VBoard = VBoard || {};
 
 	//max/min/view size should be bound to VBoard.board
 	vb.maxSize = 55;
-	vb.minSize = 5;
+	vb.minSize = 3;
 	vb.BoardHeight = 50;
 	vb.BoardWidth = 50;
 
@@ -29,34 +29,7 @@ var VBoard = VBoard || {};
 
 	vb.launchCanvas = function () {
 		vb.simTime = Date.now();
-		window.addEventListener("resize", vb.setCameraPerspective);
-		window.addEventListener("keydown", function (evt) {
-			vb.inputs.onKeyDown(evt.keyCode);
-			//if(!evt.metaKey) {
-			//	evt.preventDefault();
-			// }
-		});
-
-		window.addEventListener("keyup", function (evt) {
-			vb.inputs.onKeyUp(evt.keyCode);
-		});
-
-		window.addEventListener("mousewheel", function (evt) {
-			vb.inputs.onScroll(Math.max(-1, Math.min(1, (evt.wheelDelta))));
-		});
-
-		//silly firefox doing firefox things
-		window.addEventListener("DOMMouseScroll", function (evt) {
-			vb.inputs.onScroll(Math.max(-1, Math.min(1, (-evt.detail))));
-		});
-
-		window.addEventListener("mouseup", function(evt){
-			vb.board.removeSelectedPiece();
-		});
-
-		window.addEventListener("mousemove", function(evt){
-			vb.board.dragPiece();
-		});
+		vb.inputs.initialize();
 
 		vb.renderInit();
 
@@ -71,7 +44,8 @@ var VBoard = VBoard || {};
 					//we may want to keep separate lists for static and non-static pieces
 					//or we can just not push static pieces to the back
 
-		pieceHash: {}, //unordered hash map of pieces
+		pieceHash: {},	//unordered hash map of pieces
+						//maps from piece ids to piece objects
 
 		//a map from private zone id's to private zone objects
 		privateZones: {},
@@ -117,7 +91,7 @@ var VBoard = VBoard || {};
 		//removes a piece from the board
 		remove: function (piece) {
 			//we should call bringToFront instead of doing this probably
-			var index = this.pieces.ourIndexOf(piece);
+			var index = this.ourIndexOf(piece);
 			for(var i = index; i < this.pieces.length-1; i++) {
 				this.pieces[i] = this.pieces[i+1];
 				this.pieces[i].mesh.position.z = this.getZIndex(i);
@@ -244,10 +218,9 @@ var VBoard = VBoard || {};
 			//		we should just have a scene.pick trigger in a global event listener
 			//		We also should be able to right click anywhere to bring up a menu
 			//		that lets us add a piece at that location.
-			plane.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnLeftPickTrigger,
-			function (evt) {
+			plane.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnLeftPickTrigger, function (evt) {
 				if(piece.static == false) {
-					this.setSelectedPiece(piece);
+					vb.board.setSelectedPiece(piece);
 				}
 
 				//check that the shift key was pressed for the context menu
@@ -288,6 +261,7 @@ var VBoard = VBoard || {};
 			//todo: enable the highlight
 		},
 
+		//we should use the data from the mouse event rather than scene.pointer
 		dragPiece: function () {
 			for(index in this.selectedPieces) {
 				var piece = this.selectedPieces[index];
@@ -346,8 +320,10 @@ var VBoard = VBoard || {};
 		screenToGameSpace: function (position) {
 			//screen space
 			//also equals to the camera coordinates
-			var halfWidth = vb.canvas.width / 2;
-			var halfHeight = vb.canvas.height / 2;
+
+			//apparently canvas.height does not update when you open the developer console
+			var halfWidth = window.innerWidth / 2; //vb.canvas.width / 2;
+			var halfHeight = window.innerHeight / 2; //vb.canvas.height / 2;
 
 			//game space
 			var cameraX = vb.camera.position.x;
@@ -357,7 +333,7 @@ var VBoard = VBoard || {};
 			var screenDX = (position.x - halfWidth);
 			var screenDY = (position.y - halfHeight);
 
-			var ratio = vb.canvas.width / vb.canvas.height;
+			var ratio = window.innerWidth / window.innerHeight;
 			var size = vb.size;
 
 			var upX = vb.camera.upVector.x;
@@ -383,6 +359,7 @@ var VBoard = VBoard || {};
 
 			var pieces = boardData["pieces"];
 
+			//TODO: it turns out for ... in does not guarantee any particular order, so this should be rewritten
 			for(index in pieces) {
 				var pieceData = pieces[index];
 				this.generateNewPiece(pieceData);
@@ -453,6 +430,7 @@ var VBoard = VBoard || {};
 			this.host = id;
 
 			//TODO: message to local user?
+			//probably not in this function
 		},
 
 		createNewUser: function (userData) {
@@ -478,6 +456,37 @@ var VBoard = VBoard || {};
 	vb.inputs = {
 		//to do: separate system from polling buttons (wasd, etc) versus event buttons (backspace, space, etc)
 		keysPressed: [],
+
+		initialize: function () {
+			window.addEventListener("resize", vb.setCameraPerspective);
+			window.addEventListener("keydown", function (evt) {
+				vb.inputs.onKeyDown(evt.keyCode);
+				//if(!evt.metaKey) {
+				//	evt.preventDefault();
+				// }
+			});
+
+			window.addEventListener("keyup", function (evt) {
+				vb.inputs.onKeyUp(evt.keyCode);
+			});
+
+			window.addEventListener("mousewheel", function (evt) {
+				vb.inputs.onScroll(Math.max(-1, Math.min(1, (evt.wheelDelta))));
+			});
+
+			//silly firefox doing firefox things
+			window.addEventListener("DOMMouseScroll", function (evt) {
+				vb.inputs.onScroll(Math.max(-1, Math.min(1, (-evt.detail))));
+			});
+
+			window.addEventListener("mouseup", function(evt){
+				vb.board.removeSelectedPieces();
+			});
+
+			window.addEventListener("mousemove", function(evt){
+				vb.board.dragPiece();
+			});
+		},
 
 		onKeyDown: function (key) {
 			//console.log("NEW KEY: " + key);
@@ -745,19 +754,24 @@ var VBoard = VBoard || {};
 		removePiece: function (id) {
 			var data = {
 				"type" : "pieceRemove",
-				"data" : {
-					"piece" : id
-				}
+				"data" : [
+					{
+						"piece" : id
+					}
+				]
 			};
 			this.send(data);
 		},
 
 		toggleStatic: function (id) {
 			var data = {
-				"type" : "toggleStatic",
-				"data" : {
-					"piece" : id
-				}
+				"type" : "pieceTransform",
+				"data" : [
+					{
+						"piece" : id,
+						"static" : vb.board.pieceHash[id].static ? 1 : 0
+					}
+				]
 			};
 			this.send(data);
 		},
@@ -788,18 +802,56 @@ var VBoard = VBoard || {};
 		},
 
 		//TODO: implement
-		rotatePiece: function () {},
-		resizePiece: function () {},
-		recolorPiece: function () {},
+		rotatePiece: function (id, angle) {
+			var data = {
+				"type" : "pieceTransform",
+				"data" : [
+					{
+						"piece" : id,
+						"r" : angle
+					}
+				]
+			};
+			this.send(data);
+		},
+
+		resizePiece: function (id, size) {
+			var data = {
+				"type" : "pieceTransform",
+				"data" : [
+					{
+						"piece" : "id",
+						"s" : size
+					}
+				]
+			};
+			this.send(data);
+		},
+
+		//color is an array of length 3
+		recolorPiece: function (id, color) {
+			var data = {
+				"type" : "pieceTransform",
+				"data" : [
+					{
+						"piece" : id,
+						"color" : color
+					}
+				]
+			};
+			this.send(data);
+		},
 
 		//interacting with special pieces
 
 		rollDice: function (id) {
 			var data = {
 				"type" : "rollDice",
-				"data" : {
-					"piece" : id
-				}
+				"data" : [
+					{
+						"piece" : id
+					}
+				]
 			};
 			this.send(data);
 		},
@@ -807,9 +859,11 @@ var VBoard = VBoard || {};
 		flipCard: function (id) {
 			var data = {
 				"type" : "flipCard",
-				"data" : {
-					"piece" : id
-				}
+				"data" : [
+					{
+						"piece" : id
+					}
+				]
 			};
 			this.send(data);
 		},
@@ -817,9 +871,7 @@ var VBoard = VBoard || {};
 		//cards is an array of images that represent the faces of the cards
 		//pieceData is identical to the data used for addPiece and will represent the deck object
 		createDeck: function (cards, pieceData) {
-
 			//TODO
-
 		},
 
 		addCardPieceToDeck: function (deckID, cardID) {
@@ -874,8 +926,19 @@ var VBoard = VBoard || {};
 			}
 		},
 
+		//example serverData:
+		// {
+		//	"name" : "new servername",
+		//	"password" : "qwerty"
+		// }
 		changeServerInfo: function (serverData) {
-			//TODO
+			if(vb.users.getLocal().isHost) {
+				var data = {
+					"type" : "changeServerInfo",
+					"data" : serverData
+				};
+				this.send(data);
+			}
 		},
 
 		kickUser: function (id, message) {
@@ -956,11 +1019,11 @@ var VBoard = VBoard || {};
 						vb.board.removePiece(pieceData);
 					}
 					break;
-				case "toggleStatic":
-					break;
 				case "setBackground":
+					vb.board.setBackground(data["data"]["icon"]);
 					break;
 				case "clearBoard":
+					vb.board.clearBoard();
 					break;
 				case "userConnect":
 					var users = data["data"];

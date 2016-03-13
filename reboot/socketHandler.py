@@ -86,25 +86,17 @@ class WebSocketGameHandler(tornado.websocket.WebSocketHandler):
 			game = self.game;
 
 			if data["type"] == "chat":
-				game.chat(self, data["data"]["msg"])
+				game.chat(self, data["data"])
 			elif data["type"] == "beacon":
-				print "todo"
-				#Todo: Needs to be implemented
+				game.beacon(self, data["data"])
 			elif data["type"] == "pieceTransform":
-				print "todo"
-				#Todo: Needs to be implemented
+				game.pieceTransform(self, data["data"])
 			elif data["type"] == "pieceAdd":
-				print "todo"
-				#Todo: Needs to be implemented
+				game.pieceAdd(self, data["data"])
 			elif data["type"] == "pieceRemove":
-				print "todo"
-				#Todo: Needs to be implemented
-			elif data["type"] == "toggleStatic":
-				print "todo"
-				#Todo: Needs to be implemented
+				game.pieceRemove(self, data["data"])
 			elif data["type"] == "setBackground":
-				print "todo"
-				#Todo: Needs to be implemented
+				game.setBackground(self, data["data"])
 			elif data["type"] == "disconnect":
 				game.disconnect(self, data["data"]["msg"])
 				self.close() #maybe keep connection open instead for other stuff
@@ -150,26 +142,23 @@ class WebSocketGameHandler(tornado.websocket.WebSocketHandler):
 			#do not need to determine if client is host in this function, that is handled by the Game class
 
 			elif data["type"] == "changeHost":
-				print "todo"
-				#Todo: Needs to be implemented
+				target = data["data"]["id"]
+				message = data["data"]["msg"]
+				game.chageHost(self, target, message)
 			elif data["type"] == "announcement":
-				print "todo"
-				#Todo: Needs to be implemented
+				game.announcement(self, data["data"]["msg"])
 			elif data["type"] == "changeServerInfo":
-				print "todo"
-				#Todo: Needs to be implemented
+				game.changeServerInfo(self, data["data"])
 			elif data["type"] == "kickUser":
-				print "todo"
-				#Todo: Needs to be implemented
+				target = data["data"]["id"]
+				message = data["data"]["msg"]
+				game.kickUser(self, target, message)
 			elif data["type"] == "clearBoard":
-				print "todo"
-				#Todo: Needs to be implemented
+				game.clearBoard(self);
 			elif data["type"] == "closeServer":
-				print "todo"
-				#Todo: Needs to be implemented
+				game.closeServer(self);
 			elif data["type"] == "loadBoardState":
-				boardData = data["data"];
-				game.loadBoardState(self, boardData);
+				game.loadBoardState(self, data["data"]);
 			else:
 				response = {
 					"type" : "error",

@@ -232,6 +232,7 @@
 			"user" : 4,
 
 			//optional parameters
+			"icon" : "/res/img.png",
 			"color" : [
 				255,
 				255,
@@ -242,7 +243,8 @@
 				90.6532
 			],
 			"r" : 0.45656,
-			"s" : 1.0
+			"s" : 1.0,
+			"static" : 0
 		}
 	]
 }
@@ -302,15 +304,16 @@
 	]
 }
 
-{
-	"type" : "toggleStatic",
-	"data" : [
-		{
-			"user" : 2,
-			"piece" : 6
-		}
-	]
-}
+//REMOVED: Use pieceTransform instead
+//{
+//	"type" : "toggleStatic",
+//	"data" : [
+//		{
+//			"user" : 2,
+//			"piece" : 6
+//		}
+//	]
+//}
 
 {
 	"type" : "setBackground",
@@ -604,12 +607,19 @@
 			"piece" : 3,
 
 			//optional parameters
+			"icon" : "/res/img.png",
 			"pos" : [
 				6.98721345,
 				90.6532
 			],
 			"r" : 0.45656,
-			"s" : 1.0
+			"s" : 1.0,
+			"color" : [
+				0,
+				0,
+				0
+			],
+			"static" : 1
 		}
 	]
 }
@@ -671,14 +681,15 @@
 }
 
 //maybe make this part of pieceTransform instead of an independent command
-{
-	"type" : "toggleStatic",
-	"data" : [
-		{
-			"piece" : 6
-		}
-	]
-}
+//REMOVED, see above comment
+//{
+//	"type" : "toggleStatic",
+//	"data" : [
+//		{
+//			"piece" : 6
+//		}
+//	]
+//}
 
 //maybe this should be host only
 {

@@ -1,5 +1,3 @@
-import json
-
 class Piece:
 	def __init__(self, pieceData, id):
 		#TODO: check for reasonable values
@@ -94,7 +92,24 @@ class BoardState:
 		if piece_id in self.piecemap:
 			index = self.piecemap[piece_id]
 			piece = self.pieces[index]
-			#TODO
+
+			if "pos" in pieceData:
+				piece.pos = pieceData["pos"]
+
+			if "r" in pieceData:
+				piece.rotation = pieceData["r"]
+
+			if "s" in pieceData:
+				piece.size = pieceData["s"]
+
+			if "static" in pieceData:
+				piece.static = pieceData["s"] == 1
+
+			if "color" in pieceData:
+				piece.color = pieceData["color"]
+
+			if "icon" in pieceData:
+				piece.icon = pieceData["icon"]
 			return True
 		else:
 			return False
@@ -130,8 +145,10 @@ class BoardState:
 			return False
 
 	def clear_board(self):
-		#TODO
-		return
+		#TODO: maybe it's better to iterate through pieces and call remove_piece for each one
+		self.pieces = [];
+
+		#TODO: clear private zones
 
 	def get_json_obj(self):
 		pieces_json = []
@@ -144,3 +161,4 @@ class BoardState:
 			"privateZones" : [], #TODO
 			"pieces" : pieces_json
 		}
+

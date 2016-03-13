@@ -165,7 +165,7 @@ class Game:
 
 	def kickUser(self, client, target, message):
 		if client is None or self.host.user_id == client.user_id:
-			#yes the host can kick himself
+			#yes the host can kick himself, why not
 			victim = self.getClientFromID(target)
 
 			if victim is None:
@@ -183,10 +183,14 @@ class Game:
 			}
 			client.write_message(json.dumps(response))
 
-	def changeInfo(self, client, name, password):
+	def changeServerInfo(self, client, data):
 		if client is None or self.host.user_id == client.user_id:
-			self.name = name
-			self.password = password
+
+			if "name" in data:
+				self.name = data["name"]
+
+			if "password" in data:
+				self.password = data["password"]
 
 			self.announce(None, "Server Information updated.");
 		else:
@@ -299,6 +303,15 @@ class Game:
 				if "s" in pieceData:
 					data_entry["s"] = piece.size
 
+				if "static" in pieceData:
+					data_entry["static"] = 1 if piece.static else 0
+
+				if "color" in pieceData:
+					data_entry["color"] = piece.color
+
+				if "icon" in pieceData:
+					data_entry["icon"] = piece.icon
+
 				response_data.append(data_entry)
 			else:
 				error_data = {
@@ -332,7 +345,7 @@ class Game:
 		}
 		self.message_all(response)
 
-	def removePiece(self, client, pieces):
+	def pieceRemove(self, client, pieces):
 		response_data = []
 
 		for pieceData in pieces:
@@ -360,9 +373,9 @@ class Game:
 		}
 		self.message_all(response);
 
-	def toggleStatic(self, client, pieces):
-		#TODO
-		return
+	#def toggleStatic(self, client, pieces):
+	#	#TODO
+	#	return
 
 	def setBackground(self, client, backgroundData):
 		self.board_state.background = backgroundData["icon"];
