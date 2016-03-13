@@ -7,17 +7,51 @@
 		<meta name="description" content="">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-		<script type="text/javascript">window.jQuery || document.write('<script src="/js/vendor/jquery-1.11.3.min.js"><\/script>')</script>
+		<script type="text/javascript">window.jQuery || document.write('<script src="/static/jquery-1.11.0.min.js"><\/script>')</script>
+		<script src="/static/bootstrap.min.js" type="text/javascript"></script>
 		<link rel="stylesheet" href="/static/board.css">
+		<link rel="stylesheet" href="/static/bootstrap.min.css">
 	</head>
 	<body>
+
+		<div id="menu">
+			<button id="addPiece" class="btn btn-success btn-menu" type="button">Add Piece</button></br>
+			<button id="addChessBoard" class="btn btn-success btn-menu" type="button">Add ChessBoard</button>
+			<button id="penTool" class="btn btn-success btn-menu" type="button">Pen Tool</button>
+		</div>
+		<div id="viewMenuHover"></div>
+		<div id="context-menu">
+			<div id="context-delete" class="context-item">Delete</div>
+			<div id="context-back" class="context-item">Push to Back</div>
+			<div id="context-front" class="context-item">Bring to Front</div>
+			<div id="context-static" class="context-item">Static Toggle</div>
+		</div>
+
 		<canvas id="canvas">
 			If you can see this, your browser may not support HTML 5
 		</canvas>
-		<!--<div id="menu">
-			
-		</div>-->
+
+		<div class="modal fade" id="add-piece-modal" role="dialog">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button class="close-modal" type="button" class="close" data-dismiss="modal">&times;</button>
+						<h4 id="confirmJoinModalTitle"style="color:red;">Add Piece</h4>
+					</div>
+					<div class="modal-body">
+
+						<select id="add-piece-list"></select>
+
+				  		<button type="submit" value="Add Piece" id="submit-add-piece">Add</button>
+				  		<button class="close-modal" type="button" data-dismiss="modal">Cancel</button>
+					</div>
+					<div class="modal-footer"></div>
+			  	</div>
+			</div>
+		</div>
+
 		<script src="/static/babylon.js"></script>
 		<script src="/static/vboard.js"></script>
+		<script src="/static/menu.js"></script>
 	</body>
 </html>

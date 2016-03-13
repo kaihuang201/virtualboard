@@ -79,20 +79,70 @@
 			}
 		],
 		"board" : {
+			"background" : "/res/img/background.png",
+
+			"privateZones" : [
+				{
+					//private zone ids are different from piece ids
+					"id" : 1,
+
+					"pos" : [
+						5.426,
+						-7.234
+					],
+					"size" : [
+						2,
+						5
+					],
+					"r" : 0,
+					"color" : [
+						255,
+						0,
+						0
+					]
+				}
+			],
+
 			//note: piece array is ordered with bottom element first, and top element last
 			"pieces" : [
+				//data is identical to pieceAdd data
 				{
-					"name" : "somepiece",
-					"x" : 5.734,
-					"y" : 3.64,
-					"id" : 5,
+					"pos" : [
+						5.734,
+						3.64
+					],
+					"piece" : 5,
 					"icon" : "static/img/crown.png",
 					"color" : [
 						255,
 						0,
 						0
 					],
-					"static" : 0
+					"static" : 0,
+					"r" : 3.14159,
+					"s" : 1.0,
+
+					//optional parameter only present if piece is a card
+					"cardData" : {
+						"faceDown" : 0,
+						"backIcon" : "/res/cardback.png"
+					},
+
+					//optional parameter only preset if piece is a die
+					"diceData" : {
+						"min" : 1,
+						"max" : 6,
+
+						//when rolled, sets the "icon" field to diceData[faces][value - diceData[min]] unless value is out of bounds
+						"faces" : [
+							"/res/dice1.png",
+							"/res/dice2.png",
+							"/res/dice3.png",
+							"/res/dice4.png",
+							"/res/dice5.png",
+							"/res/dice6.png"
+						]
+					}
 				}
 			]
 		}
@@ -166,8 +216,10 @@
 	"data" : [
 		{
 			"user" : 1,
-			"x" : 54.352,
-			"y" : 65.454
+			"pos" : [
+				54.352,
+				65.454
+			]
 		}
 	]
 }
@@ -180,15 +232,19 @@
 			"user" : 4,
 
 			//optional parameters
+			"icon" : "/res/img.png",
 			"color" : [
 				255,
 				255,
 				255
 			],
-			"x" : 6.98721345,
-			"y" : 90.6532,
+			"pos" : [
+				6.98721345,
+				90.6532
+			],
 			"r" : 0.45656,
-			"s" : 1.0
+			"s" : 1.0,
+			"static" : 0
 		}
 	]
 }
@@ -199,17 +255,41 @@
 		{
 			"piece" : 6,
 			"user" : 4,
-			"name" : "my piece",
 			"icon" : "/res/img.png",
+			"static" : 0,
 			"color" : [
 				255,
 				255,
 				255
 			],
-			"x" : 6.6435,
-			"y" : 65.2543,
+			"pos" : [
+				6.6435,
+				65.2543
+			],
 			"r" : 0.45656,
-			"s" : 1.0
+			"s" : 1.0,
+
+			//optional parameter only present if piece is a card
+			"cardData" : {
+				"faceDown" : 0,
+				"backIcon" : "/res/cardback.png"
+			},
+
+			//optional parameter only preset if piece is a die
+			"diceData" : {
+				"min" : 1,
+				"max" : 6,
+
+				//when rolled, sets the "icon" field to diceData[faces][value - diceData[min]] unless value is out of bounds
+				"faces" : [
+					"/res/dice1.png",
+					"/res/dice2.png",
+					"/res/dice3.png",
+					"/res/dice4.png",
+					"/res/dice5.png",
+					"/res/dice6.png"
+				]
+			}
 		}
 	]
 }
@@ -222,6 +302,25 @@
 			"user" : 4
 		}
 	]
+}
+
+//REMOVED: Use pieceTransform instead
+//{
+//	"type" : "toggleStatic",
+//	"data" : [
+//		{
+//			"user" : 2,
+//			"piece" : 6
+//		}
+//	]
+//}
+
+{
+	"type" : "setBackground",
+	"data" : {
+		"user" : 2,
+		"icon" : "/res/img/background.png"
+	}
 }
 
 {
@@ -271,6 +370,123 @@
 	]
 }
 
+{
+	"type" : "listClients",
+	"data" : [
+		{
+			"id" : 0,
+			"name" : "sam",
+			"host" : 1,
+			"local" : 0,
+			"color" : [
+				255,
+				0,
+				0
+			]
+		},
+		{
+			"id" : 3,
+			"name": "fred",
+			"host" : 0,
+			"local" : 1,
+			"color" : [
+				255,
+				0,
+				255
+			]
+		}
+	]
+}
+
+//Special objet control
+
+{
+	"type" : "rollDice",
+	"data" : [
+		{
+			"user" : 2,
+			//piece id refers to a piece that is hopefully a dice type
+			"piece" : 12,
+
+			//when rolled, sets the "icon" field to diceData[faces][value - diceData[min]] unless value is out of bounds
+			"result" : 6
+		}
+	]
+}
+
+{
+	"type" : "flipCard",
+	"data" : [
+		{
+			"user" : 2,
+			"piece" : 5
+		}
+	]
+}
+
+//drawing cards from/adding cards to a deck will cause the piece corresponding to that card to be removed
+//the reason each client knows all the cards in each deck is for client sided saving
+//we could change the way cards and decks work so clients can't use the console to access secret information
+//but that greatly complicates saving/loading, for now its probably better to do it this way
+{
+	"type" : "createDeck",
+	"data" : [
+		{
+			"cards" : [
+				"/res/queenhearts.png",
+				"/res/2clubs.png",
+				"/res/9spades.png",
+				"/res/kingdiamonds.png"
+			],
+
+			//identical to the data from pieceAdd
+			//the deck itself will be represented by this piece
+			"pieceData" : {
+				"piece" : 6,
+				"user" : 4,
+				"icon" : "/res/deckicon.png",
+				"static" : 0,
+				"color" : [
+					255,
+					255,
+					255
+				],
+				"pos" : [
+					6.6435,
+					65.2543
+				],
+				"r" : 0.45656,
+				"s" : 1.0,
+			}
+		}
+	]
+}
+
+{
+	"type" : "addCard",
+	"data" : [
+		{
+			"user" : 2,
+
+			//piece id of deck
+			"piece" : 7,
+			"card" : "/res/aceclubs.png"
+		}
+	]
+}
+
+//typically, removing a card is the followed up immediately by a "pieceAdd" message from the server to actually spawn the card
+{
+	"type" : "removeCard",
+	"data" : [
+		{
+			"user" : 1,
+			"deck" : 7,
+			"card" : "/res/queenhearts.png"
+		}
+	]
+}
+
 //TODO: private zones
 {
 	"type" : "createPrivateZone",
@@ -283,36 +499,55 @@
 				0,
 				0
 			],
-			"x" : 1.045,
-			"y" : -8.53,
-			"l" : 7,
-			"w" : 2,
+			"pos" : [
+				1.045,
+				-8.53
+			],
+			"size" : [
+				7,
+				2
+			],
 			"r" : 3.14159265
 		}
 	]
 }
 
 {
-	"type" : "transformPrivateZone",
+	"removePrivateZone",
 	"data" : [
 		{
-			"user" : 4,
-			"id" : 8,
-
-			//optional parameters
-			"color" : [
-				255,
-				0,
-				0
-			],
-			"x" : 1.045,
-			"y" : -8.53,
-			"l" : 7,
-			"w" : 2,
-			"r" : 3.14159265
+			"user" : 2,
+			"id" : 3 //id of private zone
 		}
 	]
 }
+
+//REMOVED, INSTEAD JUST REMOVE AND CREATE NEW ZONE
+//{
+//	"type" : "transformPrivateZone",
+//	"data" : [
+//		{
+//			"user" : 4,
+//			"id" : 8,
+//
+//			//optional parameters
+//			"color" : [
+//				255,
+//				0,
+//				0
+//			],
+//			"pos" : [
+//				1.045,
+//				-8.53
+//			],
+//			"size" : [
+//				7,
+//				2
+//			],
+//			"r" : 3.14159265
+//		}
+//	]
+//}
 
 {
 	"type" : "drawScribble",
@@ -338,24 +573,6 @@
 	]
 }
 
-{
-	"type" : "listClients",
-	"data" : [
-		{
-			"id" : 0,
-			"name" : "sam",
-			"host" : 1,
-			"local" : 0
-		},
-		{
-			"id" : 3,
-			"name": "fred",
-			"host" : 0,
-			"local" : 1
-		}
-	]
-}
-
 //==========
 //client to server protocol
 //==========
@@ -373,12 +590,16 @@
 	"type" : "beacon",
 	"data" : [
 		{
-			"x" : 54.5435,
-			"y" : 0.534
+			"pos" : [	
+				54.5435,
+				0.534
+			]
 		}
 	]
 }
 
+//maybe we remove toggleStatic and just make it a field in pieceTransform?
+//additionally, we can make it so color changes are managed here
 {
 	"type" : "pieceTransform",
 	"data" :  [
@@ -386,10 +607,19 @@
 			"piece" : 3,
 
 			//optional parameters
-			"x" : 6.98721345,
-			"y" : 90.6532,
+			"icon" : "/res/img.png",
+			"pos" : [
+				6.98721345,
+				90.6532
+			],
 			"r" : 0.45656,
-			"s" : 1.0
+			"s" : 1.0,
+			"color" : [
+				0,
+				0,
+				0
+			],
+			"static" : 1
 		}
 	]
 }
@@ -402,13 +632,41 @@
 	"type" : "pieceAdd",
 	"data" : [
 		{
-			"piece" : 6,
-			"name" : "my piece",
-			"url" : "/res/img.png",
-			"x" : 6.6435,
-			"y" : 65.2543,
+			"icon" : "/res/img.png",
+			"pos" : [
+				6.6435,
+				65.2543
+			],
+			"color" : [
+				255,
+				255,
+				255
+			],
 			"r" : 0.45656,
-			"s" : 1.0
+			"s" : 1.0,
+			"static" : 0,
+
+			//optional parameter only present if piece is a card
+			"cardData" : {
+				"faceDown" : 0,
+				"backIcon" : "/res/cardback.png"
+			},
+
+			//optional parameter only preset if piece is a die
+			"diceData" : {
+				"min" : 1,
+				"max" : 6,
+
+				//overrides and sets the "icon" field unless value is out of bounds
+				"faces" : [
+					"/res/dice1.png",
+					"/res/dice2.png",
+					"/res/dice3.png",
+					"/res/dice4.png",
+					"/res/dice5.png",
+					"/res/dice6.png"
+				]
+			}
 		}
 	]
 }
@@ -418,6 +676,161 @@
 	"data" : [
 		{
 			"piece" : 6,
+		}
+	]
+}
+
+//maybe make this part of pieceTransform instead of an independent command
+//REMOVED, see above comment
+//{
+//	"type" : "toggleStatic",
+//	"data" : [
+//		{
+//			"piece" : 6
+//		}
+//	]
+//}
+
+//maybe this should be host only
+{
+	"type" : "setBackground",
+	"data" : {
+		"icon" : "/res/img/background.png"
+	}
+}
+
+{
+	"type" : "disconnect",
+	"data" : {
+		"msg" : "brb food"
+	}
+}
+
+{
+	"type" : "listClients"
+}
+
+//special objects
+
+{
+	"type" : "rollDice",
+	"data" : [
+		{
+			//piece id refers to a piece that is hopefully a dice type
+			"piece" : 12,
+		}
+	]
+}
+
+{
+	"type" : "flipCard",
+	"data" : [
+		{
+			"piece" : 5
+		}
+	]
+}
+
+//drawing cards from/adding cards to a deck will cause the piece corresponding to that card to be removed
+//the reason each client knows all the cards in each deck is for client sided saving
+//we could change the way cards and decks work so clients can't use the console to access secret information
+//but that greatly complicates saving/loading, for now its probably better to do it this way
+{
+	"type" : "createDeck",
+	"data" : [
+		{
+			"cards" : [
+				"/res/queenhearts.png",
+				"/res/2clubs.png",
+				"/res/9spades.png",
+				"/res/kingdiamonds.png"
+			],
+
+			//identical to the data from pieceAdd
+			//the deck itself will be represented by this piece
+			"pieceData" : {
+				"icon" : "/res/deckicon.png",
+				"color" : [
+					255,
+					255,
+					255
+				],
+				"pos" : [
+					6.6435,
+					65.2543
+				],
+				"r" : 0.45656,
+				"s" : 1.0,
+				"static" : 0
+			}
+		}
+	]
+}
+
+//moves a card piece from the board into a deck
+{
+	"type" : "addCardPieceToDeck",
+	"data" : [
+		{
+			//piece id of deck
+			"deck" : 7,
+
+			//piece id of card
+			"card" : 3
+		}
+	]
+}
+
+//adds a card type to the deck directly, without referencing a card piece on the board
+{
+	"type" : "addCardTypeToDeck",
+	"data" : [
+		{
+			"deck" : 7,
+			"card" : "/res/kingclubs.png"
+		}
+	]
+}
+
+//typically, removing a card is then followed up immediately by a "pieceAdd" message from the server to actually spawn the card
+{
+	"type" : "drawCard",
+	"data" : [
+		{
+			"deck" : 7,
+			"count" : 1
+		}
+	]
+}
+
+//TODO: private zones
+{
+	"type" : "createPrivateZone",
+	"data" : [
+		{
+			"color" : [
+				255,
+				0,
+				0
+			],
+			"pos" : [
+				1.045,
+				-8.53
+			],
+			"size" : [
+				7,
+				2
+			],
+			"r" : 3.14159265
+		}
+	]
+}
+
+{
+	"removePrivateZone",
+	"data" : [
+		{
+			"id" : 3 //id of private zone
 		}
 	]
 }
@@ -450,16 +863,8 @@
 	]
 }
 
-{
-	"type" : "disconnect",
-	"data" : {
-		"msg" : "brb food"
-	}
-}
 
-{
-	"type" : "listClients"
-}
+
 
 //==========
 //host only client to server commands
@@ -501,17 +906,26 @@
 	"type" : "clearBoard"
 }
 
+{
+	"type" : "closeServer"
+}
+
 //this will add a set of pieces and private zones to the existing board state
 //host can clear the board first if desired
 {
 	"type" : "loadBoardState",
 	"data" : {
+		"background" : "/res/img/background.png",
 		"privateZones" : [
 			{
-				"x" : 5.426,
-				"y" : -7.234,
-				"l" : 2,
-				"w" : 5,
+				"pos" : [
+					5.426,
+					-7.234
+				],
+				"size" : [
+					2,
+					5
+				],
 				"r" : 0,
 				"color" : [
 					255,
@@ -522,17 +936,41 @@
 		],
 		"pieces" : [
 			{
-				"name" : "somepiece",
-				"x" : 5.734,
-				"y" : 3.64,
-				"id" : 5,
+				"pos" : [
+					5.734,
+					3.64
+				],
 				"icon" : "static/img/crown.png",
 				"color" : [
 					255,
 					0,
 					0
 				],
-				"static" : 0
+				"static" : 0,
+				"r" : 3.14159,
+				"s" : 1.0,
+
+				//optional parameter only present if piece is a card
+				"cardData" : {
+					"faceDown" : 0,
+					"backIcon" : "/res/cardback.png"
+				},
+
+				//optional parameter only preset if piece is a die
+				"diceData" : {
+					"min" : 1,
+					"max" : 6,
+
+					//when rolled, sets the "icon" field to diceData[faces][value - diceData[min]] unless value is out of bounds
+					"faces" : [
+						"/res/dice1.png",
+						"/res/dice2.png",
+						"/res/dice3.png",
+						"/res/dice4.png",
+						"/res/dice5.png",
+						"/res/dice6.png"
+					]
+				}
 			}
 		]
 	}

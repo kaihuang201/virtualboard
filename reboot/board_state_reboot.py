@@ -1,25 +1,47 @@
-import json
-
 class Piece:
-	def __init__(self, name, x, y, icon, color, piece_id):
-		self.name = name
-		self.x = x
-		self.y = y
-		self.icon = icon
-		self.piece_id = piece_id
-		self.color = color
-		self.static = False
+	def __init__(self, pieceData, id):
+		#TODO: check for reasonable values
+
+		self.pos = pieceData["pos"]
+		self.icon = pieceData["icon"]
+		self.piece_id = id
+		self.color = pieceData["color"]
+		self.static = pieceData["static"] == 1
+		self.rotation = pieceData["r"]
+		self.size = pieceData["s"]
+
+		if "cardData" in pieceData:
+			#TODO
+			self.isCard = True
+			self.cardData = pieceData.cardData
+		else:
+			self.isCard = False
+
+		#I know dice is plural but "isDie" sounds awkward here
+		if "diceData" in pieceData:
+			#TODO
+			self.isDice = True
+			self.diceData = pieceData.diceData
+		else:
+			self.isDice = False
 
 	def get_json_obj(self):
-		return {
-			"name" : self.name,
-			"x" : self.x,
-			"y" : self.y,
-			"id" : self.piece_id,
+		data = {
+			"pos" : self.pos,
+			"piece" : self.piece_id,
 			"icon" : self.icon,
 			"color" : self.color,
-			"static" : 1 if self.static else 0
+			"static" : 1 if self.static else 0,
+			"r" : self.rotation,
+			"s" : self.size
 		}
+
+		if self.isCard:
+			data["cardData"] = self.cardData
+
+		if self.isDice:
+			data["diceData"] = self.diceData
+		return data
 
 class BoardState:
 	def __init__(self):
@@ -30,14 +52,25 @@ class BoardState:
 		self.piecemap = {}
 
 		self.next_piece_id = 0
+		self.background = ""
 
 	#returns the newly generated piece
-	def generate_new_piece(self, name="", x=0, y=0, icon="", color=''):
-		piece = Piece(name, x, y, icon, color, self.next_piece_id)
+	#color is an array, but if you define an array as a default parameter it is static to the class, not the object
+	def generate_new_piece(self, pieceData): #name="", x=0, y=0, icon="", color):
+		piece = Piece(pieceData, self.next_piece_id)
 		self.piecemap[self.next_piece_id] = len(self.pieces)
 		self.pieces.append(piece)
 		self.next_piece_id += 1
 		return piece
+
+	#returns the piece corresponding to piece_id, or None if it does not exist
+	def get_piece(self, piece_id):
+		if piece_id in self.piecemap:
+			index = self.piecemap[piece_id]
+			piece = self.pieces[index]
+			return piece
+		else:
+			return None
 
 	#returns false if the piece is not found, true otherwise
 	def remove_piece(self, piece_id):
@@ -47,6 +80,41 @@ class BoardState:
 			self.bring_to_front(index)
 			self.pieces.pop()
 			del self.piecemap[piece.piece_id]
+			return True
+		else:
+			return False
+
+	#returns false if the piece is not found, true otherwise
+	#if we had the client's color, we could also do private zone filtering here block cheating, but oh well
+	def transform_piece(self, pieceData):
+		piece_id = pieceData["piece"]
+
+		if piece_id in self.piecemap:
+			index = self.piecemap[piece_id]
+			piece = self.pieces[index]
+
+			if "pos" in pieceData:
+				piece.pos = pieceData["pos"]
+
+				#only for positional changes do we bring the piece to the front
+				#note that this also invalidates the index variable we have
+				if not self.bring_to_front(piece.piece_id):
+					print "error bringing transformed piece to front"
+
+			if "r" in pieceData:
+				piece.rotation = pieceData["r"]
+
+			if "s" in pieceData:
+				piece.size = pieceData["s"]
+
+			if "static" in pieceData:
+				piece.static = pieceData["s"] == 1
+
+			if "color" in pieceData:
+				piece.color = pieceData["color"]
+
+			if "icon" in pieceData:
+				piece.icon = pieceData["icon"]
 			return True
 		else:
 			return False
@@ -81,13 +149,22 @@ class BoardState:
 		else:
 			return False
 
+	def clear_board(self):
+		#TODO: maybe it's better to iterate through pieces and call remove_piece for each one
+		self.pieces = [];
+		self.piecemap = {};
+
+		#TODO: clear private zones
+
 	def get_json_obj(self):
 		pieces_json = []
 
 		for piece in self.pieces:
 			pieces_json.append(piece.get_json())
+
 		return {
-			"board" : {
-				"pieces" : pieces_json
-			}
+			"background" : self.background,
+			"privateZones" : [], #TODO
+			"pieces" : pieces_json
 		}
+
