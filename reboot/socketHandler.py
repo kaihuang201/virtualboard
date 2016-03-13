@@ -174,37 +174,6 @@ class WebSocketGameHandler(tornado.websocket.WebSocketHandler):
 		if self.game is not None:
 			self.game.disconnect(self, "socket terminated")
 
-class SaveGameHandler(tornado.web.RequestHandler):
-	def post(self):
-		lobby_id = self.get_parameter("lobby_id")
-		filename = "save.vb"
-		self.set_header('Content-Type', 'application/octet-stream')
-		self.set_header('Content-Disposition', 'attachment; filename=' + filename)
-		if (games.has_key(lobby_id)):
-			self.write(games[lobby_id].dump_json())
-
-class LoadGameHandler(tornado.web.RequestHandler):
-	def post(self):
-		lobby_id = self.get_parameter("lobby_id")
-		savefile = self.request.files['upload'][0]
-		filename = savefile['filename']
-		extn = os.path.splitext(filename)[1]
-		if (not extn == '.vb'):
-			self.write("Incorrect file format, please upload a .vb save file")
-			return
-
-		save = savefile['body']
-
-		if (games.has_key(lobby_id)):
-			success = games[lobby_id].load_json(save)
-			if (not success):
-				self.write("Save file is improperly formatted, VirtualBoard could not load the saved game")
-
-class SetupHandler(tornado.web.RequestHandler):
-	@tornado.web.asynchronous
-	def get(request):
-		request.render("setup.html")
-
 class IndexHandler(tornado.web.RequestHandler):
 	@tornado.web.asynchronous
 	def get(request):

@@ -3,39 +3,47 @@ var VBoard = VBoard || {};
 	//size of the vertical view plane
 	vb.size = 10;
 
-	//max/min/view size should be bound to VBoard.board
+	//max/min/view size should probably be bound to VBoard.board
 	vb.maxSize = 55;
 	vb.minSize = 3;
 	vb.BoardHeight = 50;
 	vb.BoardWidth = 50;
+	vb.moveHighlightDuration = 500; //milliseconds
+	vb.addHighlightDuration = 500; //milliseconds
 
 	vb.quickStart = function () {
-		vb.limboIO.hostGame("bill", [0, 0, 0], "chess deathmatch", "12345");
-		vb.quickStart = true;
+		vb.limboIO.hostGame("bill", [0, 0, 255], "chess deathmatch", "12345");
+		vb.quickStarted = true;
 	};
 
 	vb.javascriptInit = function () {
 		//networking
-		vb.socket = new WebSocket("ws://" + window.location.host + window.location.pathname + "game");
+		vb.socket = new WebSocket("ws://" + window.location.host + window.location.pathname + "socket");
 
 		vb.socket.onopen = function () {
+			//TODO: display some kind of "loading..." animation
+
 			//fetch game list
+			vb.limboIO.listGames();
 		};
 		vb.socket.onmessage = vb.limboIO.messageHandler;
 		vb.socket.onclose = function () {
 			console.log("rip socket");
+
+			//TODO: display graphical error message, tell user to refresh page
 		};
 	};
 
+	//this function is called when we enter a game session
 	vb.launchCanvas = function () {
 		vb.simTime = Date.now();
 		vb.inputs.initialize();
 
 		vb.renderInit();
 
-		//if(!vb.testing) {
-		//	vb.loadDummyBlocks();
-		// }
+		if(vb.quickStarted) {
+			vb.sessionIO.loadChessGame();
+		}
 	};
 
 	vb.board = {
@@ -98,6 +106,7 @@ var VBoard = VBoard || {};
 			}
 
 			//TODO: disable highlight on piece if it exists
+			clearTimeout(piece.highlightTimeout);
 
 			this.pieces.pop();
 			delete this.pieceHash[piece.id];
@@ -138,14 +147,11 @@ var VBoard = VBoard || {};
 
 		//called by web socket handler upon receiving an update
 		transformPiece: function (pieceData) {
-			var piece = pieceHash[pieceData.piece];
+			var piece = this.pieceHash[pieceData.piece];
 			var user = vb.users.userList[pieceData.user];
 			//piece.user = pieceData.user;
 
-			this.highlightPiece(piece, new BABYLON.Color3(
-				user.color[0],
-				user.color[1],
-				user.color[2]));
+			this.highlightPiece(piece, user.color, vb.moveHighlightDuration);
 
 			if(pieceData.hasOwnProperty("color")) {
 				piece.mesh.material.diffuseColor = new BABYLON.Color3(pieceData.color[0], pieceData.color[1], pieceData.color[2]);
@@ -158,6 +164,8 @@ var VBoard = VBoard || {};
 				if (!user.isLocal) {
 					piece.mesh.position.x = pieceData.pos[0];
 					piece.mesh.position.y = pieceData.pos[1];
+
+					//TODO: we should remove piece from our selectedPieces if present since someone else is moving it
 				} else {
 					//TODO: check to see if piece.mesh.position agrees with piece.position and update timeout
 				}
@@ -174,17 +182,25 @@ var VBoard = VBoard || {};
 		},
 
 		//takes a piece object from the board.pieces array
-		highlightPiece: function (piece, color) {
-			//to do: highlight the piece with piece.user's color when moving
-			//should time out after 500 ms probably if this is not called again
+		//color is a BABYLON.Color3, not an array of length 3
+		highlightPiece: function (piece, color, duration) {
+			clearTimeout(piece.highlightTimeout);
+
+			//var babylonColor = new BABYLON.Color3(color[0]/255, color[1]/255, color[2]/255);
+
+			piece.mesh.overlayColor = color;
+			piece.mesh.renderOverlay = true;
+			piece.highlightTimeout = setTimeout(function () {
+				piece.mesh.renderOverlay = false;
+			}, duration);
 		},
 
 		//takes JSON formatted data from socket handler
 		generateNewPiece: function (pieceData) {
 			//to do: create a proper piece "class" with a constructor and methods
 			var material = new BABYLON.StandardMaterial("std", vb.scene);
-			var icon = "/static/img/crown.png";
-			var size = 3.0;
+			//var icon = "/static/img/crown.png";
+			//var size = 3.0;
 
 			/*if(this.pieceNameMap.hasOwnProperty(name)) {
 				icon = this.pieceNameMap[name].icon;
@@ -206,7 +222,7 @@ var VBoard = VBoard || {};
 			piece.id = pieceData.piece;
 			//piece.user = pieceData.user;
 			piece.position = new BABYLON.Vector2(pieceData.pos[0], pieceData.pos[1]);
-			piece.pickedUp = !!user;
+			//piece.pickedUp = !!user;
 			piece.mesh = plane;
 			piece.icon = icon;
 
@@ -231,22 +247,21 @@ var VBoard = VBoard || {};
 
 			this.add(piece);
 
-			var user = vb.users.userList[pieceData.user];
-			this.highlightPiece(piece, new BABYLON.Color3(
-				user.color[0],
-				user.color[1],
-				user.color[2]));
+			if(pieceData.hasOwnProperty("user")) {
+				var user = vb.users.userList[pieceData.user];
+				this.highlightPiece(piece, user.color, vb.addHighlightDuration);
+			}
 			return piece;
 		},
 
 		removeSelectedPieces: function () {
 			if(this.selectedPieces.length > 0) {
-				for(index in this.selectedPieces) {
-					this.selectedPieces[index].pickedUp = false;
+				//for(index in this.selectedPieces) {
+					//this.selectedPieces[index].pickedUp = false;
 					//this.selectedPieces[index].user = vb.users.getNone();
 
 					//todo: disable the highlight
-				}
+				// }
 				this.selectedPieces = [];
 			}
 		},
@@ -298,11 +313,6 @@ var VBoard = VBoard || {};
 					//this fixes a race condition where 2 users move the same piece at the same time
 				}
 			}
-		},
-
-		//we may not need this function, replaced by transformPiece()
-		movePiece: function (piece, pos, user, instant) {
-			//to do
 		},
 
 		//triggered by network call
@@ -436,7 +446,9 @@ var VBoard = VBoard || {};
 		createNewUser: function (userData) {
 			var id = userData["id"];
 			var name = userData["name"];
-			var color = new BABYLON.Color3(userData["color"][0], userData["color"][1], userData["color"][2]);
+			var color = new BABYLON.Color3(	userData["color"][0]/255,
+											userData["color"][1]/255,
+											userData["color"][2]/255 );
 			var isLocal = userData["local"] == 1;
 			var isHost = userData["host"] == 1;
 			
@@ -659,10 +671,6 @@ var VBoard = VBoard || {};
 					//switch from lobby state to game state
 					vb.socket.onmessage = vb.sessionIO.messageHandler;
 					vb.launchCanvas();
-
-					if(vb.quickStart) {
-						vb.sessionIO.loadChessGame();
-					}
 
 					break;
 				case "initFailure":

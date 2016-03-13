@@ -96,6 +96,11 @@ class BoardState:
 			if "pos" in pieceData:
 				piece.pos = pieceData["pos"]
 
+				#only for positional changes do we bring the piece to the front
+				#note that this also invalidates the index variable we have
+				if not self.bring_to_front(piece.piece_id):
+					print "error bringing transformed piece to front"
+
 			if "r" in pieceData:
 				piece.rotation = pieceData["r"]
 
@@ -147,6 +152,7 @@ class BoardState:
 	def clear_board(self):
 		#TODO: maybe it's better to iterate through pieces and call remove_piece for each one
 		self.pieces = [];
+		self.piecemap = {};
 
 		#TODO: clear private zones
 
