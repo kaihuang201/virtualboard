@@ -1185,7 +1185,7 @@ function Piece(pieceData)
 	//		We also should be able to right click anywhere to bring up a menu
 	//		that lets us add a piece at that location.
 	plane.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnLeftPickTrigger, function (evt) {
-		if(this.static == false) {
+		if(me.static == false) {
 			VBoard.board.setSelectedPiece(me);
 		}
 
