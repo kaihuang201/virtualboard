@@ -118,7 +118,7 @@ var VBoard = VBoard || {};
 				var mapEntry = vb.board.dieNameMap[selectedName];
 				var data = {
 					"pos" : [vb.camera.position.x, vb.camera.position.y],
-					"maxroll" : selectedMax,
+					"max_roll" : selectedMax,
 					"color" : [255, 255, 255],
 					"static" : 0,
 					"s" : mapEntry.size,
