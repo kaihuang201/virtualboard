@@ -32,7 +32,7 @@ class Game:
 
 		for client in self.clients:
 			abridged_users.append({
-				"id" : client.user_id,
+				"user" : client.user_id,
 				"name" : client.name,
 				"color" : client.color,
 				"host" : 1 if client.user_id == self.host.user_id else 0,

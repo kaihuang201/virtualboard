@@ -56,7 +56,7 @@
 		"gameName" : "coolville",
 		"users" : [
 			{
-				"id" : 0,
+				"user" : 0,
 				"name" : "sam",
 				"color" : [
 					255,
@@ -67,7 +67,7 @@
 				"local" : 0
 			},
 			{
-				"id" : 3,
+				"user" : 3,
 				"name": "fred",
 				"color" : [
 					0,
@@ -374,7 +374,7 @@
 	"type" : "listClients",
 	"data" : [
 		{
-			"id" : 0,
+			"user" : 0,
 			"name" : "sam",
 			"host" : 1,
 			"local" : 0,
@@ -385,7 +385,7 @@
 			]
 		},
 		{
-			"id" : 3,
+			"user" : 3,
 			"name": "fred",
 			"host" : 0,
 			"local" : 1,

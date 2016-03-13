@@ -355,15 +355,15 @@ var VBoard = VBoard || {};
 
 
 		//constructor for internal object
-		User: function (id, name, color, isLocal, isHost) {
-			//the downside to this construction is that accessing vb.user's methods is not as clean
-			this.id = id;
-			this.name = name;
-			this.color = color;
-			this.isLocal = isLocal;
-			this.isHost = isHost;
-			this.ping = -1;
-		},
+		//User: function (id, name, color, isLocal, isHost) {
+		//	//the downside to this construction is that accessing vb.user's methods is not as clean
+		//	this.id = id;
+		//	this.name = name;
+		//	this.color = color;
+		//	this.isLocal = isLocal;
+		//	this.isHost = isHost;
+		//	this.ping = -1;
+		//},
 
 		//methods
 		add: function (user) {
@@ -375,12 +375,12 @@ var VBoard = VBoard || {};
 
 			//this.userList[index] = this.userList[this.userList.length-1];
 			//this.userList.pop();
-			delete userList[user.id];
+			delete this.userList[user.id];
 		},
 
 		removeUser: function (userData) {
 			var id = userData["user"];
-			var user = userList[id];
+			var user = this.userList[id];
 			this.remove(user);
 		},
 
@@ -411,15 +411,23 @@ var VBoard = VBoard || {};
 		},
 
 		createNewUser: function (userData) {
-			var id = userData["id"];
+			var id = userData["user"];
 			var name = userData["name"];
 			var color = new BABYLON.Color3(	userData["color"][0]/255,
 											userData["color"][1]/255,
 											userData["color"][2]/255 );
 			var isLocal = userData["local"] == 1;
 			var isHost = userData["host"] == 1;
-			
-			var user = new this.User(id, name, color, isLocal, isHost);
+
+			//var user = new this.User(id, name, color, isLocal, isHost);
+			var user = {
+				"id" : id,
+				"name" : name,
+				"color" : color,
+				"isLocal" : isLocal,
+				"isHost" : isHost,
+				"ping" : -1
+			};
 
 			if(isLocal) {
 				this.local = user;
@@ -636,13 +644,13 @@ var VBoard = VBoard || {};
 						vb.users.createNewUser(userData);
 					}
 
-					//initialize board data
-					var boardData = data["data"]["board"];
-					vb.board.loadBoardData(boardData);
-
 					//switch from lobby state to game state
 					vb.socket.onmessage = vb.sessionIO.messageHandler;
 					vb.launchCanvas();
+
+					//initialize board data
+					var boardData = data["data"]["board"];
+					vb.board.loadBoardData(boardData);
 
 					break;
 				case "initFailure":
@@ -800,7 +808,7 @@ var VBoard = VBoard || {};
 				"type" : "pieceTransform",
 				"data" : [
 					{
-						"piece" : "id",
+						"piece" : id,
 						"s" : size
 					}
 				]
@@ -1018,7 +1026,7 @@ var VBoard = VBoard || {};
 
 					for(var index in users) {
 						var user = users[index];
-						vb.users.removeID(user.user); //TO FIX
+						vb.users.removeUser(user); //TO FIX
 					}
 					break;
 				case "changeHost":
