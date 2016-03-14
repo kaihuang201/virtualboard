@@ -213,13 +213,7 @@ var VBoard = VBoard || {};
             $("#context-roll").on("click" , function(){
 
                 if (piece instanceof Die) {
-                    // TODO send request to server to get the value of the roll
-
-                    /****** Temperary Code ******/
-                    var value = Math.floor(Math.random() * (piece.max)) + 1;
-                    /****************************/
-
-                    piece.roll(value);
+                    vb.sessionIO.rollDice(piece.id);
                 }
                 $("#context-menu").css("visibility", "hidden");
             });

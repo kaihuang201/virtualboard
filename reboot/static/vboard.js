@@ -1037,6 +1037,16 @@ var VBoard = VBoard || {};
 				case "listClients":
 					break;
 				case "rollDice":
+					var dice = data["data"];
+
+					for (var i = 0; i < dice.length; i++) {
+						var die = dice[i];
+						var id = die["piece"];
+						var value = die["result"];
+
+						var piece = vb.board.pieceHash[id];
+						piece.roll(value);
+					}
 					break;
 				case "flipCard":
 					break;

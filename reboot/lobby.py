@@ -379,19 +379,42 @@ class Game:
 	# special pieces
 	#==========
 
-	def rollDie(self, client, pieces):
+	def rollDice(self, client, pieces):
 		response_data = []
 		for pieceData in pieces:
 			piece_id = pieceData["piece"]
 			piece = self.board_state.get_piece(piece_id)
+			if piece == None:
+				error_data = {
+					"type" : "error",
+					"data" : [
+						{
+							"msg" : "invalid piece id " + id
+						}
+					]
+				}
+				client.write_message(json.dumps(error_data))
+				return
+
 			if piece.isDie:
 				max_value = piece.max_roll
-				new_value = random.randint(1, max_roll)
+				new_value = random.randint(1, int(max_value))
 				response_data.append({
 					"user": client.user_id,
 					"piece": piece_id,
 					"result": new_value
 				})
+			else:
+				error_data = {
+					"type" : "error",
+					"data" : [
+						{
+							"msg" : "piece id " + id + " is not a die"
+						}
+					]
+				}
+				client.write_message(json.dumps(error_data))
+				return
 
 		response = {
 			"type": "rollDice",
