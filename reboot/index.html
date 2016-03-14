@@ -14,10 +14,27 @@
 	</head>
 	<body>
 
+
+		<div id="main-page">
+			<div class="btn-group" style="margin-top: 15px; margin-left: 20%; margin-right: 20%;">
+				<button class="btn btn-default" id="lobby-list-toggler">Show Lobbies</button>
+				<button class="btn btn-default" id="create-lobby">Create Lobby</button>
+			</div>
+			
+			<ul id="lobby-list" class="list-group" style="display:none; width: 60%; margin-top: 10px; margin-left: 20%; margin-right: 20%;">
+				<!-- <a id="lobby-no-1" class="list-group-item"><span class="label label-default label-pill pull-xs-right">14</span>Cras justo odio</a> -->
+			</ul>
+		</div>
+
+
+
+
 		<div id="menu" style="visibility: hidden">
-			<button id="addPiece" class="btn btn-success btn-menu" type="button">Add Piece</button></br>
+			
+			<button id="addPiece" class="btn btn-success btn-menu" type="button">Add Piece</button>
 			<button id="addChessBoard" class="btn btn-success btn-menu" type="button">Add ChessBoard</button>
 			<button id="penTool" class="btn btn-success btn-menu" type="button">Pen Tool</button>
+			<button id="quitGame" class="btn btn-success btn-menu" type="button">Exit Game</button>
 		</div>
 		<div id="viewMenuHover"></div>
 		<div id="context-menu">
@@ -35,8 +52,8 @@
 			<div class="modal-dialog">
 				<div class="modal-content">
 					<div class="modal-header">
-						<button class="close-modal" type="button" class="close" data-dismiss="modal">&times;</button>
-						<h4 id="confirmJoinModalTitle"style="color:red;">Add Piece</h4>
+						<button type="button" class="close" data-dismiss="modal">&times;</button>
+						<h4 class="modal-title">Add Piece</h4>
 					</div>
 					<div class="modal-body">
 
@@ -50,8 +67,40 @@
 			</div>
 		</div>
 
+		<div class="modal fade" id="lobby-list-modal" role="dialog">
+			<div class="modal-dialog modal-lg">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal">&times;</button>
+						<h4 class="modal-title">Create a Lobby</h4>
+					</div>
+					<div class="modal-body">
+						<div class="container-fluid">
+							<div class="col-md-8">
+								<p style="word-wrap: break-word;">asdfasdfkasjdlkfjlkajsdlkfjlkasjdflkjaslkdjflkajsdklfjaklsjdflkjsakldjfkjaslkdjflkajsdklfjaklsjdflkjsakldjfkjaslkdjflkajsdklfjaklsjdflkjsakldjfkjaslkdjflkajsdklfjaklsjdflkjsakldjfkjaslkdjflkajsdklfjaklsjdflkjsakldjf</p>
+							</div>
+							<div class="col-md-4">
+								<p style="word-wrap: break-word;">asdfasdlkfjklasjdklfjalksjdlfkjasldkjflkajskldjfklasjkldfjkasjdklfjaskldjf</p>
+							</div>
+						</div>
+
+						
+
+						
+				  		
+					</div>
+					<div class="modal-footer">
+						<button type="button" value="join_game" id="submit-join-lobby" class="btn btn-primary">Join</button>
+				  		<button class="close-modal" type="button" data-dismiss="modal" class="btn btn-secondary">Go Back</button>
+					</div>
+			  	</div>
+			</div>
+		</div>
+
 		<script src="/static/babylon.js"></script>
 		<script src="/static/vboard.js"></script>
 		<script src="/static/menu.js"></script>
+
+		
 	</body>
 </html>

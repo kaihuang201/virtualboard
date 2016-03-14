@@ -22,6 +22,28 @@ var VBoard = VBoard || {};
 					left:"-300px"
 				}, 300);
 			});
+
+			$("#lobby-list-toggler").on("click", function() {
+				
+				// refresh list
+				VBoard.limboIO.listGames();
+				$("#lobby-list").toggle("fast");
+			});
+
+			$("#create-lobby").on("click", function() {
+				$("#main-page").hide("fast");
+				VBoard.limboIO.hostGame("bill", [0, 0, 255], "chess deathmatch", "12345");
+			})
+
+			$("#listGames").on("click", function () {
+				
+				$("#lobby-list-modal").modal();
+
+				var listOfLobbies = vb.interface.listLobbiesRequest();
+
+
+			})
+
 			$("#addPiece").on("click", function () {
 				$("#add-piece-modal").modal();
 			});
@@ -29,6 +51,15 @@ var VBoard = VBoard || {};
 			$("#addChessBoard").on("click", function () {
 				vb.board.loadChessGame();
 			});
+
+			$("#quitGame").on("click", function () {
+				VBoard.sessionIO.disconnect("clicked on Quit Button")
+				$("canvas").hide("fast");
+				$("#main-page").show("fast");
+				$("#context-menu").css("visibility", "hidden");
+			});
+
+
 
 			//$("#penTool").on("click", function () {
 			//	var user = null;

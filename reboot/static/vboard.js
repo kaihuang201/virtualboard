@@ -48,6 +48,69 @@ var VBoard = VBoard || {};
 		}
 	};
 
+	vb.interface = {
+
+
+		// interface initializer
+		init: function () {
+			// TODO:
+		},
+
+		lobbyButtonAssignment: function (lobbyNo, lobbyName, password, color) {
+			$("#lobby-" + lobbyNo.toString()).on("click",function() {
+				self.joinLobbyRequest(color,lobbyName,password);
+			});
+		},
+
+
+		// request methods
+
+		//TODO: most of them
+		createLobbyRequest: function (gameName, password, color) {
+			vb.limboIO.hostGame(vb.users.getLocal(),color,gameName,password);
+		},
+
+		
+
+		joinLobbyRequest: function (color, gameID, password) {
+			vb.limboIO.joinGame(vb.users.getLocal(),color,gameID,password);
+		},
+
+		listLobbiesRequest: function () {
+			vb.limboIO.listGames();
+		},
+
+		leaveLobbyRequest: function () {
+			vb.sessionIO.disconnect();
+		},
+
+		// returned msg methods
+		// TODO: most of them
+		showListGames: function (listOfGames) {
+			console.log("list all games");
+			console.log(JSON.stringify(listOfGames));
+			$("#lobby-list").empty()
+			for (var i = listOfGames.length - 1; i >= 0; i--) {
+				var lobbyID = listOfGames[i]["id"];
+				var singleLobby = '<a id="lobby-' + lobbyID.toString() + '" class="list-group-item"><span class="badge badge-default pull-right">' + listOfGames[i]["players"] + '</span>' + listOfGames[i]["name"] + '</a>'
+				$("#lobby-list").append(singleLobby);
+				var currentLobby = $("#lobby-" + lobbyID.toString());
+				currentLobby.unbind();
+				currentLobby.on("click",function() {
+					// this is going to be replaced
+					vb.interface.joinLobbyRequest([0,0,255],lobbyID,'12345');
+				});
+			}
+
+			// return listOfGames;
+		},
+
+		switchToGameMode: function () {
+			$("#main-page").hide("fast");
+		}
+
+	};
+
 	vb.board = {
 		//members
 		pieces: [], //ordered list
@@ -680,14 +743,15 @@ var VBoard = VBoard || {};
 					vb.socket.onmessage = vb.sessionIO.messageHandler;
 					vb.launchCanvas();
 
+					vb.interface.switchToGameMode();
 					break;
 				case "initFailure":
 					break;
 				case "listGames":
-					//TODO: display list of lobbies received from this query
+					vb.interface.showListGames(data["data"]);
 					break;
 				default:
-					//console.log("unhandled server message");
+					console.log("unhandled server message");
 			}
 		}
 	};
