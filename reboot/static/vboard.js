@@ -118,6 +118,7 @@ var VBoard = VBoard || {};
 			//TODO: disable highlight on piece if it exists
 			clearTimeout(piece.highlightTimeout);
 			clearTimeout(piece.predictTimeout);
+			vb.sessionIO.moveBuffer.remove(piece.id);
 
 			this.pieces.pop();
 			delete this.pieceHash[piece.id];
@@ -875,7 +876,7 @@ var VBoard = VBoard || {};
 		},
 
 		//takes an array of integers representing piece ids
-		removePiece: function (ids) {
+		removePiece: function (id) {
 			if(id.constructor === Array) {
 				var pieceData = [];
 
@@ -1382,24 +1383,45 @@ var VBoard = VBoard || {};
 						"r" : 0,
 						"s" : 16,
 						"static" : 1,
-					}, {
-						"pos" : [-1, 7],
-						"icon" : "/static/img/nbking.png",
-						"color" : [255, 255, 255],
-						"r" : 0,
-						"s" : 2,
-						"static" : 0,
-					}, {
-						"pos" : [1, -7],
-						"icon" : "/static/img/nwking.png",
-						"color" : [255, 255, 255],
-						"r" : 0,
-						"s" : 2,
-						"static" : 0,
-					}
+					},
+					this.loadChessGameHelper("nbking", -1,  7),
+					this.loadChessGameHelper("nwking",  1, -7),
+					this.loadChessGameHelper("nbqueen",  1,  7),
+					this.loadChessGameHelper("nwqueen", -1, -7),
+
+					this.loadChessGameHelper("nbrook",  7,  7),
+					this.loadChessGameHelper("nbrook", -7,  7),
+					this.loadChessGameHelper("nwrook",  7, -7),
+					this.loadChessGameHelper("nwrook", -7, -7),
+
+					this.loadChessGameHelper("nbknight",  5,  7),
+					this.loadChessGameHelper("nbknight", -5,  7),
+					this.loadChessGameHelper("nwknight",  5, -7),
+					this.loadChessGameHelper("nwknight", -5, -7),
+
+					this.loadChessGameHelper("nbbishop",  3,  7),
+					this.loadChessGameHelper("nbbishop", -3,  7),
+					this.loadChessGameHelper("nwbishop",  3, -7),
+					this.loadChessGameHelper("nwbishop", -3, -7)
 				]
 			};
+
+			for(var x = -7; x < 8; x += 2) {
+				chessData["pieces"].push(this.loadChessGameHelper("nbpawn", x, 5));
+				chessData["pieces"].push(this.loadChessGameHelper("nwpawn", x, -5));
+			}
 			this.loadBoardState(chessData);
+		},
+
+		loadChessGameHelper: function (subicon, x, y) {
+			return {
+				"icon" : "/static/img/" + subicon + ".png",
+				"color" : [255, 255, 255],
+				"r" : 0,
+				"s" : 2,
+				"static" : 0,
+				"pos" : [x, y]
+			};
 		}
 	};
 
