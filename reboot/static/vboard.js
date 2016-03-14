@@ -12,6 +12,7 @@ var VBoard = VBoard || {};
 	vb.addHighlightDuration = 500; //milliseconds
 	vb.predictionTimeout = 500; //delay until we roll back the client sided prediction
 	vb.moveTickDuration = 100; //maximum time to hold onto new positional data before sending it
+	vb.smoothTransitionDuration = 90; //how many milliseconds to smooth out motion received from the server
 
 	vb.quickStart = function () {
 		vb.limboIO.hostGame("bill", [0, 0, 255], "chess deathmatch", "12345");
@@ -173,12 +174,17 @@ var VBoard = VBoard || {};
 				piece.position.x = pieceData["pos"][0];
 				piece.position.y = pieceData["pos"][1];
 
+				if(!user.isLocal) {
+					//TODO: remove piece from selectedPieces if it exists
+				}
+
 				if(piece.predictTimeout === null) {
 					//if we have no expectation for this piece's position
 					//then we should update the mesh's position immediately, regardless of who moved it
 
-					piece.mesh.position.x = pieceData["pos"][0];
-					piece.mesh.position.y = pieceData["pos"][1];
+					//piece.mesh.position.x = pieceData["pos"][0];
+					//piece.mesh.position.y = pieceData["pos"][1];
+					this.smoothTransition(piece); //, pieceData["pos"][0], pieceData["pos"][1]);
 				} else {
 					clearTimeout(piece.predictTimeout);
 
@@ -188,10 +194,15 @@ var VBoard = VBoard || {};
 						piece.predictTimeout = null;
 						piece.mesh.position.x = pieceData["pos"][0];
 						piece.mesh.position.y = pieceData["pos"][1];
+						//this.smoothTransition(piece); //, pieceData["pos"][0], pieceData["pos"][1]);
 					} else {
 						//hopefully this motion is part of what we have already predicted
 
 						//check to see if this is the end of the motion
+						//TODO: instead of looking directly at piece.mesh.position, we should instead maybe
+						//		have some secondary variable set on piece.  That way we can easily add
+						//		a smoothing function for setting the value of piece.mesh.position
+						//nvm who cares
 						if(piece.position.x == piece.mesh.position.x && piece.position.y == piece.mesh.position.y) {
 							piece.predictTimeout = null;
 						} else {
@@ -212,6 +223,42 @@ var VBoard = VBoard || {};
 			if(pieceData.hasOwnProperty("s")) {
 				piece.mesh.scaling.x = pieceData.s;
 				piece.mesh.scaling.y = pieceData.s;
+			}
+		},
+
+		smoothedPieces: {},
+
+		smoothTransition: function (piece, x, y) {
+			this.smoothedPieces[piece.id] = {
+				"time" : 0,
+				"oldx" : piece.mesh.position.x,
+				"oldy" : piece.mesh.position.y
+			};
+		},
+
+		//called once per frame
+		//updates the positions of pieces that are currently having their motions smoothed
+		movePieces: function (dt) {
+			for(id in this.smoothedPieces) {
+				if(this.smoothedPieces.hasOwnProperty(id)) {
+					var moveInfo = this.smoothedPieces[id];
+					var piece = this.pieceHash[id];
+					moveInfo.time += dt;
+
+					if(moveInfo.time >= vb.smoothTransitionDuration) {
+						piece.mesh.position.x = piece.position.x;
+						piece.mesh.position.y = piece.position.y;
+
+						//according to the internet its ok to delete this during enumeration
+						delete this.smoothedPieces[id];
+					} else {
+						var progress = moveInfo.time / vb.smoothTransitionDuration;
+						var interpX = (1.0 - progress)*moveInfo.oldx + progress*piece.position.x;
+						var interpY = (1.0 - progress)*moveInfo.oldy + progress*piece.position.y;
+						piece.mesh.position.x = interpX;
+						piece.mesh.position.y = interpY;
+					}
+				}
 			}
 		},
 
@@ -246,6 +293,10 @@ var VBoard = VBoard || {};
 			plane.position = new BABYLON.Vector3(pieceData.pos[0], pieceData.pos[1], 0);
 			plane.rotation.z = pieceData.r;
 
+			//position - last server confirmed position
+			//targetPosition - the same as position except for when the local user is moving the piece
+			//					specifically, targetPosition is where the piece will end up after transition smoothing
+			//mesh.position - where the piece is being rendered
 			var piece = {
 				"id" : pieceData["piece"],
 				"position" : new BABYLON.Vector2(pieceData["pos"][0], pieceData["pos"][1]),
@@ -263,19 +314,21 @@ var VBoard = VBoard || {};
 			//		we should just have a scene.pick trigger in a global event listener
 			//		We also should be able to right click anywhere to bring up a menu
 			//		that lets us add a piece at that location.
-			plane.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnLeftPickTrigger, function (evt) {
-				if(piece.static == false) {
-					vb.board.setSelectedPieces([piece]);
-					var pos = vb.board.screenToGameSpace(new BABYLON.Vector2(vb.scene.pointerX, vb.scene.pointerY));
-					vb.lastDragX = pos.x;
-					vb.lastDragY = pos.y;
-				}
+			plane.actionManager.registerAction(
+				new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnLeftPickTrigger, function (evt) {
+					if(piece.static == false) {
+						vb.board.setSelectedPieces([piece]);
+						var pos = vb.board.screenToGameSpace(new BABYLON.Vector2(vb.scene.pointerX, vb.scene.pointerY));
+						vb.lastDragX = pos.x;
+						vb.lastDragY = pos.y;
+					}
 
-				//check that the shift key was pressed for the context menu
-				if(vb.inputs.keysPressed.indexOf(16) >= 0) {
-					vb.menu.createContextMenu(piece);
-				}
-			}));
+					//check that the shift key was pressed for the context menu
+					if(vb.inputs.keysPressed.indexOf(16) >= 0) {
+						vb.menu.createContextMenu(piece);
+					}
+				})
+			);
 
 			this.add(piece);
 
@@ -298,7 +351,8 @@ var VBoard = VBoard || {};
 			}
 		},
 
-		//TODO: make sure piece is not already in selection
+		//pieces should be in order from bottom element to top element
+		//that way the order won't get jumbled as the pieces move
 		setSelectedPieces: function (pieces) {
 			//maybe this should be called first?
 			this.removeSelectedPieces();
@@ -309,6 +363,8 @@ var VBoard = VBoard || {};
 			//todo: enable the highlight
 		},
 
+		//pieces in this.selectedPieces should be ordered based on depth
+		//we cannot simply insert this piece at the end of the array
 		addSelectedPiece: function (piece) {
 			//TODO
 			//needs to make sure that piece is not already contained in this.selectedPieces
@@ -843,6 +899,7 @@ var VBoard = VBoard || {};
 		//input data is an object that maps properties to values (see pieceData for an example)
 		addPiece: function (inputData) {
 			if(inputData.constructor !== Array) {
+				//turn single input into an array instead of dealing with two cases separately
 				inputData = [inputData];
 			}
 			var pieces = [];
@@ -983,14 +1040,11 @@ var VBoard = VBoard || {};
 		//all of the following should send a pieceTransform message
 		movePiece: function (id, x, y) {
 			if(id.constructor !== Array) {
-				console.log("turning single entry into array");
-				id = [id];
-				x = [x];
-				y = [y];
-			}
-
-			for(var i=0; i<id.length; i++) {
-				this.moveBuffer.add(id[i], x[i], y[i]);
+				this.moveBuffer.add(id, x, y);
+			} else {
+				for(var i=0; i<id.length; i++) {
+					this.moveBuffer.add(id[i], x[i], y[i]);
+				}
 			}
 
 			if(this.moveBuffer.flushTimeout === null) {
@@ -1075,7 +1129,7 @@ var VBoard = VBoard || {};
 			if(id.constructor === Array) {
 				var pieceData = [];
 
-				for(var i=0; i<ids.length; i++) {
+				for(var i=0; i<id.length; i++) {
 					pieceData.push({
 						"piece" : id[i],
 						"color" : color[i]
@@ -1184,8 +1238,29 @@ var VBoard = VBoard || {};
 			//TODO
 		},
 
-		drawCard: function (id, count) {
-			//TODO
+		drawCard: function (deckID, count) {
+			if(deckID.constructor === Array) {
+				var pieceData = [];
+
+				for(var i=0; i<deckID.length; i++) {
+					pieceData.push({
+						"deck" : deckID[i],
+						"count" : color[i]
+					});
+				}
+			} else {
+				var pieceData = [
+					{
+						"piece" : id,
+						"color" : color,
+					}
+				];
+			}
+			var data = {
+				"type" : "pieceTransform",
+				"data" : pieceData
+			};
+			this.send(data);
 		},
 
 		createPrivateZone: function (zoneData) {
@@ -1484,6 +1559,7 @@ var VBoard = VBoard || {};
 		vb.simTime = time;
 		vb.frame++;
 		vb.inputs.processInputs(dt);
+		vb.board.movePieces(dt);
 		vb.scene.render();
 	};
 })(VBoard);
