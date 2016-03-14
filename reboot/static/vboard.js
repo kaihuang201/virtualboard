@@ -17,6 +17,12 @@ var VBoard = VBoard || {};
 		vb.quickStarted = true;
 	};
 
+	vb.quickJoin = function () {
+		//this will only work if the game id of the target game is 0
+		//if you have closed and reopened the host game without restarting the tornado server this will not work
+		vb.limboIO.joinGame("bob", [0, 255, 0], 0, "12345");
+	};
+
 	vb.javascriptInit = function () {
 		//networking
 		vb.socket = new WebSocket("ws://" + window.location.host + window.location.pathname + "socket");
@@ -352,7 +358,7 @@ var VBoard = VBoard || {};
 			var totalX = cameraX + dx;
 			var totalY = cameraY + dy;
 
-			console.log("   output pos: " + totalX + " " + totalY);
+			//console.log("   output pos: " + totalX + " " + totalY);
 			return new BABYLON.Vector2(totalX, totalY);
 		},
 
