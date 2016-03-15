@@ -422,6 +422,47 @@ class Game:
 		}
 		self.message_all(response)
 
+	def flipCard(self, client, pieces):
+		response_data = []
+		for pieceData in pieces:
+			piece_id = pieceData["piece"]
+			piece = self.board_state.get_piece(piece_id)
+			if piece == None:
+				error_data = {
+					"type" : "error",
+					"data" : [
+						{
+							"msg" : "invalid piece id " + id
+						}
+					]
+				}
+				client.write_message(json.dumps(error_data))
+				return
+
+			if piece.isCard:
+				response_data.append({
+					"user": client.user_id,
+					"piece": piece_id,
+					"front_icon": piece.front_icon
+				})
+			else:
+				error_data = {
+					"type" : "error",
+					"data" : [
+						{
+							"msg" : "piece id " + id + " is not a card"
+						}
+					]
+				}
+				client.write_message(json.dumps(error_data))
+				return
+
+		response = {
+			"type": "flipCard",
+			"data": response_data
+		}
+		self.message_all(response)
+
 
 	#def toggleStatic(self, client, pieces):
 	#	#TODO

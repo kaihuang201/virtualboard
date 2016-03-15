@@ -96,7 +96,7 @@ var VBoard = VBoard || {};
 				var data = {
 					"pos" : [vb.camera.position.x, vb.camera.position.y],
 					"icon" : mapEntry.back,
-					"fronticon" : mapEntry.front,
+					"front_icon" : mapEntry.front,
 					"color" : [255, 255, 255],
 					"static" : 0,
 					"s" : mapEntry.size,
@@ -200,13 +200,7 @@ var VBoard = VBoard || {};
             $("#context-flip").on("click" , function(){
 
                 if (piece instanceof Card) {
-                    // TODO send request to server to get the image for the front of the card
-
-                    /****** Temperary Code ******/
-                    var icon = "/static/img/cardfront.png";
-                    /****************************/
-
-                    piece.flip(icon);
+                    vb.sessionIO.flipCard(piece.id);
                 }
                 $("#context-menu").css("visibility", "hidden");
             });

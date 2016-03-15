@@ -9,10 +9,10 @@ class Piece:
 		self.rotation = pieceData["r"]
 		self.size = pieceData["s"]
 
-		if "fronticon" in pieceData:
+		if "front_icon" in pieceData:
 			#TODO
 			self.isCard = True
-			self.fronticon = pieceData["fronticon"]
+			self.front_icon = pieceData["front_icon"]
 		else:
 			self.isCard = False
 
@@ -39,7 +39,7 @@ class Piece:
 		}
 
 		if self.isCard:
-			data["fronticon"] = self.fronticon
+			data["front_icon"] = self.front_icon
 
 		if self.isDie:
 			data["max_roll"] = self.max_roll

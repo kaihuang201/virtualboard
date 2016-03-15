@@ -282,7 +282,7 @@ var VBoard = VBoard || {};
 		//takes JSON formatted data from socket handler
 		generateNewPiece: function (pieceData) {
 			var piece;
-			if (pieceData.fronticon){
+			if (pieceData.front_icon){
 				piece = new Card(pieceData);
 			}
 			else if (pieceData.max_roll) {
@@ -1185,8 +1185,6 @@ var VBoard = VBoard || {};
 			this.send(data);
 		},
 
-		//cards is an array of images that represent the faces of the cards
-		//pieceData is identical to the data used for addPiece and will represent the deck object
 		createDeck: function (deckData) {
 			//TODO
 		},
@@ -1399,6 +1397,16 @@ var VBoard = VBoard || {};
 					}
 					break;
 				case "flipCard":
+					var cards = data["data"];
+
+					for (var i = 0; i < cards.length; i++) {
+						var card = cards[i];
+						var id = card["piece"];
+						var frontIcon = card["front_icon"];
+
+						var piece = vb.board.pieceHash[id];
+						piece.flip(frontIcon);
+					}
 					break;
 				case "createDeck":
 					break;
@@ -1569,7 +1577,7 @@ function Piece(pieceData)
 	//		that lets us add a piece at that location.
 	plane.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnLeftPickTrigger, function (evt) {
 		if(me.static == false) {
-			VBoard.board.setSelectedPiece(me);
+			VBoard.board.setSelectedPieces([me]);
 		}
 
 		//check that the shift key was pressed for the context menu
@@ -1587,7 +1595,7 @@ function Card(pieceData) {
 
 	this.facedown = true;
 
-	this.flip = function (fronticon) {
+	this.flip = function (frontIcon) {
 		this.facedown = !this.facedown;
 
 		var scene = VBoard.scene;
@@ -1597,7 +1605,7 @@ function Card(pieceData) {
 			material.diffuseTexture = new BABYLON.Texture(icon, scene);
 		}
 		else {
-			material.diffuseTexture = new BABYLON.Texture(fronticon, scene);
+			material.diffuseTexture = new BABYLON.Texture(frontIcon, scene);
 		}
 
 		material.diffuseTexture.hasAlpha = true;
