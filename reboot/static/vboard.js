@@ -167,7 +167,6 @@ var VBoard = VBoard || {};
 				$('#template-modal #submit-btn-modal-template').on("click",function () {
 					var password = $('#lobby-password').val();
 					vb.limboIO.joinGame(VBoard.interface.userName,VBoard.interface.colorSelected,lobbyNo,password);
-					console.log("pwd: " + password);
 					// $('#template-modal').modal('hide');
 					vb.interface.clearTemplateModal();
 					// this.colorSelected = [0,0,0];
@@ -189,8 +188,7 @@ var VBoard = VBoard || {};
 					var gameName = $('#lobby-name').val();
 					var password = $('#lobby-password').val();
 					vb.limboIO.hostGame(VBoard.interface.userName,VBoard.interface.colorSelected,gameName,password);
-					console.log("pwd: " + password);
-					// console.log(this.userName + VBoard.interface.colorSelected + gameName + password);
+					// console.log(VBoard.interface.userName+ VBoard.interface.colorSelected + gameName + password);
 					// $('#template-modal').modal('hide');
 					vb.interface.clearTemplateModal();
 					// this.colorSelected = [0,0,0];
@@ -218,8 +216,8 @@ var VBoard = VBoard || {};
 		// returned msg methods
 		// TODO: most of them
 		showListGames: function (listOfGames) {
-			console.log("list all games");
-			console.log(JSON.stringify(listOfGames));
+			// console.log("list all games");
+			// console.log(JSON.stringify(listOfGames));
 			if (listOfGames.length != 0) {
 				$("#lobby-list").empty();
 				for (var i = listOfGames.length - 1; i >= 0; i--) {
