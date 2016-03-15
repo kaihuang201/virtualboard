@@ -17,11 +17,19 @@
 
 
 		<div id="main-page">
-			<div class="btn-group" style="margin-top: 15px; margin-left: 20%; margin-right: 20%;">
-				<button class="btn btn-default" id="lobby-list-toggler">Show Lobbies</button>
-				<button class="btn btn-default" id="create-lobby">Create Lobby</button>
-			</div>
 			
+			
+			<div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups" style="margin-top: 15px; margin-left: 20%; margin-right: 20%;">
+				<div class="btn-group" role="group" aria-label="First group">
+					<button class="btn btn-default" id="lobby-list-toggler">Show Lobbies</button>
+					<button class="btn btn-default" id="create-lobby">Create Lobby</button>
+				</div>
+
+				<div class="btn-group pull-right" role="group" aria-label="First group">
+					<button class="btn btn-default" id="change-username">Enter a nickname</button>
+				</div>
+			</div>
+
 			<ul id="lobby-list" class="list-group" style="display:none; width: 60%; margin-top: 10px; margin-left: 20%; margin-right: 20%;">
 				<!-- <a id="lobby-no-1" class="list-group-item"><span class="label label-default label-pill pull-xs-right">14</span>Cras justo odio</a> -->
 			</ul>
@@ -77,6 +85,9 @@
 					</div>
 					<div class="modal-body">
 						<div class="container-fluid">
+							<div id="model-template-alert">
+								
+							</div>
 							<div class="col-md-12" id="modal-template-content">
 								<div class="form-group">
 									<label for="color-picker" class="form-control-label">Choose <span id="selected-color">Your Color</span>:</label>

@@ -31,6 +31,8 @@ var VBoard = VBoard || {};
 			console.log("rip socket");
 
 			//TODO: display graphical error message, tell user to refresh page
+			// alert("socket is closed, please refresh page!");
+			vb.interface.alertModal('socket is closed, please refresh page!');
 		};
 	};
 
@@ -69,7 +71,7 @@ var VBoard = VBoard || {};
 			$("#create-lobby").on("click", function() {
 				// $("#main-page").hide("fast");
 				VBoard.interface.createLobbyRequest();
-			})
+			});
 
 			$("#listGames").on("click", function () {
 				
@@ -78,9 +80,16 @@ var VBoard = VBoard || {};
 				var listOfLobbies = vb.interface.listLobbiesRequest();
 
 
-			})
+			});
 
-			vb.interface.colorPickerInit();
+			// vb.interface.colorPickerInit();
+
+			$('#change-username').on('click',function () {
+				vb.interface.clearTemplateModalAlert();
+				vb.interface.clearTemplateModal();
+				vb.interface.userNamePrompt();
+				$('#user-nickname').val(this.userName);
+			});
 		},
 
 		colorPickerInit: function () {
@@ -121,11 +130,13 @@ var VBoard = VBoard || {};
 			$('#template-modal #submit-btn-modal-template').unbind();
 			$('#template-modal #submit-btn-modal-template').on("click",function () {
 				if ($('#user-nickname').val() != '') {
-					self.userName = $('#user-nickname').val();
+					this.userName = $('#user-nickname').val();
+					$('#change-username').html("Hello " + this.userName +'!');
 					$('#template-modal').modal('hide');
 					vb.interface.clearTemplateModal();
 				} else {
-					alert('Please enter a valid username');
+					// alert('Please enter a valid username');
+					vb.interface.setTemplateModalAlert('Make sure you put in a valid nickname')
 				}
 				
 				
@@ -141,9 +152,9 @@ var VBoard = VBoard || {};
 				$('#template-modal #submit-btn-modal-template').on("click",function () {
 					var password = $('#lobby-password').val();
 					vb.limboIO.joinGame(vb.interface.userName,vb.interface.colorSelected,lobbyNo,password);
-					$('#template-modal').modal('hide');
+					// $('#template-modal').modal('hide');
 					vb.interface.clearTemplateModal();
-					self.colorSelected = [0,0,0];
+					// this.colorSelected = [0,0,0];
 				});
 			// });
 			
@@ -158,11 +169,10 @@ var VBoard = VBoard || {};
 			$('#template-modal #submit-btn-modal-template').on("click",function () {
 				var gameName = $('#lobby-name').val();
 				var password = $('#lobby-password').val();
-				vb.limboIO.hostGame(self.userName,self.colorSelected,gameName,password);
-				console.log(self.userName + self.colorSelected + gameName + password + "  <- test");
-				$('#template-modal').modal('hide');
+				vb.limboIO.hostGame(this.userName,this.colorSelected,gameName,password);
+				// $('#template-modal').modal('hide');
 				vb.interface.clearTemplateModal();
-				self.colorSelected = [0,0,0];
+				// this.colorSelected = [0,0,0];
 			});
 			
 			
@@ -183,29 +193,36 @@ var VBoard = VBoard || {};
 		showListGames: function (listOfGames) {
 			console.log("list all games");
 			console.log(JSON.stringify(listOfGames));
-			$("#lobby-list").empty()
-			for (var i = listOfGames.length - 1; i >= 0; i--) {
-				var lobbyID = listOfGames[i]["id"];
-				var lobbyName = listOfGames[i]["name"];
-				var singleLobby = '<a id="lobby-' + lobbyID.toString() + '" class="list-group-item"><span class="badge badge-default pull-right">' + listOfGames[i]["players"] + '</span>' + lobbyName + '</a>'
-				$("#lobby-list").append(singleLobby);
-				var currentLobby = $("#lobby-" + lobbyID.toString());
-				currentLobby.unbind();
-				currentLobby.on("click",function() {
-					// this is going to be replaced
-					// vb.interface.joinLobbyRequest([0,0,255],lobbyID,'12345');
-					vb.interface.joinLobbyRequest(lobbyID,lobbyName);
-				});
+			if (listOfGames.length != 0) {
+				$("#lobby-list").empty();
+				for (var i = listOfGames.length - 1; i >= 0; i--) {
+					var lobbyID = listOfGames[i]["id"];
+					var lobbyName = listOfGames[i]["name"];
+					var singleLobby = '<a id="lobby-' + lobbyID.toString() + '" class="list-group-item"><span class="badge badge-default pull-right">' + listOfGames[i]["players"] + '</span>' + lobbyName + '</a>'
+					$("#lobby-list").append(singleLobby);
+					var currentLobby = $("#lobby-" + lobbyID.toString());
+					currentLobby.unbind();
+					currentLobby.on("click",function() {vb.interface.joinLobbyRequest(lobbyID,lobbyName);});
+				}
+			} else {
+				$("#lobby-list").empty();
+				$("#lobby-list").append('<a id="retry-btn" class="list-group-item">No Game Found...Please Click to Retry</a>');
+				$('#retry-btn').unbind();
+				$('#retry-btn').on('click',function() {vb.interface.listLobbiesRequest();})
 			}
+			
 
-			// return listOfGames;
 		},
 
+
+		// Modal operation functions
 		switchToGameMode: function () {
 			$("#main-page").hide("fast");
+			$('#template-modal').modal('hide');
 		},
 
 		switchToCreateLobbyModal: function () {
+			vb.interface.clearTemplateModalAlert();
 			$('#modal-template-title').html('Create A Lobby');
 			$('#modal-template-content').html('<div class="form-group"> \
 									<label for="color-picker" class="form-control-label">Choose <span id="selected-color">Your Color</span>:</label> \
@@ -219,12 +236,14 @@ var VBoard = VBoard || {};
 									<label for="lobby-password" class="form-control-label">Game Password:</label>\
 									<input type="password" class="form-control" id="lobby-password">\
 								</div>');
-			$('#template-modal #submit-btn-modal-template').html('Create');
-			$("#selected-color").css('color',self.colorLastSelectedStr);
+
+			$('#template-modal #submit-btn-modal-template').show().html('Create');
+			$("#selected-color").css('color',this.colorLastSelectedStr);
 			vb.interface.colorPickerInit();
 		},
 
 		switchToJoinLobbyModal: function (lobbyName) {
+			vb.interface.clearTemplateModalAlert();
 			$('#modal-template-title').html('Join 『' + lobbyName + '』');
 			$('#modal-template-content').html('<div class="form-group"> \
 									<label for="color-picker" class="form-control-label">Choose <span id="selected-color">Your Color</span>:</label> \
@@ -234,22 +253,39 @@ var VBoard = VBoard || {};
 									<label for="lobby-password" class="form-control-label">Game Password:</label>\
 									<input type="password" class="form-control" id="lobby-password">\
 								</div>');
-			$('#template-modal #submit-btn-modal-template').html('Join');
-			$("#selected-color").css('color',self.colorLastSelectedStr);
+			$('#template-modal #submit-btn-modal-template').show().html('Join');
+			$("#selected-color").css('color',this.colorLastSelectedStr);
 			vb.interface.colorPickerInit();
 		},
 
 		switchToUserNicknameModal: function () {
+			vb.interface.clearTemplateModalAlert();
 			$('#modal-template-title').html('Please Enter A Nickname:');
 			$('#modal-template-content').html('<div class="form-group">\
-									<label for="user-nickname" class="form-control-label">User Name:</label>\
+									<label for="user-nickname" class="form-control-label">Choose Your Nickname:</label>\
 									<input type="text" class="form-control" id="user-nickname">\
 								</div>');
-			$('#template-modal #submit-btn-modal-template').html('Join');
+			$('#template-modal #submit-btn-modal-template').show().html('Confirm');
 		},
 
 		clearTemplateModal: function () {
 			$('#modal-template-content').html('');
+		},
+
+		setTemplateModalAlert: function (alertText) {
+			$("#model-template-alert").html('<div class="alert alert-danger" role="alert">\
+									<strong>Oops!</strong> '+ alertText + '\
+								</div>');
+		},
+
+		clearTemplateModalAlert: function () {
+			$("#model-template-alert").html('');
+		},
+
+		alertModal: function (alertText) {
+			$('#submit-btn-modal-template').hide();
+			this.setTemplateModalAlert(alertText);
+			$('#template-modal').modal('show');
 		}
 
 	};
