@@ -32,6 +32,9 @@ var VBoard = VBoard || {};
 					left:"-300px"
 				}, 300);
 			});
+
+			
+
 			$("#addPiece").on("click", function () {
 				$("#add-piece-modal").modal();
 			});
@@ -56,6 +59,15 @@ var VBoard = VBoard || {};
 			$("#addChessBoard").on("click", function () {
 				vb.board.loadChessGame();
 			});
+
+			$("#quitGame").on("click", function () {
+				VBoard.sessionIO.disconnect("clicked on Quit Button")
+				$("canvas").hide("fast");
+				$("#main-page").show("fast");
+				$("#context-menu").css("visibility", "hidden");
+			});
+
+
 
 			//$("#penTool").on("click", function () {
 			//	var user = null;

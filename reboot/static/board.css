@@ -60,3 +60,32 @@ div.context-item:hover{
 	background-color: rgba(120,120,120,0.5);
 }
 
+
+
+/* Tooltip */
+.btn-tooltip + .tooltip > .tooltip-inner {
+    background-color: #eeeeee; 
+    color: #555555; 
+    border: 0px solid #eeeeee;
+    padding: 7px;
+    font-size: 13px;
+}
+/* Tooltip on top */
+.btn-tooltip + .tooltip.top > .tooltip-arrow {
+    border-top: 5px solid #eeeeee;
+}
+
+/* Tooltip on bottom */
+.btn-tooltip + .tooltip.bottom > .tooltip-arrow {
+    border-bottom: 5px solid #eeeeee;
+}
+
+/* Tooltip on left */
+.btn-tooltip + .tooltip.left > .tooltip-arrow {
+    border-left: 5px solid #eeeeee;
+}
+
+/* Tooltip on right */
+.btn-tooltip + .tooltip.right > .tooltip-arrow {
+    border-right: 5px solid #eeeeee;
+}
