@@ -39,8 +39,9 @@
 
 
 		<div id="menu" style="visibility: hidden">
-			
 			<button id="addPiece" class="btn btn-success btn-menu" type="button">Add Piece</button>
+			<button id="addCard" class="btn btn-success btn-menu" type="button">Add Card</button>
+			<button id="addDie" class="btn btn-success btn-menu" type="button">Add Die</button>
 			<button id="addChessBoard" class="btn btn-success btn-menu" type="button">Add ChessBoard</button>
 			<button id="penTool" class="btn btn-success btn-menu" type="button">Pen Tool</button>
 			<button id="quitGame" class="btn btn-success btn-menu" type="button">Exit Game</button>
@@ -51,6 +52,8 @@
 			<div id="context-back" class="context-item">Push to Back</div>
 			<div id="context-front" class="context-item">Bring to Front</div>
 			<div id="context-static" class="context-item">Static Toggle</div>
+			<div id="context-flip" class="context-item">Flip</div>
+			<div id="context-roll" class="context-item">Roll</div>
 		</div>
 
 		<canvas id="canvas">
@@ -75,6 +78,7 @@
 			  	</div>
 			</div>
 		</div>
+
 
 		<div class="modal fade" id="template-modal" role="dialog">
 			<div class="modal-dialog modal-sm">
@@ -113,6 +117,46 @@
 			  	</div>
 			</div>
 		</div>
+
+		<div class="modal fade" id="add-card-modal" role="dialog">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button class="close-modal" type="button" class="close" data-dismiss="modal">&times;</button>
+						<h4 id="confirmJoinModalTitle"style="color:red;">Add Card</h4>
+					</div>
+					<div class="modal-body">
+
+						<select id="add-card-list"></select>
+
+				  		<button type="submit" value="Add Piece" id="submit-add-card">Add</button>
+				  		<button class="close-modal" type="button" data-dismiss="modal">Cancel</button>
+					</div>
+					<div class="modal-footer"></div>
+			  	</div>
+			</div>
+		</div>
+
+		<div class="modal fade" id="add-die-modal" role="dialog">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button class="close-modal" type="button" class="close" data-dismiss="modal">&times;</button>
+						<h4 id="confirmJoinModalTitle"style="color:red;">Add Die</h4>
+					</div>
+					<div class="modal-body">
+
+						<select id="add-die-list"></select>
+						Max: <input id="add-die-max" type="number" min="1"/>
+
+				  		<button type="submit" value="Add Die" id="submit-add-die">Add</button>
+				  		<button class="close-modal" type="button" data-dismiss="modal">Cancel</button>
+					</div>
+					<div class="modal-footer"></div>
+				</div>
+			</div>
+		</div>
+		
 
 		<script src="/static/babylon.js"></script>
 		<script src="/static/vboard.js"></script>

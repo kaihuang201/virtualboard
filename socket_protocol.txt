@@ -56,7 +56,7 @@
 		"gameName" : "coolville",
 		"users" : [
 			{
-				"id" : 0,
+				"user" : 0,
 				"name" : "sam",
 				"color" : [
 					255,
@@ -67,7 +67,7 @@
 				"local" : 0
 			},
 			{
-				"id" : 3,
+				"user" : 3,
 				"name": "fred",
 				"color" : [
 					0,
@@ -226,10 +226,26 @@
 
 {
 	"type" : "pieceTransform",
+
+	//alternatively, the following shorthand is acceptable
+	"type" : "pt",
+
+	//optionally, a user may be specified at this top level which would then be used for all following pieces
+	//	the functions handling the socket api should propogate this field to all entries in the data array
+	//	before passing the json data on to other functions
+	//	(not implemented yet)
+	"u" : 4,
+
 	"data" : [
 		{
 			"piece" : 3,
 			"user" : 4,
+
+			//alternatively to the two parameters above, the following can be used instead
+			//	the functions handling the socket api should immediately convert to the expanded version
+			//	before passing the json data on to other functions
+			"p" : 3,
+			"u" : 4
 
 			//optional parameters
 			"icon" : "/res/img.png",
@@ -374,7 +390,7 @@
 	"type" : "listClients",
 	"data" : [
 		{
-			"id" : 0,
+			"user" : 0,
 			"name" : "sam",
 			"host" : 1,
 			"local" : 0,
@@ -385,7 +401,7 @@
 			]
 		},
 		{
-			"id" : 3,
+			"user" : 3,
 			"name": "fred",
 			"host" : 0,
 			"local" : 1,
@@ -602,9 +618,15 @@
 //additionally, we can make it so color changes are managed here
 {
 	"type" : "pieceTransform",
+
 	"data" :  [
 		{
 			"piece" : 3,
+
+			//alternatively to the piece parameter above, the following can be used instead
+			//	the functions handling the socket api should immediately convert to the expanded version
+			//	before passing the json data on to other functions
+			"p" : 3,
 
 			//optional parameters
 			"icon" : "/res/img.png",

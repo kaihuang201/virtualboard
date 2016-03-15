@@ -1,0 +1,11 @@
+{
+    "d6" : {
+        "size" : 2,
+        "1" : "/static/img/die_face_1.png",
+        "2" : "/static/img/die_face_2.png",
+        "3" : "/static/img/die_face_3.png",
+        "4" : "/static/img/die_face_4.png",
+        "5" : "/static/img/die_face_5.png",
+        "6" : "/static/img/die_face_6.png"
+    }
+}
