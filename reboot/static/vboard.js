@@ -1569,7 +1569,7 @@ function Piece(pieceData)
 	//		that lets us add a piece at that location.
 	plane.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnLeftPickTrigger, function (evt) {
 		if(me.static == false) {
-			VBoard.board.setSelectedPiece(me);
+			VBoard.board.setSelectedPieces([me]);
 		}
 
 		//check that the shift key was pressed for the context menu
