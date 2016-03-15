@@ -25,7 +25,7 @@
 				</div>
 
 				<div class="btn-group pull-right" role="group" aria-label="First group">
-					<button class="btn btn-default btn-tooltip" id="change-username" data-toggle="tooltip" data-placement="right" data-original-title="Change Me!">I have no nickname</button>
+					<button class="btn btn-default btn-tooltip" id="change-username" data-toggle="tooltip" data-placement="right" data-original-title="Change Me!">Click here to set a nickname</button>
 				</div>
 			</div>
 
@@ -34,30 +34,31 @@
 			</ul>
 		</div>
 
+		<!--<div id="game-page" style="display:none;> -->
 
+			<div id="menu" style="visibility: hidden">
+				<button id="addPiece" class="btn btn-success btn-menu" type="button">Add Piece</button>
+				<button id="addCard" class="btn btn-success btn-menu" type="button">Add Card</button>
+				<button id="addDie" class="btn btn-success btn-menu" type="button">Add Die</button>
+				<button id="addChessBoard" class="btn btn-success btn-menu" type="button">Add ChessBoard</button>
+				<button id="penTool" class="btn btn-success btn-menu" type="button">Pen Tool</button>
+				<button id="quitGame" class="btn btn-success btn-menu" type="button">Exit Game</button>
+			</div>
+			<div id="viewMenuHover"></div>
+			<div id="context-menu">
+				<div id="context-delete" class="context-item">Delete</div>
+				<div id="context-back" class="context-item">Push to Back</div>
+				<div id="context-front" class="context-item">Bring to Front</div>
+				<div id="context-static" class="context-item">Static Toggle</div>
+				<div id="context-flip" class="context-item">Flip</div>
+				<div id="context-roll" class="context-item">Roll</div>
+			</div>
 
+			<canvas id="canvas">
+				If you can see this, your browser may not support HTML 5
+			</canvas>
 
-		<div id="menu" style="visibility: hidden">
-			<button id="addPiece" class="btn btn-success btn-menu" type="button">Add Piece</button>
-			<button id="addCard" class="btn btn-success btn-menu" type="button">Add Card</button>
-			<button id="addDie" class="btn btn-success btn-menu" type="button">Add Die</button>
-			<button id="addChessBoard" class="btn btn-success btn-menu" type="button">Add ChessBoard</button>
-			<button id="penTool" class="btn btn-success btn-menu" type="button">Pen Tool</button>
-			<button id="quitGame" class="btn btn-success btn-menu" type="button">Exit Game</button>
-		</div>
-		<div id="viewMenuHover"></div>
-		<div id="context-menu">
-			<div id="context-delete" class="context-item">Delete</div>
-			<div id="context-back" class="context-item">Push to Back</div>
-			<div id="context-front" class="context-item">Bring to Front</div>
-			<div id="context-static" class="context-item">Static Toggle</div>
-			<div id="context-flip" class="context-item">Flip</div>
-			<div id="context-roll" class="context-item">Roll</div>
-		</div>
-
-		<canvas id="canvas">
-			If you can see this, your browser may not support HTML 5
-		</canvas>
+		<!--</div>-->
 
 		<div class="modal fade" id="add-piece-modal" role="dialog">
 			<div class="modal-dialog">

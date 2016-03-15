@@ -101,7 +101,7 @@ var VBoard = VBoard || {};
 
 
 			// automatic refresh game list
-			VBoard.interface.autoGameListIntervalID = setInterval(function(){VBoard.limboIO.listGames();}, 2000);
+			VBoard.interface.autoGameListIntervalID = setInterval(function(){VBoard.limboIO.listGames();}, 20000);
 			// enable tooltip @ bootstrap
 			$('[data-toggle="tooltip"]').tooltip(); 
 		},
@@ -156,6 +156,16 @@ var VBoard = VBoard || {};
 				}
 				
 				
+			});
+			//TODO: figure out a proper callback
+			setTimeout(function () {
+				$('#user-nickname').focus();
+			}, 500);
+			$("#user-nickname").keypress(function (event) {
+				//detect enter keypress while textbox is selected
+				if(event.keyCode == '13') {
+					$("#submit-btn-modal-template").click();
+				}
 			});
 		},
 
@@ -249,7 +259,7 @@ var VBoard = VBoard || {};
 				}
 			} else {
 				$("#lobby-list").empty();
-				$("#lobby-list").append('<a id="retry-btn" class="list-group-item">No Game Found...</a>');
+				$("#lobby-list").append('<a id="retry-btn" class="list-group-item">No Games Found, but you can Create a Lobby!</a>');
 				$('#retry-btn').unbind();
 				// $('#retry-btn').on('click',function() {vb.interface.listLobbiesRequest();})
 			}
@@ -262,6 +272,7 @@ var VBoard = VBoard || {};
 		switchToGameMode: function () {
 			$("#main-page").hide("fast");
 			$('#template-modal').modal('hide');
+			$("#game-page").show("fast");
 
 			// stop lobby list refreshing
 			clearInterval(VBoard.interface.autoGameListIntervalID);
