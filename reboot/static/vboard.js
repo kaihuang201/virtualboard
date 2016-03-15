@@ -231,7 +231,7 @@ var VBoard = VBoard || {};
 				$("#lobby-list").empty();
 				$("#lobby-list").append('<a id="retry-btn" class="list-group-item">No Game Found...</a>');
 				$('#retry-btn').unbind();
-				$('#retry-btn').on('click',function() {vb.interface.listLobbiesRequest();})
+				// $('#retry-btn').on('click',function() {vb.interface.listLobbiesRequest();})
 			}
 			
 
