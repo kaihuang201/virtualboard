@@ -23,26 +23,7 @@ var VBoard = VBoard || {};
 				}, 300);
 			});
 
-			$("#lobby-list-toggler").on("click", function() {
-
-				// refresh list
-				VBoard.limboIO.listGames();
-				$("#lobby-list").toggle("fast");
-			});
-
-			$("#create-lobby").on("click", function() {
-				// $("#main-page").hide("fast");
-				VBoard.interface.createLobbyRequest();
-			})
-
-			$("#listGames").on("click", function () {
-				
-				$("#lobby-list-modal").modal();
-
-				var listOfLobbies = vb.interface.listLobbiesRequest();
-
-
-			})
+			
 
 			$("#addPiece").on("click", function () {
 				$("#add-piece-modal").modal();

@@ -55,6 +55,25 @@ var VBoard = VBoard || {};
 		// interface initializer
 		init: function () {
 			// TODO:
+			$("#lobby-list-toggler").on("click", function() {
+				// refresh list
+				VBoard.limboIO.listGames();
+				$("#lobby-list").toggle("fast");
+			});
+
+			$("#create-lobby").on("click", function() {
+				// $("#main-page").hide("fast");
+				VBoard.interface.createLobbyRequest();
+			})
+
+			$("#listGames").on("click", function () {
+				
+				$("#template-modal").modal();
+
+				var listOfLobbies = vb.interface.listLobbiesRequest();
+
+
+			})
 
 			vb.interface.colorPickerInit();
 		},
@@ -88,32 +107,44 @@ var VBoard = VBoard || {};
 			});
 		},
 
-		lobbyButtonAssignment: function (lobbyNo, lobbyName, password, color) {
-			$("#lobby-" + lobbyNo.toString()).on("click",function() {
-				self.joinLobbyRequest(color,lobbyName,password);
-			});
+		// request methods
+
+		joinLobbyRequest: function (lobbyNo, lobbyName) {
+			// $("#lobby-" + lobbyNo.toString()).on("click",function() {
+				
+				vb.interface.switchToJoinLobbyModal(lobbyName);
+				$('#template-modal').modal('show');
+
+				$('#template-modal #submit-btn-modal-template').on("click",function () {
+					var password = $('#lobby-password').val();
+					vb.limboIO.joinGame('annonymous',self.colorSelected,lobbyNo,password);
+					vb.interface.clearTemplateModal();
+					self.colorSelected = [0,0,0];
+				});
+			// });
+			
 		},
 
 
-		// request methods
+		
 
 		//TODO: most of them
 		createLobbyRequest: function () {
-			$('#lobby-list-modal').modal('show');
-			$('#lobby-list-modal #submit-join-lobby').on("click",function () {createLobbySubmit();})
-			function createLobbySubmit () {
+			vb.interface.switchToCreateLobbyModal();
+			$('#template-modal').modal('show');
+
+			$('#template-modal #submit-btn-modal-template').on("click",function () {
 				var gameName = $('#lobby-name').val();
 				var password = $('#lobby-password').val();
-				vb.limboIO.hostGame(vb.users.getLocal(),self.colorSelected,gameName,password);
-			};
+				vb.limboIO.hostGame("annonymous",self.colorSelected,gameName,password);
+				vb.interface.clearTemplateModal();
+				self.colorSelected = [0,0,0];
+			});
+			
 			
 		},
 
 		
-
-		joinLobbyRequest: function (color, gameID, password) {
-			vb.limboIO.joinGame(vb.users.getLocal(),color,gameID,password);
-		},
 
 		listLobbiesRequest: function () {
 			vb.limboIO.listGames();
@@ -131,13 +162,15 @@ var VBoard = VBoard || {};
 			$("#lobby-list").empty()
 			for (var i = listOfGames.length - 1; i >= 0; i--) {
 				var lobbyID = listOfGames[i]["id"];
-				var singleLobby = '<a id="lobby-' + lobbyID.toString() + '" class="list-group-item"><span class="badge badge-default pull-right">' + listOfGames[i]["players"] + '</span>' + listOfGames[i]["name"] + '</a>'
+				var lobbyName = listOfGames[i]["name"];
+				var singleLobby = '<a id="lobby-' + lobbyID.toString() + '" class="list-group-item"><span class="badge badge-default pull-right">' + listOfGames[i]["players"] + '</span>' + lobbyName + '</a>'
 				$("#lobby-list").append(singleLobby);
 				var currentLobby = $("#lobby-" + lobbyID.toString());
 				currentLobby.unbind();
 				currentLobby.on("click",function() {
 					// this is going to be replaced
-					vb.interface.joinLobbyRequest([0,0,255],lobbyID,'12345');
+					// vb.interface.joinLobbyRequest([0,0,255],lobbyID,'12345');
+					vb.interface.joinLobbyRequest(lobbyID,lobbyName);
 				});
 			}
 
@@ -146,6 +179,42 @@ var VBoard = VBoard || {};
 
 		switchToGameMode: function () {
 			$("#main-page").hide("fast");
+		},
+
+		switchToCreateLobbyModal: function () {
+			$('#modal-template-title').html('Create A Lobby');
+			$('#modal-template-content').html('<div class="form-group"> \
+									<label for="color-picker" class="form-control-label">Choose <span id="selected-color">Your Color</span>:</label> \
+									<div id="color-picker" style="padding-top: 5px;"></div>\
+								</div>\
+								<div class="form-group">\
+									<label for="lobby-name" class="form-control-label">Name Your Game:</label>\
+									<input type="text" class="form-control" id="lobby-name">\
+								</div>\
+								<div class="form-group">\
+									<label for="lobby-password" class="form-control-label">Game Password:</label>\
+									<input type="password" class="form-control" id="lobby-password">\
+								</div>');
+			$('#template-modal #submit-btn-modal-template').html('Create');
+			vb.interface.colorPickerInit();
+		},
+
+		switchToJoinLobbyModal: function (lobbyName) {
+			$('#modal-template-title').html('Join ' + lobbyName);
+			$('#modal-template-content').html('<div class="form-group"> \
+									<label for="color-picker" class="form-control-label">Choose <span id="selected-color">Your Color</span>:</label> \
+									<div id="color-picker" style="padding-top: 5px;"></div>\
+								</div>\
+								<div class="form-group">\
+									<label for="lobby-password" class="form-control-label">Game Password:</label>\
+									<input type="password" class="form-control" id="lobby-password">\
+								</div>');
+			$('#template-modal #submit-btn-modal-template').html('Join');
+			vb.interface.colorPickerInit();
+		},
+
+		clearTemplateModal: function () {
+			$('#modal-template-content').html('');
 		}
 
 	};

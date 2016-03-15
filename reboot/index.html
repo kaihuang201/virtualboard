@@ -68,16 +68,16 @@
 			</div>
 		</div>
 
-		<div class="modal fade" id="lobby-list-modal" role="dialog">
+		<div class="modal fade" id="template-modal" role="dialog">
 			<div class="modal-dialog modal-sm">
 				<div class="modal-content">
 					<div class="modal-header">
 						<button type="button" class="close" data-dismiss="modal">&times;</button>
-						<h4 class="modal-title">Create a Lobby</h4>
+						<h4 class="modal-title" id="modal-template-title">Create a Lobby</h4>
 					</div>
 					<div class="modal-body">
 						<div class="container-fluid">
-							<div class="col-md-12">
+							<div class="col-md-12" id="modal-template-content">
 								<div class="form-group">
 									<label for="color-picker" class="form-control-label">Choose <span id="selected-color">Your Color</span>:</label>
 									<div id="color-picker" style="padding-top: 5px;"></div>
@@ -96,7 +96,7 @@
 						</div>	  		
 					</div>
 					<div class="modal-footer">
-						<button type="button" value="join_game" id="submit-join-lobby" class="btn btn-primary" data-dismiss="modal">Create</button>
+						<button type="button" value="join_game" id="submit-btn-modal-template" class="btn btn-primary" data-dismiss="modal">Create</button>
 				  		<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
 					</div>
 			  	</div>
