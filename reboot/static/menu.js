@@ -24,15 +24,15 @@ var VBoard = VBoard || {};
 			});
 
 			$("#lobby-list-toggler").on("click", function() {
-				
+
 				// refresh list
 				VBoard.limboIO.listGames();
 				$("#lobby-list").toggle("fast");
 			});
 
 			$("#create-lobby").on("click", function() {
-				$("#main-page").hide("fast");
-				VBoard.limboIO.hostGame("bill", [0, 0, 255], "chess deathmatch", "12345");
+				// $("#main-page").hide("fast");
+				VBoard.interface.createLobbyRequest();
 			})
 
 			$("#listGames").on("click", function () {

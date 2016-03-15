@@ -49,11 +49,43 @@ var VBoard = VBoard || {};
 	};
 
 	vb.interface = {
-
+		// this is for color selected from the interface
+		colorSelected: [0,0,0],
 
 		// interface initializer
 		init: function () {
 			// TODO:
+
+			vb.interface.colorPickerInit();
+		},
+
+		colorPickerInit: function () {
+			// adapted from
+			// http://wanderinghorse.net/computing/javascript/jquery/colorpicker/demo-colorpicker.html
+			$('#color-picker').empty().addColorPicker({
+				clickCallback: function(c) {
+					// $('#ColorSelectionTarget2').css('border-color',c).css('color',c);
+					$("#selected-color").css('color',c);
+					// $("#selected-color").animate({
+					// 	color: "#fff"
+					// },1000);
+					function strRGB2ArrayRGB(str) {
+						var retRGB = str.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+						return [parseInt(retRGB[1],10),parseInt(retRGB[2],10),parseInt(retRGB[3],10)];
+					};
+					colorSelected = strRGB2ArrayRGB(c);
+				},
+				colors: [ '#FF4351', '#7D79F2', '#1B9AF7', '#A5DE37', '#FEAE1B' ],
+				iterationCallback: function(target,elem,color,iterationNumber) {
+		      			if( iterationNumber < 4 /* colors array is undefined here :( */ ) {
+		      				target.append('&nbsp;&nbsp;');
+		      			}
+		      		elem.css("border","1px solid #dddddd")
+		      			.css("padding", "7px")
+		      			.css("border-radius", "10px");
+					elem.html("&nbsp;&nbsp;&nbsp;&nbsp;");
+				}
+			});
 		},
 
 		lobbyButtonAssignment: function (lobbyNo, lobbyName, password, color) {
@@ -66,8 +98,15 @@ var VBoard = VBoard || {};
 		// request methods
 
 		//TODO: most of them
-		createLobbyRequest: function (gameName, password, color) {
-			vb.limboIO.hostGame(vb.users.getLocal(),color,gameName,password);
+		createLobbyRequest: function () {
+			$('#lobby-list-modal').modal('show');
+			$('#lobby-list-modal #submit-join-lobby').on("click",function () {createLobbySubmit();})
+			function createLobbySubmit () {
+				var gameName = $('#lobby-name').val();
+				var password = $('#lobby-password').val();
+				vb.limboIO.hostGame(vb.users.getLocal(),self.colorSelected,gameName,password);
+			};
+			
 		},
 
 		
@@ -1247,4 +1286,5 @@ var VBoard = VBoard || {};
 $(document).ready(function () {
 	console.log("document ready");
 	VBoard.javascriptInit();
+	VBoard.interface.init();
 });
