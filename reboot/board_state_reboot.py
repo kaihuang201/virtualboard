@@ -32,6 +32,12 @@ class Piece:
 			self.isDie = False
 			self.icon = pieceData["icon"]
 
+		if "cards" in pieceData:
+			self.isDeck = True
+			self.cards = pieceData["cards"]
+		else:
+			self.isDeck = False
+
 	def get_json_obj(self):
 		data = {
 			"pos" : self.pos,
@@ -47,6 +53,9 @@ class Piece:
 
 		if self.isDie:
 			data["max_roll"] = self.max_roll
+
+		if self.isDeck:
+			data["cards"] = self.cards
 
 		data["icon"] = self.icon
 

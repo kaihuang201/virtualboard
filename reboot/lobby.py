@@ -3,6 +3,7 @@ import tornado.websocket
 import json
 import time
 import random
+import numpy
 
 from board_state_reboot import *
 
@@ -425,6 +426,16 @@ class Game:
 			"data": response_data
 		}
 		self.message_all(response)
+
+	def createDeck(self, client, pieces):
+		for piece in pieces:
+			cards = [
+				#TODO fill with cards
+			]
+			numpy.random.shuffle(cards)
+			piece["cards"] = cards
+
+		self.pieceAdd(client, pieces)
 
 	def flipCard(self, client, pieces):
 		response_data = []

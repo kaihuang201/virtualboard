@@ -45,6 +45,17 @@ var VBoard = VBoard || {};
 				vb.board.loadChessGame();
 			});
 
+			$("#addDeck").on("click", function () {
+				vb.sessionIO.createDeck([{
+					"pos" : [vb.camera.position.x, vb.camera.position.y],
+					"color" : [255, 255, 255],
+					"static" : 0,
+					"s" : 4,
+					"r" : vb.camera.rotation.z,
+					"icon" : "/static/img/card/cardback.png"
+				}]);
+			});
+
 			//$("#penTool").on("click", function () {
 			//	var user = null;
 			//	var pos = {x:0, y:0};

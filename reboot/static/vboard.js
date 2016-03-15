@@ -1186,7 +1186,11 @@ var VBoard = VBoard || {};
 		},
 
 		createDeck: function (deckData) {
-			//TODO
+			var data = {
+				"type" : "createDeck",
+				"data" : deckData
+			};
+			this.send(data);
 		},
 
 		addCardPieceToDeck: function (deckID, cardID) {
