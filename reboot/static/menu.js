@@ -7,7 +7,17 @@ var VBoard = VBoard || {};
 				$.each(data, function(key, value) {
 					vb.board.pieceNameMap[key] = value;
 				});
-				vb.menu.loadOptions();
+				vb.menu.loadPieceOptions();
+			});$.getJSON("/static/json/cardmap.json", function (data) {
+				$.each(data, function(key, value) {
+					vb.board.cardNameMap[key] = value;
+				});
+				vb.menu.loadCardOptions();
+			});$.getJSON("/static/json/diemap.json", function (data) {
+				$.each(data, function(key, value) {
+					vb.board.dieNameMap[key] = value;
+				});
+				vb.menu.loadDieOptions();
 			});
 
 			$("#viewMenuHover").mouseover(function () {
@@ -25,6 +35,23 @@ var VBoard = VBoard || {};
 			$("#addPiece").on("click", function () {
 				$("#add-piece-modal").modal();
 			});
+			$("#addCard").on("click", function () {
+				$("#add-card-modal").modal();
+			});
+			$("#addDie").on("click", function () {
+				var selectedName = $("#add-die-list").val();
+				if (vb.board.dieNameMap.hasOwnProperty(selectedName)) {
+					$("#add-die-max").val(Object.keys(vb.board.dieNameMap[selectedName]).length - 1);
+				}
+				$("#add-die-modal").modal();
+			});
+
+			$("#add-die-list").on("change"), function() {
+				var selectedName = $("#add-card-list").val();
+				if (vb.board.dieNameMap.hasOwnProperty(selectedName)) {
+					$("#add-die-max").val(Object.keys(vb.board.dieNameMap[selectedName]).length - 1);
+				}
+			}
 
 			$("#addChessBoard").on("click", function () {
 				vb.board.loadChessGame();
@@ -46,20 +73,78 @@ var VBoard = VBoard || {};
 				//vb.board.generateNewPiece(selectedName, user, pos);
 				var mapEntry = vb.board.pieceNameMap[selectedName];
 				var data = {
+					"pos" : [vb.camera.position.x, vb.camera.position.y],
 					"icon" : mapEntry.icon,
+					"color" : [255, 255, 255],
+					"static" : 0,
 					"s" : mapEntry.size,
-					"pos" : [camera.position.x, camera.position.y],
-					"r" : camera.rotation.z
+					"r" : vb.camera.rotation.z
 				};
 				vb.sessionIO.addPiece(data);
 				$("#add-piece-modal").modal("toggle");
 			});
 
+			$("#submit-add-card").click(function () {
+				var selectedName = $("#add-card-list").val();
+				var user = null;
+				//TODO: use vb.camera.position.x/y instead of board center
+				//var pos = {x:0, y:0};
+
+				//TODO: replace with actual method
+				//vb.board.generateNewPiece(selectedName, user, pos);
+				var mapEntry = vb.board.cardNameMap[selectedName];
+				var data = {
+					"pos" : [vb.camera.position.x, vb.camera.position.y],
+					"icon" : mapEntry.back,
+					"front_icon" : mapEntry.front,
+					"color" : [255, 255, 255],
+					"static" : 0,
+					"s" : mapEntry.size,
+					"r" : vb.camera.rotation.z
+				};
+				vb.sessionIO.addPiece(data);
+				$("#add-card-modal").modal("toggle");
+			});
+
+			$("#submit-add-die").click(function () {
+				var selectedName = $("#add-die-list").val();
+				var selectedMax = $("#add-die-max").val();
+				var user = null;
+				//TODO: use vb.camera.position.x/y instead of board center
+				//var pos = {x:0, y:0};
+
+				//TODO: replace with actual method
+				//vb.board.generateNewPiece(selectedName, user, pos);
+				var mapEntry = vb.board.dieNameMap[selectedName];
+				var data = {
+					"pos" : [vb.camera.position.x, vb.camera.position.y],
+					"max_roll" : selectedMax,
+					"color" : [255, 255, 255],
+					"static" : 0,
+					"s" : mapEntry.size,
+					"r" : vb.camera.rotation.z
+				};
+				vb.sessionIO.addPiece(data);
+				$("#add-die-modal").modal("toggle");
+			});
+
 		},
 
-		loadOptions: function () {
-			for (var key in vb.board.pieceNameMap.pieces) {
+		loadPieceOptions: function () {
+			for (var key in vb.board.pieceNameMap) {
 				$("#add-piece-list").append( new Option(key, key) );
+			}
+		},
+
+		loadCardOptions: function () {
+			for (var key in vb.board.cardNameMap) {
+				$("#add-card-list").append( new Option(key, key) );
+			}
+		},
+
+		loadDieOptions: function () {
+			for (var key in vb.board.dieNameMap) {
+				$("#add-die-list").append( new Option(key, key) );
 			}
 		},
 
@@ -76,6 +161,24 @@ var VBoard = VBoard || {};
 			$("#context-back").off("click");
 			$("#context-front").off("click");
 			$("#context-static").off("click");
+            $("#context-flip").off("click");
+            $("#context-roll").off("click");
+
+            //only show flip option if piece is a card
+            if (piece instanceof Card) {
+                $("#context-flip").show();
+            }
+            else {
+                $("#context-flip").hide();
+            }
+
+            //only show roll option if piece is a die
+            if (piece instanceof Die) {
+                $("#context-roll").show();
+            }
+            else {
+                $("#context-roll").hide();
+            }
 
 			//set new onclick function bindings
 			$("#context-delete").on("click", function(){
@@ -94,6 +197,20 @@ var VBoard = VBoard || {};
 				vb.board.toggleStatic(piece);
 				$("#context-menu").css("visibility", "hidden");
 			});
+            $("#context-flip").on("click" , function(){
+
+                if (piece instanceof Card) {
+                    vb.sessionIO.flipCard(piece.id);
+                }
+                $("#context-menu").css("visibility", "hidden");
+            });
+            $("#context-roll").on("click" , function(){
+
+                if (piece instanceof Die) {
+                    vb.sessionIO.rollDice(piece.id);
+                }
+                $("#context-menu").css("visibility", "hidden");
+            });
 		}
 	};
 

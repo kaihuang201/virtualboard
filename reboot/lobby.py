@@ -2,6 +2,7 @@ import tornado.web
 import tornado.websocket
 import json
 import time
+import random
 
 from board_state_reboot import *
 
@@ -290,8 +291,8 @@ class Game:
 			if self.board_state.transform_piece(pieceData):
 				piece = self.board_state.get_piece(pieceData["piece"])
 				data_entry = {
-					"user" : client.user_id,
-					"piece" : piece.piece_id
+					"u" : client.user_id,
+					"p" : piece.piece_id
 				}
 
 				if "pos" in pieceData:
@@ -325,7 +326,7 @@ class Game:
 				client.write_message(json.dumps(error_data))
 
 		response = {
-			"type" : "pieceTransform",
+			"type" : "pt",
 			"data" : response_data
 		}
 		self.message_all(response);
@@ -372,6 +373,96 @@ class Game:
 			"data" : response_data
 		}
 		self.message_all(response);
+
+
+	#==========
+	# special pieces
+	#==========
+
+	def rollDice(self, client, pieces):
+		response_data = []
+		for pieceData in pieces:
+			piece_id = pieceData["piece"]
+			piece = self.board_state.get_piece(piece_id)
+			if piece == None:
+				error_data = {
+					"type" : "error",
+					"data" : [
+						{
+							"msg" : "invalid piece id " + id
+						}
+					]
+				}
+				client.write_message(json.dumps(error_data))
+				return
+
+			if piece.isDie:
+				max_value = piece.max_roll
+				new_value = random.randint(1, int(max_value))
+				response_data.append({
+					"user": client.user_id,
+					"piece": piece_id,
+					"result": new_value
+				})
+			else:
+				error_data = {
+					"type" : "error",
+					"data" : [
+						{
+							"msg" : "piece id " + id + " is not a die"
+						}
+					]
+				}
+				client.write_message(json.dumps(error_data))
+				return
+
+		response = {
+			"type": "rollDice",
+			"data": response_data
+		}
+		self.message_all(response)
+
+	def flipCard(self, client, pieces):
+		response_data = []
+		for pieceData in pieces:
+			piece_id = pieceData["piece"]
+			piece = self.board_state.get_piece(piece_id)
+			if piece == None:
+				error_data = {
+					"type" : "error",
+					"data" : [
+						{
+							"msg" : "invalid piece id " + id
+						}
+					]
+				}
+				client.write_message(json.dumps(error_data))
+				return
+
+			if piece.isCard:
+				response_data.append({
+					"user": client.user_id,
+					"piece": piece_id,
+					"front_icon": piece.front_icon
+				})
+			else:
+				error_data = {
+					"type" : "error",
+					"data" : [
+						{
+							"msg" : "piece id " + id + " is not a card"
+						}
+					]
+				}
+				client.write_message(json.dumps(error_data))
+				return
+
+		response = {
+			"type": "flipCard",
+			"data": response_data
+		}
+		self.message_all(response)
+
 
 	#def toggleStatic(self, client, pieces):
 	#	#TODO

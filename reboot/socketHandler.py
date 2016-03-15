@@ -58,10 +58,22 @@ class WebSocketGameHandler(tornado.websocket.WebSocketHandler):
 				next_game_id += 1
 				game.connect(self)
 			elif data["type"] == "initJoin":
-				self.name = data["data"]["name"]
-				self.color = data["data"]["color"]
-				game = games[data["data"]["gameID"]]
-				game.connect(self)
+				game_id = data["data"]["gameID"];
+
+				if game_id in games:
+					self.name = data["data"]["name"]
+					self.color = data["data"]["color"]
+					game = games[game_id]
+					game.connect(self)
+				else:
+					response = {
+						"type" : "error",
+						"data" : [
+							{
+								"msg" : "Invalid game id"
+							}
+						]
+					}
 			elif data["type"] == "listGames":
 				game_list = []
 
@@ -89,7 +101,14 @@ class WebSocketGameHandler(tornado.websocket.WebSocketHandler):
 				game.chat(self, data["data"])
 			elif data["type"] == "beacon":
 				game.beacon(self, data["data"])
-			elif data["type"] == "pieceTransform":
+			elif data["type"] == "pieceTransform" or data["type"] == "pt":
+
+				#since pieceTransform messages make up >95% of all messages,
+				#	it makes sense to have shorthands available
+				for entry in data["data"]:
+					if "p" in entry:
+						entry["piece"] = entry["p"]
+
 				game.pieceTransform(self, data["data"])
 			elif data["type"] == "pieceAdd":
 				game.pieceAdd(self, data["data"])
@@ -111,11 +130,9 @@ class WebSocketGameHandler(tornado.websocket.WebSocketHandler):
 			#special piece interactions
 
 			elif data["type"] == "rollDice":
-				print "todo"
-				#Todo: Needs to be implemented
+				game.rollDice(self, data["data"])
 			elif data["type"] == "flipCard":
-				print "todo"
-				#Todo: Needs to be implemented
+				game.flipCard(self, data["data"])
 			elif data["type"] == "createDeck":
 				print "todo"
 				#Todo: Needs to be implemented
