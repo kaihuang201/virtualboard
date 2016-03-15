@@ -51,10 +51,15 @@ var VBoard = VBoard || {};
 	vb.interface = {
 		// this is for color selected from the interface
 		colorSelected: [0,0,0],
+		colorLastSelectedStr: '',
+		userName: "",
 
 		// interface initializer
 		init: function () {
 			// TODO:
+
+			vb.interface.userNamePrompt();
+
 			$("#lobby-list-toggler").on("click", function() {
 				// refresh list
 				VBoard.limboIO.listGames();
@@ -93,6 +98,7 @@ var VBoard = VBoard || {};
 						return [parseInt(retRGB[1],10),parseInt(retRGB[2],10),parseInt(retRGB[3],10)];
 					};
 					colorSelected = strRGB2ArrayRGB(c);
+					colorLastSelectedStr = c;
 				},
 				colors: [ '#FF4351', '#7D79F2', '#1B9AF7', '#A5DE37', '#FEAE1B' ],
 				iterationCallback: function(target,elem,color,iterationNumber) {
@@ -109,15 +115,33 @@ var VBoard = VBoard || {};
 
 		// request methods
 
+		userNamePrompt: function () {
+			vb.interface.switchToUserNicknameModal();
+			$('#template-modal').modal('show');
+			$('#template-modal #submit-btn-modal-template').unbind();
+			$('#template-modal #submit-btn-modal-template').on("click",function () {
+				if ($('#user-nickname').val() != '') {
+					self.userName = $('#user-nickname').val();
+					$('#template-modal').modal('hide');
+					vb.interface.clearTemplateModal();
+				} else {
+					alert('Please enter a valid username');
+				}
+				
+				
+			});
+		},
+
 		joinLobbyRequest: function (lobbyNo, lobbyName) {
 			// $("#lobby-" + lobbyNo.toString()).on("click",function() {
 				
 				vb.interface.switchToJoinLobbyModal(lobbyName);
 				$('#template-modal').modal('show');
-
+				$('#template-modal #submit-btn-modal-template').unbind();
 				$('#template-modal #submit-btn-modal-template').on("click",function () {
 					var password = $('#lobby-password').val();
-					vb.limboIO.joinGame('annonymous',self.colorSelected,lobbyNo,password);
+					vb.limboIO.joinGame(vb.interface.userName,vb.interface.colorSelected,lobbyNo,password);
+					$('#template-modal').modal('hide');
 					vb.interface.clearTemplateModal();
 					self.colorSelected = [0,0,0];
 				});
@@ -126,17 +150,17 @@ var VBoard = VBoard || {};
 		},
 
 
-		
 
-		//TODO: most of them
 		createLobbyRequest: function () {
 			vb.interface.switchToCreateLobbyModal();
 			$('#template-modal').modal('show');
-
+			$('#template-modal #submit-btn-modal-template').unbind();
 			$('#template-modal #submit-btn-modal-template').on("click",function () {
 				var gameName = $('#lobby-name').val();
 				var password = $('#lobby-password').val();
-				vb.limboIO.hostGame("annonymous",self.colorSelected,gameName,password);
+				vb.limboIO.hostGame(self.userName,self.colorSelected,gameName,password);
+				console.log(self.userName + self.colorSelected + gameName + password + "  <- test");
+				$('#template-modal').modal('hide');
 				vb.interface.clearTemplateModal();
 				self.colorSelected = [0,0,0];
 			});
@@ -196,11 +220,12 @@ var VBoard = VBoard || {};
 									<input type="password" class="form-control" id="lobby-password">\
 								</div>');
 			$('#template-modal #submit-btn-modal-template').html('Create');
+			$("#selected-color").css('color',self.colorLastSelectedStr);
 			vb.interface.colorPickerInit();
 		},
 
 		switchToJoinLobbyModal: function (lobbyName) {
-			$('#modal-template-title').html('Join ' + lobbyName);
+			$('#modal-template-title').html('Join 『' + lobbyName + '』');
 			$('#modal-template-content').html('<div class="form-group"> \
 									<label for="color-picker" class="form-control-label">Choose <span id="selected-color">Your Color</span>:</label> \
 									<div id="color-picker" style="padding-top: 5px;"></div>\
@@ -210,7 +235,17 @@ var VBoard = VBoard || {};
 									<input type="password" class="form-control" id="lobby-password">\
 								</div>');
 			$('#template-modal #submit-btn-modal-template').html('Join');
+			$("#selected-color").css('color',self.colorLastSelectedStr);
 			vb.interface.colorPickerInit();
+		},
+
+		switchToUserNicknameModal: function () {
+			$('#modal-template-title').html('Please Enter A Nickname:');
+			$('#modal-template-content').html('<div class="form-group">\
+									<label for="user-nickname" class="form-control-label">User Name:</label>\
+									<input type="text" class="form-control" id="user-nickname">\
+								</div>');
+			$('#template-modal #submit-btn-modal-template').html('Join');
 		},
 
 		clearTemplateModal: function () {
