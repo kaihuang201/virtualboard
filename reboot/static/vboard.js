@@ -95,11 +95,15 @@ var VBoard = VBoard || {};
 				vb.interface.clearTemplateModalAlert();
 				vb.interface.clearTemplateModal();
 				vb.interface.userNamePrompt();
-				$('#user-nickname').val(this.userName);
+				$('#user-nickname').val(VBoard.interface.userName);
 			});
+
+
 
 			// automatic refresh game list
 			VBoard.interface.autoGameListIntervalID = setInterval(function(){VBoard.limboIO.listGames();}, 2000);
+			// enable tooltip @ bootstrap
+			$('[data-toggle="tooltip"]').tooltip(); 
 		},
 
 		colorPickerInit: function () {
@@ -254,15 +258,16 @@ var VBoard = VBoard || {};
 									<label for="color-picker" class="form-control-label">Choose <span id="selected-color">Your Color</span>:</label> \
 									<div id="color-picker" style="padding-top: 5px;"></div>\
 								</div>\
-								<div class="form-group">\
-									<label for="lobby-name" class="form-control-label">Name Your Game:</label>\
-									<input type="text" class="form-control" id="lobby-name">\
+								<div class="input-group">\
+									<input type="text" class="form-control" placeholder="name your game..." id="lobby-name">\
+										<span class="input-group-btn">\
+										<button class="btn btn-default" type="button" id="random-gamename"><span class="glyphicon glyphicon-refresh" aria-hidden="true"></span></button>\
+										</span>\
 								</div>\
 								<div class="form-group">\
-									<label for="lobby-password" class="form-control-label">Game Password:</label>\
-									<input type="password" class="form-control" id="lobby-password">\
+									<input type="password" class="form-control" id="lobby-password" placeholder="Password">\
 								</div>');
-
+			$('#random-gamename').unbind().on('click',function(){$('#lobby-name').val(generate_game_name());});
 			$('#template-modal #submit-btn-modal-template').show().html('Create');
 			$("#selected-color").css('color',this.colorLastSelectedStr);
 			vb.interface.colorPickerInit();
@@ -286,11 +291,17 @@ var VBoard = VBoard || {};
 
 		switchToUserNicknameModal: function () {
 			vb.interface.clearTemplateModalAlert();
-			$('#modal-template-title').html('Please Enter A Nickname:');
-			$('#modal-template-content').html('<div class="form-group">\
-									<label for="user-nickname" class="form-control-label">Choose Your Nickname:</label>\
-									<input type="text" class="form-control" id="user-nickname">\
-								</div>');
+			$('#modal-template-title').html('Pick a Nickname:');
+
+			$('#modal-template-content').html('<div class="input-group">\
+										<input type="text" class="form-control" placeholder="Your nickname..." id="user-nickname">\
+										<span class="input-group-btn">\
+										<button class="btn btn-default" type="button" id="random-nickname"><span class="glyphicon glyphicon-refresh" aria-hidden="true"></span></button>\
+										</span>\
+										</div>');
+
+			$('#random-nickname').unbind().on('click',function(){$('#user-nickname').val(generate_game_name());});
+			// $('#user-nickname').val("test");
 			$('#template-modal #submit-btn-modal-template').show().html('Confirm');
 		},
 
@@ -301,7 +312,7 @@ var VBoard = VBoard || {};
 
 		setTemplateModalAlert: function (alertText) {
 			$("#model-template-alert").html('<div class="alert alert-danger" role="alert">\
-									<strong>Oops!</strong> '+ alertText + '\
+									<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span> '+ alertText + '\
 								</div>');
 		},
 
@@ -340,7 +351,10 @@ var VBoard = VBoard || {};
 		},
 
 		getRandomName: function () {
+			var nameList = ['Hippo','Fox','Frog','Cat','Sloth','Bunny','Pikachu','Ant','Snake','Dog','Meow','Rat','ET'];
 
+			var randomNum = Math.floor((Math.random() * nameList.length));
+			return nameList[randomNum];
 		}
 
 	};
