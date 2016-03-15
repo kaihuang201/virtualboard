@@ -166,14 +166,22 @@ var VBoard = VBoard || {};
 				$('#template-modal #submit-btn-modal-template').unbind();
 				$('#template-modal #submit-btn-modal-template').on("click",function () {
 					var password = $('#lobby-password').val();
-					vb.limboIO.joinGame(VBoard.interface.userName,VBoard.interface.colorSelected,lobbyNo,password);
+
+					if (VBoard.interface.colorSelected[1] != 0 && VBoard.interface.colorSelected[2] != 0 && VBoard.interface.colorSelected[3] != 0) {
+						vb.limboIO.joinGame(VBoard.interface.userName,VBoard.interface.colorSelected,lobbyNo,password);
+						vb.interface.clearTemplateModal();
+						VBoard.interface.colorSelected = [0,0,0];
+					} else {
+						vb.interface.setTemplateModalAlert('Please select a color');
+					}
+					
 					// $('#template-modal').modal('hide');
-					vb.interface.clearTemplateModal();
-					// this.colorSelected = [0,0,0];
+					
+					// 
 				});
 			} else {
-			this.userNamePrompt();
-			this.setTemplateModalAlert('Please choose a nickname and try again');
+				this.userNamePrompt();
+				this.setTemplateModalAlert('Please choose a nickname and try again');
 			}
 		},
 
@@ -187,11 +195,21 @@ var VBoard = VBoard || {};
 				$('#template-modal #submit-btn-modal-template').on("click",function () {
 					var gameName = $('#lobby-name').val();
 					var password = $('#lobby-password').val();
-					vb.limboIO.hostGame(VBoard.interface.userName,VBoard.interface.colorSelected,gameName,password);
-					// console.log(VBoard.interface.userName+ VBoard.interface.colorSelected + gameName + password);
+
+					if (gameName != '' && VBoard.interface.colorSelected[1] != 0 && VBoard.interface.colorSelected[2] != 0 && VBoard.interface.colorSelected[3] != 0) {
+						console.log(VBoard.interface.colorSelected + ' <-- test');
+						vb.limboIO.hostGame(VBoard.interface.userName,VBoard.interface.colorSelected,gameName,password);	
+						vb.interface.clearTemplateModal();
+						console.log(VBoard.interface.userName+ VBoard.interface.colorSelected + gameName + password);
+						VBoard.interface.colorSelected = [0,0,0];
+					} else {
+						vb.interface.setTemplateModalAlert('Please enter a game name/select a color');
+					}
+					
+					
 					// $('#template-modal').modal('hide');
-					vb.interface.clearTemplateModal();
-					// this.colorSelected = [0,0,0];
+					
+					
 				});
 			} else {
 				this.userNamePrompt();
@@ -223,7 +241,7 @@ var VBoard = VBoard || {};
 				for (var i = listOfGames.length - 1; i >= 0; i--) {
 					var lobbyID = listOfGames[i]["id"];
 					var lobbyName = listOfGames[i]["name"];
-					var singleLobby = '<a id="lobby-' + lobbyID.toString() + '" class="list-group-item"><span class="badge badge-default pull-right">' + listOfGames[i]["players"] + '</span>' + lobbyName + '</a>'
+					var singleLobby = '<a id="lobby-' + lobbyID.toString() + '" class="list-group-item"><span class="badge badge-default pull-right">' + listOfGames[i]["players"] + ' ' + ((listOfGames[i]["players"]==1)?'player':'players')+ ' online</span>' + lobbyName + '</a>'
 					$("#lobby-list").append(singleLobby);
 					var currentLobby = $("#lobby-" + lobbyID.toString());
 					currentLobby.unbind();
