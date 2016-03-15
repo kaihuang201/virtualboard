@@ -40,6 +40,10 @@ var VBoard = VBoard || {};
 			console.log("rip socket");
 
 			//TODO: display graphical error message, tell user to refresh page
+			// alert("socket is closed, please refresh page!");
+			vb.interface.alertModal('socket is closed, please refresh page!',1);
+			clearInterval(VBoard.interface.autoGameListIntervalID);
+
 		};
 	};
 
@@ -55,6 +59,290 @@ var VBoard = VBoard || {};
 		if(vb.quickStarted) {
 			vb.sessionIO.loadChessGame();
 		}
+	};
+
+	vb.interface = {
+		// this is for color selected from the interface
+		colorSelected: [0,0,0],
+		colorLastSelectedStr: '',
+		userName: "",
+		autoGameListIntervalID: 0,
+
+		// interface initializer
+		init: function () {
+
+			// vb.interface.userNamePrompt();
+
+
+
+			$("#create-lobby").on("click", function() {
+				// $("#main-page").hide("fast");
+				VBoard.interface.createLobbyRequest();
+			});
+
+			$("#listGames").on("click", function () {
+				
+				$("#template-modal").modal();
+
+				var listOfLobbies = vb.interface.listLobbiesRequest();
+
+
+			});
+
+			// vb.interface.colorPickerInit();
+
+			$('#change-username').on('click',function () {
+				vb.interface.clearTemplateModalAlert();
+				vb.interface.clearTemplateModal();
+				vb.interface.userNamePrompt();
+				$('#user-nickname').val(this.userName);
+			});
+
+			// automatic refresh game list
+			VBoard.interface.autoGameListIntervalID = setInterval(function(){VBoard.limboIO.listGames();}, 2000);
+		},
+
+		colorPickerInit: function () {
+			// adapted from
+			// http://wanderinghorse.net/computing/javascript/jquery/colorpicker/demo-colorpicker.html
+			$('#color-picker').empty().addColorPicker({
+				clickCallback: function(c) {
+					// $('#ColorSelectionTarget2').css('border-color',c).css('color',c);
+					$("#selected-color").css('color',c);
+					// $("#selected-color").animate({
+					// 	color: "#fff"
+					// },1000);
+					function strRGB2ArrayRGB(str) {
+						var retRGB = str.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+						return [parseInt(retRGB[1],10),parseInt(retRGB[2],10),parseInt(retRGB[3],10)];
+					};
+					VBoard.interface.colorSelected = strRGB2ArrayRGB(c);
+					VBoard.interface.colorLastSelectedStr = c;
+
+					// console.log(VBoard.interface.colorSelected + " <--- test");
+				},
+				colors: [ '#FF4351', '#7D79F2', '#1B9AF7', '#A5DE37', '#FEAE1B' ],
+				iterationCallback: function(target,elem,color,iterationNumber) {
+		      			if( iterationNumber < 4 /* colors array is undefined here :( */ ) {
+		      				target.append('&nbsp;&nbsp;');
+		      			}
+		      		elem.css("border","1px solid #dddddd")
+		      			.css("padding", "7px")
+		      			.css("border-radius", "10px");
+					elem.html("&nbsp;&nbsp;&nbsp;&nbsp;");
+				}
+			});
+		},
+
+		// request methods
+
+		userNamePrompt: function () {
+			vb.interface.switchToUserNicknameModal();
+			$('#template-modal').modal('show');
+			$('#template-modal #submit-btn-modal-template').unbind();
+			$('#template-modal #submit-btn-modal-template').on("click",function () {
+				if ($('#user-nickname').val() != '') {
+					VBoard.interface.userName = $('#user-nickname').val();
+					$('#change-username').html("Hello " + VBoard.interface.userName +'!');
+					$('#template-modal').modal('hide');
+					vb.interface.clearTemplateModal();
+				} else {
+					// alert('Please enter a valid username');
+					vb.interface.setTemplateModalAlert('Make sure you put in a valid nickname')
+				}
+				
+				
+			});
+		},
+
+		joinLobbyRequest: function (lobbyNo, lobbyName) {
+			if (VBoard.interface.userName != "") {
+				vb.interface.switchToJoinLobbyModal(lobbyName);
+				$('#template-modal').modal('show');
+				$('#template-modal #submit-btn-modal-template').unbind();
+				$('#template-modal #submit-btn-modal-template').on("click",function () {
+					var password = $('#lobby-password').val();
+					vb.limboIO.joinGame(VBoard.interface.userName,VBoard.interface.colorSelected,lobbyNo,password);
+					console.log("pwd: " + password);
+					// $('#template-modal').modal('hide');
+					vb.interface.clearTemplateModal();
+					// this.colorSelected = [0,0,0];
+				});
+			} else {
+			this.userNamePrompt();
+			this.setTemplateModalAlert('Please choose a nickname and try again');
+			}
+		},
+
+
+
+		createLobbyRequest: function () {
+			if (VBoard.interface.userName != "") {
+				vb.interface.switchToCreateLobbyModal();
+				$('#template-modal').modal('show');
+				$('#template-modal #submit-btn-modal-template').unbind();
+				$('#template-modal #submit-btn-modal-template').on("click",function () {
+					var gameName = $('#lobby-name').val();
+					var password = $('#lobby-password').val();
+					vb.limboIO.hostGame(VBoard.interface.userName,VBoard.interface.colorSelected,gameName,password);
+					console.log("pwd: " + password);
+					// console.log(this.userName + VBoard.interface.colorSelected + gameName + password);
+					// $('#template-modal').modal('hide');
+					vb.interface.clearTemplateModal();
+					// this.colorSelected = [0,0,0];
+				});
+			} else {
+				this.userNamePrompt();
+				this.setTemplateModalAlert('Please choose a nickname and try again');
+			}
+
+			
+			
+			
+		},
+
+		
+
+		listLobbiesRequest: function () {
+			vb.limboIO.listGames();
+		},
+
+		leaveLobbyRequest: function () {
+			vb.sessionIO.disconnect();
+		},
+
+		// returned msg methods
+		// TODO: most of them
+		showListGames: function (listOfGames) {
+			console.log("list all games");
+			console.log(JSON.stringify(listOfGames));
+			if (listOfGames.length != 0) {
+				$("#lobby-list").empty();
+				for (var i = listOfGames.length - 1; i >= 0; i--) {
+					var lobbyID = listOfGames[i]["id"];
+					var lobbyName = listOfGames[i]["name"];
+					var singleLobby = '<a id="lobby-' + lobbyID.toString() + '" class="list-group-item"><span class="badge badge-default pull-right">' + listOfGames[i]["players"] + '</span>' + lobbyName + '</a>'
+					$("#lobby-list").append(singleLobby);
+					var currentLobby = $("#lobby-" + lobbyID.toString());
+					currentLobby.unbind();
+					currentLobby.on("click",function() {vb.interface.joinLobbyRequest(lobbyID,lobbyName);});
+				}
+			} else {
+				$("#lobby-list").empty();
+				$("#lobby-list").append('<a id="retry-btn" class="list-group-item">No Game Found...</a>');
+				$('#retry-btn').unbind();
+				// $('#retry-btn').on('click',function() {vb.interface.listLobbiesRequest();})
+			}
+			
+
+		},
+
+
+		// Modal operation functions
+		switchToGameMode: function () {
+			$("#main-page").hide("fast");
+			$('#template-modal').modal('hide');
+
+			// stop lobby list refreshing
+			clearInterval(VBoard.interface.autoGameListIntervalID);
+		},
+
+		switchToCreateLobbyModal: function () {
+			vb.interface.clearTemplateModalAlert();
+			$('#modal-template-title').html('Create A Lobby');
+			$('#modal-template-content').html('<div class="form-group"> \
+									<label for="color-picker" class="form-control-label">Choose <span id="selected-color">Your Color</span>:</label> \
+									<div id="color-picker" style="padding-top: 5px;"></div>\
+								</div>\
+								<div class="form-group">\
+									<label for="lobby-name" class="form-control-label">Name Your Game:</label>\
+									<input type="text" class="form-control" id="lobby-name">\
+								</div>\
+								<div class="form-group">\
+									<label for="lobby-password" class="form-control-label">Game Password:</label>\
+									<input type="password" class="form-control" id="lobby-password">\
+								</div>');
+
+			$('#template-modal #submit-btn-modal-template').show().html('Create');
+			$("#selected-color").css('color',this.colorLastSelectedStr);
+			vb.interface.colorPickerInit();
+		},
+
+		switchToJoinLobbyModal: function (lobbyName) {
+			vb.interface.clearTemplateModalAlert();
+			$('#modal-template-title').html('Join 『' + lobbyName + '』');
+			$('#modal-template-content').html('<div class="form-group"> \
+									<label for="color-picker" class="form-control-label">Choose <span id="selected-color">Your Color</span>:</label> \
+									<div id="color-picker" style="padding-top: 5px;"></div>\
+								</div>\
+								<div class="form-group">\
+									<label for="lobby-password" class="form-control-label">Game Password:</label>\
+									<input type="password" class="form-control" id="lobby-password">\
+								</div>');
+			$('#template-modal #submit-btn-modal-template').show().html('Join');
+			$("#selected-color").css('color',this.colorLastSelectedStr);
+			vb.interface.colorPickerInit();
+		},
+
+		switchToUserNicknameModal: function () {
+			vb.interface.clearTemplateModalAlert();
+			$('#modal-template-title').html('Please Enter A Nickname:');
+			$('#modal-template-content').html('<div class="form-group">\
+									<label for="user-nickname" class="form-control-label">Choose Your Nickname:</label>\
+									<input type="text" class="form-control" id="user-nickname">\
+								</div>');
+			$('#template-modal #submit-btn-modal-template').show().html('Confirm');
+		},
+
+		clearTemplateModal: function () {
+			$('#modal-template-title').html("");
+			$('#modal-template-content').html('');
+		},
+
+		setTemplateModalAlert: function (alertText) {
+			$("#model-template-alert").html('<div class="alert alert-danger" role="alert">\
+									<strong>Oops!</strong> '+ alertText + '\
+								</div>');
+		},
+
+		clearTemplateModalAlert: function () {
+			$("#model-template-alert").html('');
+		},
+
+		alertModal: function (alertText,automaticRefresh) {
+			function sleep(milliseconds) {
+				var start = new Date().getTime();
+				for (var i = 0; i < 1e7; i++) {
+					if ((new Date().getTime() - start) > milliseconds){
+						break;
+					}
+				}
+			};
+			vb.interface.clearTemplateModal();
+			$('#submit-btn-modal-template').hide();
+			$('#modal-template-title').html("Opps!");
+			$('#template-modal').modal('show');
+			if (!automaticRefresh) {
+				vb.interface.setTemplateModalAlert(alertText);
+			} else {
+				var count = 10;
+				vb.interface.setTemplateModalAlert(alertText + ' (Reload in <span id="count-down">'+ count + '</span> seconds)');
+				
+				
+				setInterval(function(){
+				      $("#count-down").html((--count).toString());
+				      if(count == 0) location.reload();
+				   }, 1000);
+			}
+			
+			
+			
+		},
+
+		getRandomName: function () {
+
+		}
+
 	};
 
 	vb.board = {
@@ -757,8 +1045,11 @@ var VBoard = VBoard || {};
 				case "pong":
 					break;
 				case "error":
+					vb.interface.alertModal(data["data"]["msg"],1);
 					break;
 				case "initSuccess":
+					vb.interface.switchToGameMode();
+
 					console.log("Coming to you live from " + data["data"]["gameName"]);
 					var users = data["data"]["users"];
 
@@ -776,14 +1067,16 @@ var VBoard = VBoard || {};
 					var boardData = data["data"]["board"];
 					vb.board.loadBoardData(boardData);
 
+					
 					break;
 				case "initFailure":
+					vb.interface.alertModal(data["data"]["msg"],1);
 					break;
 				case "listGames":
-					//TODO: display list of lobbies received from this query
+					vb.interface.showListGames(data["data"]);
 					break;
 				default:
-					//console.log("unhandled server message");
+					console.log("unhandled server message");
 			}
 		}
 	};
@@ -1684,4 +1977,5 @@ function Die(pieceData) {
 $(document).ready(function () {
 	console.log("document ready");
 	VBoard.javascriptInit();
+	VBoard.interface.init();
 });
