@@ -1864,6 +1864,37 @@ var VBoard = VBoard || {};
 				"static" : 0,
 				"pos" : [x, y]
 			};
+		},
+
+		loadCheckersGame: function () {
+			var checkersData = {
+				"background" : "",
+				"privateZones" : [],
+				"pieces" : [
+					{
+						"pos" : [0, 0],
+						"icon" : "/static/img/checkerboard.png",
+						"color" : [255, 255, 255],
+						"r" : 0,
+						"s" : 16,
+						"static" : 1,
+					}
+				]
+			};
+
+			for(var x = -7; x < 8; x += 2) {
+				for(var y = -7; y < 8; y += 2) {
+					//this is literally javascript having an incorrect implementation of modulus
+					if(((x + y)/2) % 2 == 1 || ((x + y)/2) % 2 == -1) {
+						if(y < -2) {
+							checkersData["pieces"].push(this.loadChessGameHelper("nwpawn", x, y));
+						} else if(y > 2) {
+							checkersData["pieces"].push(this.loadChessGameHelper("nbpawn", x, y));
+						}
+					}
+				}
+			}
+			this.loadBoardState(checkersData);
 		}
 	};
 
