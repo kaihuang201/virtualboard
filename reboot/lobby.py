@@ -291,8 +291,8 @@ class Game:
 			if self.board_state.transform_piece(pieceData):
 				piece = self.board_state.get_piece(pieceData["piece"])
 				data_entry = {
-					"user" : client.user_id,
-					"piece" : piece.piece_id
+					"u" : client.user_id,
+					"p" : piece.piece_id
 				}
 
 				if "pos" in pieceData:
@@ -326,7 +326,7 @@ class Game:
 				client.write_message(json.dumps(error_data))
 
 		response = {
-			"type" : "pieceTransform",
+			"type" : "pt",
 			"data" : response_data
 		}
 		self.message_all(response);

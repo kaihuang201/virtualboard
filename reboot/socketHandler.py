@@ -101,7 +101,14 @@ class WebSocketGameHandler(tornado.websocket.WebSocketHandler):
 				game.chat(self, data["data"])
 			elif data["type"] == "beacon":
 				game.beacon(self, data["data"])
-			elif data["type"] == "pieceTransform":
+			elif data["type"] == "pieceTransform" or data["type"] == "pt":
+
+				#since pieceTransform messages make up >95% of all messages,
+				#	it makes sense to have shorthands available
+				for entry in data["data"]:
+					if "p" in entry:
+						entry["piece"] = entry["p"]
+
 				game.pieceTransform(self, data["data"])
 			elif data["type"] == "pieceAdd":
 				game.pieceAdd(self, data["data"])

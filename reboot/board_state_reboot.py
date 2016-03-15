@@ -3,6 +3,7 @@ class Piece:
 		#TODO: check for reasonable values
 
 		self.pos = pieceData["pos"]
+		self.icon = pieceData["icon"]
 		self.piece_id = id
 		self.color = pieceData["color"]
 		self.static = pieceData["static"] == 1
@@ -12,11 +13,20 @@ class Piece:
 		if "front_icon" in pieceData:
 			#TODO
 			self.isCard = True
+
+			#front_icon is not in the socket protocol
+			#if you want to change the protocol that is fine, but make sure to keep it consistent
+			#and preferably run it by me first
 			self.front_icon = pieceData["front_icon"]
 		else:
 			self.isCard = False
 
 		#I know dice is plural but "isDie" sounds awkward here, but still, it's proper english
+
+		#max_roll is also not part of the api
+		#I also highly suggest you think about the values of cards and dice mainly in terms of images
+		#and not in terms of values since images are what we really care about in the end
+		#I strongly recommend you use the protocol I outlined, especially because many dice start from 0 and not 1
 		if "max_roll" in pieceData:
 			#TODO
 			self.isDie = True
@@ -25,13 +35,16 @@ class Piece:
 			self.isDie = False
 
 		#We don't save the icon of a die because depending on its max value we may use text for it
-		if not self.isDie:
-			self.icon = pieceData["icon"]
+		#just use an image with the number on it or ignore the icon field
+		#we are definitely not going to throw exceptions everywhere in our code so we don't have to store a string
+		#if not self.isDie:
+		#	self.icon = pieceData["icon"]
 
 	def get_json_obj(self):
 		data = {
 			"pos" : self.pos,
 			"piece" : self.piece_id,
+			"icon" : self.icon,
 			"color" : self.color,
 			"static" : 1 if self.static else 0,
 			"r" : self.rotation,
@@ -44,8 +57,8 @@ class Piece:
 		if self.isDie:
 			data["max_roll"] = self.max_roll
 
-		if not self.isDie:
-			data["icon"] = self.icon
+		#if not self.isDie:
+		#	data["icon"] = self.icon
 
 		return data
 

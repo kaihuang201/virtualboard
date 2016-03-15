@@ -298,6 +298,7 @@ var VBoard = VBoard || {};
 				var user = vb.users.userList[pieceData.user];
 				this.highlightPiece(piece, user.color, vb.addHighlightDuration);
 			}
+			return piece;
 		},
 
 		removeSelectedPieces: function () {
@@ -790,7 +791,13 @@ var VBoard = VBoard || {};
 	//socket IO while in a game session
 	vb.sessionIO = {
 		send: function (data) {
-			vb.socket.send(JSON.stringify(data));
+			vb.socket.send(JSON.stringify(data, function(key, value) {
+				if(value.toFixed) {
+					return Number(value.toFixed(3));
+				} else {
+					return value;
+				}
+			}));
 		},
 
 		//functions used to send queries to the server
@@ -986,7 +993,7 @@ var VBoard = VBoard || {};
 
 				while(piece !== null) {
 					data.push({
-						"piece" : piece.id,
+						"p" : piece.id,
 						"pos" : piece.pos
 					});
 					piece = piece.next;
@@ -1021,7 +1028,7 @@ var VBoard = VBoard || {};
 				var pieceData = this.moveBuffer.flush();
 
 				var data = {
-					"type" : "pieceTransform",
+					"type" : "pt",
 					"data" : pieceData
 				};
 				this.send(data);
@@ -1331,11 +1338,31 @@ var VBoard = VBoard || {};
 					break;
 				case "beacon":
 					break;
+				//use "pt" as a shorthand for pieceTransform
+				case "pt":
 				case "pieceTransform":
 					var pieces = data["data"];
 
+					if(data.hasOwnProperty("u")) {
+						var mainUser = data["u"];
+					} else {
+						var mainUser = -1;
+					}
+
 					for(index in pieces) {
 						var pieceData = pieces[index];
+
+						if(pieceData.hasOwnProperty("p")) {
+							pieceData["piece"] = pieceData["p"];
+						}
+
+						if(pieceData.hasOwnProperty("u")) {
+							pieceData["user"] = pieceData["u"];
+						}
+
+						if(!pieceData.hasOwnProperty("user") && mainUser !== -1) {
+							pieceData["user"] = mainUser;
+						}
 						vb.board.transformPiece(pieceData);
 					}
 					break;
@@ -1547,6 +1574,7 @@ function Piece(pieceData)
 {
 	var me = this;
 
+	//TODO: create a mapping from icons to materials/textures as they are created instead of making new ones each time
 	var material = new BABYLON.StandardMaterial("std", VBoard.scene);
 	icon = pieceData.icon;
 	size = pieceData.s;
@@ -1560,6 +1588,10 @@ function Piece(pieceData)
 	plane.position = new BABYLON.Vector3(pieceData.pos[0], pieceData.pos[1], 0);
 	plane.rotation.z = pieceData.r;
 
+	//position - last server confirmed position		
+	//targetPosition - the same as position except for when the local user is moving the piece		
+	//					specifically, targetPosition is where the piece will end up after transition smoothing		
+	//mesh.position - where the piece is being rendered
 	this.id = pieceData.piece;
 	this.position = new BABYLON.Vector2(pieceData.pos[0], pieceData.pos[1]);
 	this.mesh = plane;
@@ -1575,9 +1607,14 @@ function Piece(pieceData)
 	//		we should just have a scene.pick trigger in a global event listener
 	//		We also should be able to right click anywhere to bring up a menu
 	//		that lets us add a piece at that location.
-	plane.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnLeftPickTrigger, function (evt) {
+	plane.actionManager.registerAction(
+		new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnLeftPickTrigger, function (evt) {
 		if(me.static == false) {
 			VBoard.board.setSelectedPieces([me]);
+
+			var pos = VBoard.board.screenToGameSpace(new BABYLON.Vector2(VBoard.scene.pointerX, VBoard.scene.pointerY));
+			VBoard.lastDragX = pos.x;
+			VBoard.lastDragY = pos.y;
 		}
 
 		//check that the shift key was pressed for the context menu
