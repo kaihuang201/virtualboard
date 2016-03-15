@@ -1539,7 +1539,7 @@ function Piece(pieceData)
 {
 	var me = this;
 
-	plane.actionManager = new BABYLON.ActionManager(vb.scene);
+	plane.actionManager = new BABYLON.ActionManager(VBoard.scene);
 
 	var material = new BABYLON.StandardMaterial("std", VBoard.scene);
 	icon = pieceData.icon;
