@@ -788,6 +788,17 @@ var VBoard = VBoard || {};
 			return this.host;
 		},
 
+		changeUserColor: function (userID, colorArr) {
+			var user = this.userList[userID];
+			var bcolor = new BABYLON.Color3(colorArr[0]/255, colorArr[1]/255, colorArr[2]/255);
+			this.changeColor(user, bcolor);
+		},
+
+		changeColor: function (user, color) {
+			user.color = color;
+			//TODO: maybe other stuff needs updating too
+		},
+
 		changeHost: function (id) {
 			var newHost = this.userList[id];
 			this.userList[this.host.id].isHost = false;
@@ -1186,6 +1197,16 @@ var VBoard = VBoard || {};
 				"type" : "disconnect",
 				"data" : {
 					"msg" : reason
+				}
+			};
+			this.send(data);
+		},
+
+		changeColor: function (color) {
+			var data = {
+				"type" : "changeColor",
+				"data" : {
+					"color" : color
 				}
 			};
 			this.send(data);
@@ -1738,6 +1759,12 @@ var VBoard = VBoard || {};
 						vb.users.removeUser(user); //TO FIX
 					}
 					break;
+				case "changeColor":
+					var users = data["data"];
+
+					for(var index in users) {
+						vb.users.changeUserColor(users[index]["user"], users[index]["color"]);
+					}
 				case "changeHost":
 					vb.users.changeHost(data["data"]["user"]);
 					break;

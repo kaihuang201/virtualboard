@@ -368,6 +368,20 @@
 	]
 }
 
+{
+	"type" : "changeColor",
+	"data" : [
+		{
+			"user" : 5,
+			"color" : [
+				0,
+				255,
+				0
+			]
+		}
+	]
+}
+
 //this one doesn't use array format since only last one matters
 {
 	"type" : "changeHost",
@@ -730,6 +744,17 @@
 
 {
 	"type" : "listClients"
+}
+
+{
+	"type" : "changeColor",
+	"data" : {
+		"color" : [
+			0,
+			255,
+			0
+		]
+	}
 }
 
 //special objects

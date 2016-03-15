@@ -48,7 +48,21 @@ class Game:
 				return client
 		return None
 
-	def connect(self, new_client):
+	def connect(self, new_client, name, color, password):
+
+		if not (self.host == new_client or password == self.password):
+			response = {
+				"type" : "initFailure",
+				"data" : [
+					{
+						"msg" : "Wrong password"
+					}
+				]
+			}
+			new_client.write_message(json.dumps(response));
+			return
+		new_client.name = name;
+		new_client.color = color;
 		new_client.user_id = self.next_user_id
 		self.next_user_id += 1
 		new_client.game = self
@@ -476,6 +490,22 @@ class Game:
 			"data" : {
 				"icon" : self.board_state.background
 			}
+		}
+		self.message_all(response);
+
+	#someone can give themselves a rainbow color by spamming this
+	#whatever it probably looks sweet
+	def changeColor(self, client, colorData):
+		client.color = colorData["color"];
+
+		response = {
+			"type" : "changeColor",
+			"data" : [
+				{
+					"user" : client.user_id,
+					"color" : client.color
+				}
+			]
 		}
 		self.message_all(response);
 

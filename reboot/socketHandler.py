@@ -50,21 +50,19 @@ class WebSocketGameHandler(tornado.websocket.WebSocketHandler):
 		elif self.game is None:
 			#TODO: error checking and format validation
 			if data["type"] == "initHost":
-				self.name = data["data"]["name"]
-				self.color = data["data"]["color"]
+				hostData = data["data"]
 				global next_game_id
-				game = Game(data["data"]["gameName"], data["data"]["password"], self, next_game_id)
+				game = Game(hostData["gameName"], hostData["password"], self, next_game_id)
 				games[game.game_id] = game
 				next_game_id += 1
-				game.connect(self)
+				game.connect(self, hostData["name"], hostData["color"], hostData["password"])
 			elif data["type"] == "initJoin":
 				game_id = data["data"]["gameID"];
 
 				if game_id in games:
-					self.name = data["data"]["name"]
-					self.color = data["data"]["color"]
 					game = games[game_id]
-					game.connect(self)
+					joinData = data["data"]
+					game.connect(self, joinData["name"], joinData["color"], joinData["password"]);
 				else:
 					response = {
 						"type" : "error",
@@ -119,6 +117,8 @@ class WebSocketGameHandler(tornado.websocket.WebSocketHandler):
 			elif data["type"] == "disconnect":
 				game.disconnect(self, data["data"]["msg"])
 				self.close() #maybe keep connection open instead for other stuff
+			elif data["type"] == "changeColor":
+				game.changeColor(self, data["data"])
 			elif data["type"] == "listClients":
 				abridged_clients = game.get_abridged_clients(self)
 				response = {
