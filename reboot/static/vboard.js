@@ -106,8 +106,10 @@ var VBoard = VBoard || {};
 						var retRGB = str.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
 						return [parseInt(retRGB[1],10),parseInt(retRGB[2],10),parseInt(retRGB[3],10)];
 					};
-					colorSelected = strRGB2ArrayRGB(c);
-					colorLastSelectedStr = c;
+					VBoard.interface.colorSelected = strRGB2ArrayRGB(c);
+					VBoard.interface.colorLastSelectedStr = c;
+
+					// console.log(VBoard.interface.colorSelected + " <--- test");
 				},
 				colors: [ '#FF4351', '#7D79F2', '#1B9AF7', '#A5DE37', '#FEAE1B' ],
 				iterationCallback: function(target,elem,color,iterationNumber) {
@@ -151,7 +153,8 @@ var VBoard = VBoard || {};
 				$('#template-modal #submit-btn-modal-template').unbind();
 				$('#template-modal #submit-btn-modal-template').on("click",function () {
 					var password = $('#lobby-password').val();
-					vb.limboIO.joinGame(vb.interface.userName,vb.interface.colorSelected,lobbyNo,password);
+					vb.limboIO.joinGame(VBoard.interface.userName,VBoard.interface.colorSelected,lobbyNo,password);
+					console.log("pwd: " + password);
 					// $('#template-modal').modal('hide');
 					vb.interface.clearTemplateModal();
 					// this.colorSelected = [0,0,0];
@@ -169,7 +172,9 @@ var VBoard = VBoard || {};
 			$('#template-modal #submit-btn-modal-template').on("click",function () {
 				var gameName = $('#lobby-name').val();
 				var password = $('#lobby-password').val();
-				vb.limboIO.hostGame(this.userName,this.colorSelected,gameName,password);
+				vb.limboIO.hostGame(VBoard.interface.userName,VBoard.interface.colorSelected,gameName,password);
+				console.log("pwd: " + password);
+				// console.log(this.userName + VBoard.interface.colorSelected + gameName + password);
 				// $('#template-modal').modal('hide');
 				vb.interface.clearTemplateModal();
 				// this.colorSelected = [0,0,0];
@@ -269,6 +274,7 @@ var VBoard = VBoard || {};
 		},
 
 		clearTemplateModal: function () {
+			$('#modal-template-title').html("");
 			$('#modal-template-content').html('');
 		},
 
@@ -284,8 +290,14 @@ var VBoard = VBoard || {};
 
 		alertModal: function (alertText) {
 			$('#submit-btn-modal-template').hide();
+			$('#modal-template-title').html("Opps!");
 			this.setTemplateModalAlert(alertText);
+			this.clearTemplateModal();
 			$('#template-modal').modal('show');
+		},
+
+		getRandomName: function () {
+
 		}
 
 	};
@@ -903,6 +915,7 @@ var VBoard = VBoard || {};
 				case "pong":
 					break;
 				case "error":
+					// vb.interface.alertModal(data["data"]["msg"]);
 					break;
 				case "initSuccess":
 					console.log("Coming to you live from " + data["data"]["gameName"]);
@@ -925,6 +938,7 @@ var VBoard = VBoard || {};
 					vb.interface.switchToGameMode();
 					break;
 				case "initFailure":
+					vb.interface.alertModal(data["data"]["msg"]);
 					break;
 				case "listGames":
 					vb.interface.showListGames(data["data"]);
