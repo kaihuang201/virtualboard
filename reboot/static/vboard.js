@@ -41,7 +41,9 @@ var VBoard = VBoard || {};
 
 			//TODO: display graphical error message, tell user to refresh page
 			// alert("socket is closed, please refresh page!");
-			vb.interface.alertModal('socket is closed, please refresh page!');
+			vb.interface.alertModal('socket is closed, please refresh page!',1);
+			clearInterval(VBoard.interface.autoGameListIntervalID);
+
 		};
 	};
 
@@ -64,18 +66,14 @@ var VBoard = VBoard || {};
 		colorSelected: [0,0,0],
 		colorLastSelectedStr: '',
 		userName: "",
+		autoGameListIntervalID: 0,
 
 		// interface initializer
 		init: function () {
-			// TODO:
 
-			vb.interface.userNamePrompt();
+			// vb.interface.userNamePrompt();
 
-			$("#lobby-list-toggler").on("click", function() {
-				// refresh list
-				VBoard.limboIO.listGames();
-				$("#lobby-list").toggle("fast");
-			});
+
 
 			$("#create-lobby").on("click", function() {
 				// $("#main-page").hide("fast");
@@ -99,6 +97,9 @@ var VBoard = VBoard || {};
 				vb.interface.userNamePrompt();
 				$('#user-nickname').val(this.userName);
 			});
+
+			// automatic refresh game list
+			VBoard.interface.autoGameListIntervalID = setInterval(function(){VBoard.limboIO.listGames();}, 2000);
 		},
 
 		colorPickerInit: function () {
@@ -141,8 +142,8 @@ var VBoard = VBoard || {};
 			$('#template-modal #submit-btn-modal-template').unbind();
 			$('#template-modal #submit-btn-modal-template').on("click",function () {
 				if ($('#user-nickname').val() != '') {
-					this.userName = $('#user-nickname').val();
-					$('#change-username').html("Hello " + this.userName +'!');
+					VBoard.interface.userName = $('#user-nickname').val();
+					$('#change-username').html("Hello " + VBoard.interface.userName +'!');
 					$('#template-modal').modal('hide');
 					vb.interface.clearTemplateModal();
 				} else {
@@ -155,8 +156,7 @@ var VBoard = VBoard || {};
 		},
 
 		joinLobbyRequest: function (lobbyNo, lobbyName) {
-			// $("#lobby-" + lobbyNo.toString()).on("click",function() {
-				
+			if (VBoard.interface.userName != "") {
 				vb.interface.switchToJoinLobbyModal(lobbyName);
 				$('#template-modal').modal('show');
 				$('#template-modal #submit-btn-modal-template').unbind();
@@ -168,26 +168,35 @@ var VBoard = VBoard || {};
 					vb.interface.clearTemplateModal();
 					// this.colorSelected = [0,0,0];
 				});
-			// });
-			
+			} else {
+			this.userNamePrompt();
+			this.setTemplateModalAlert('Please choose a nickname and try again');
+			}
 		},
 
 
 
 		createLobbyRequest: function () {
-			vb.interface.switchToCreateLobbyModal();
-			$('#template-modal').modal('show');
-			$('#template-modal #submit-btn-modal-template').unbind();
-			$('#template-modal #submit-btn-modal-template').on("click",function () {
-				var gameName = $('#lobby-name').val();
-				var password = $('#lobby-password').val();
-				vb.limboIO.hostGame(VBoard.interface.userName,VBoard.interface.colorSelected,gameName,password);
-				console.log("pwd: " + password);
-				// console.log(this.userName + VBoard.interface.colorSelected + gameName + password);
-				// $('#template-modal').modal('hide');
-				vb.interface.clearTemplateModal();
-				// this.colorSelected = [0,0,0];
-			});
+			if (VBoard.interface.userName != "") {
+				vb.interface.switchToCreateLobbyModal();
+				$('#template-modal').modal('show');
+				$('#template-modal #submit-btn-modal-template').unbind();
+				$('#template-modal #submit-btn-modal-template').on("click",function () {
+					var gameName = $('#lobby-name').val();
+					var password = $('#lobby-password').val();
+					vb.limboIO.hostGame(VBoard.interface.userName,VBoard.interface.colorSelected,gameName,password);
+					console.log("pwd: " + password);
+					// console.log(this.userName + VBoard.interface.colorSelected + gameName + password);
+					// $('#template-modal').modal('hide');
+					vb.interface.clearTemplateModal();
+					// this.colorSelected = [0,0,0];
+				});
+			} else {
+				this.userNamePrompt();
+				this.setTemplateModalAlert('Please choose a nickname and try again');
+			}
+
+			
 			
 			
 		},
@@ -220,7 +229,7 @@ var VBoard = VBoard || {};
 				}
 			} else {
 				$("#lobby-list").empty();
-				$("#lobby-list").append('<a id="retry-btn" class="list-group-item">No Game Found...Please Click to Retry</a>');
+				$("#lobby-list").append('<a id="retry-btn" class="list-group-item">No Game Found...</a>');
 				$('#retry-btn').unbind();
 				$('#retry-btn').on('click',function() {vb.interface.listLobbiesRequest();})
 			}
@@ -233,6 +242,9 @@ var VBoard = VBoard || {};
 		switchToGameMode: function () {
 			$("#main-page").hide("fast");
 			$('#template-modal').modal('hide');
+
+			// stop lobby list refreshing
+			clearInterval(VBoard.interface.autoGameListIntervalID);
 		},
 
 		switchToCreateLobbyModal: function () {
@@ -297,12 +309,34 @@ var VBoard = VBoard || {};
 			$("#model-template-alert").html('');
 		},
 
-		alertModal: function (alertText) {
+		alertModal: function (alertText,automaticRefresh) {
+			function sleep(milliseconds) {
+				var start = new Date().getTime();
+				for (var i = 0; i < 1e7; i++) {
+					if ((new Date().getTime() - start) > milliseconds){
+						break;
+					}
+				}
+			};
+			vb.interface.clearTemplateModal();
 			$('#submit-btn-modal-template').hide();
 			$('#modal-template-title').html("Opps!");
-			this.setTemplateModalAlert(alertText);
-			this.clearTemplateModal();
 			$('#template-modal').modal('show');
+			if (!automaticRefresh) {
+				vb.interface.setTemplateModalAlert(alertText);
+			} else {
+				var count = 10;
+				vb.interface.setTemplateModalAlert(alertText + ' (Reload in <span id="count-down">'+ count + '</span> seconds)');
+				
+				
+				setInterval(function(){
+				      $("#count-down").html((--count).toString());
+				      if(count == 0) location.reload();
+				   }, 1000);
+			}
+			
+			
+			
 		},
 
 		getRandomName: function () {
@@ -1011,9 +1045,11 @@ var VBoard = VBoard || {};
 				case "pong":
 					break;
 				case "error":
-					// vb.interface.alertModal(data["data"]["msg"]);
+					vb.interface.alertModal(data["data"]["msg"],1);
 					break;
 				case "initSuccess":
+					vb.interface.switchToGameMode();
+
 					console.log("Coming to you live from " + data["data"]["gameName"]);
 					var users = data["data"]["users"];
 
@@ -1031,10 +1067,10 @@ var VBoard = VBoard || {};
 					var boardData = data["data"]["board"];
 					vb.board.loadBoardData(boardData);
 
-					vb.interface.switchToGameMode();
+					
 					break;
 				case "initFailure":
-					vb.interface.alertModal(data["data"]["msg"]);
+					vb.interface.alertModal(data["data"]["msg"],1);
 					break;
 				case "listGames":
 					vb.interface.showListGames(data["data"]);
