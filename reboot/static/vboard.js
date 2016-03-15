@@ -1623,22 +1623,12 @@ function Die(pieceData) {
 	this.max = pieceData.max_roll;
 
 	var scene = VBoard.scene;
-	var diffuseTexture;
+	var material = new BABYLON.StandardMaterial("std", scene);
 
-	diffuseTexture = new BABYLON.DynamicTexture("DynamicTexture", 50, scene, true);
-	diffuseTexture.hasAlpha = true;
-	diffuseTexture.drawText(1, 5, 40, "bold 36px Arial", "black" , "white", true);
-
-	this.mesh.material.diffuseTexture = diffuseTexture;
-
-	this.roll = function(value) {
-		this.value = value;
-
-		diffuseTexture = new BABYLON.DynamicTexture("DynamicTexture", 50, scene, true);
-		diffuseTexture.hasAlpha = true;
-		diffuseTexture.drawText(this.value, 5, 40, "bold 36px Arial", "black" , "white", true);
-
-		this.mesh.material.diffuseTexture = diffuseTexture;
+	this.roll = function(icon) {
+		material.diffuseTexture = new BABYLON.Texture(icon, scene);
+		material.diffuseTexture.hasAlpha = true;
+		this.mesh.material = material;
 	}
 
 	return this;

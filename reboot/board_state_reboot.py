@@ -1,3 +1,5 @@
+import random
+
 class Piece:
 	def __init__(self, pieceData, id):
 		#TODO: check for reasonable values
@@ -18,14 +20,16 @@ class Piece:
 
 		#I know dice is plural but "isDie" sounds awkward here, but still, it's proper english
 		if "max_roll" in pieceData:
-			#TODO
 			self.isDie = True
 			self.max_roll = pieceData["max_roll"]
+			value = random.randint(1, int(self.max_roll))
+			if int(self.max_roll) < 7:
+				face_img_name = "/static/img/die_face/small_die_face_" + str(value) + ".png"
+			elif int(self.max_roll) <= 24:
+				face_img_name = "/static/img/die_face/big_die_face_" + str(value) + ".png"
+			self.icon = face_img_name
 		else:
 			self.isDie = False
-
-		#We don't save the icon of a die because depending on its max value we may use text for it
-		if not self.isDie:
 			self.icon = pieceData["icon"]
 
 	def get_json_obj(self):
@@ -44,8 +48,7 @@ class Piece:
 		if self.isDie:
 			data["max_roll"] = self.max_roll
 
-		if not self.isDie:
-			data["icon"] = self.icon
+		data["icon"] = self.icon
 
 		return data
 

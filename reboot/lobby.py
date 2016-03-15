@@ -399,10 +399,14 @@ class Game:
 			if piece.isDie:
 				max_value = piece.max_roll
 				new_value = random.randint(1, int(max_value))
+				if int(max_value) < 7:
+					new_img = "/static/img/die_face/small_die_face_" + str(new_value) + ".png"
+				elif int(max_value) <= 24:
+					new_img = "/static/img/die_face/big_die_face_" + str(new_value) + ".png"
 				response_data.append({
 					"user": client.user_id,
 					"piece": piece_id,
-					"result": new_value
+					"result": new_img
 				})
 			else:
 				error_data = {

@@ -17,7 +17,6 @@ var VBoard = VBoard || {};
 				$.each(data, function(key, value) {
 					vb.board.dieNameMap[key] = value;
 				});
-				vb.menu.loadDieOptions();
 			});
 
 			$("#viewMenuHover").mouseover(function () {
@@ -39,19 +38,8 @@ var VBoard = VBoard || {};
 				$("#add-card-modal").modal();
 			});
 			$("#addDie").on("click", function () {
-				var selectedName = $("#add-die-list").val();
-				if (vb.board.dieNameMap.hasOwnProperty(selectedName)) {
-					$("#add-die-max").val(Object.keys(vb.board.dieNameMap[selectedName]).length - 1);
-				}
 				$("#add-die-modal").modal();
 			});
-
-			$("#add-die-list").on("change"), function() {
-				var selectedName = $("#add-card-list").val();
-				if (vb.board.dieNameMap.hasOwnProperty(selectedName)) {
-					$("#add-die-max").val(Object.keys(vb.board.dieNameMap[selectedName]).length - 1);
-				}
-			}
 
 			$("#addChessBoard").on("click", function () {
 				vb.board.loadChessGame();
@@ -107,7 +95,6 @@ var VBoard = VBoard || {};
 			});
 
 			$("#submit-add-die").click(function () {
-				var selectedName = $("#add-die-list").val();
 				var selectedMax = $("#add-die-max").val();
 				var user = null;
 				//TODO: use vb.camera.position.x/y instead of board center
@@ -115,13 +102,12 @@ var VBoard = VBoard || {};
 
 				//TODO: replace with actual method
 				//vb.board.generateNewPiece(selectedName, user, pos);
-				var mapEntry = vb.board.dieNameMap[selectedName];
 				var data = {
 					"pos" : [vb.camera.position.x, vb.camera.position.y],
 					"max_roll" : selectedMax,
 					"color" : [255, 255, 255],
 					"static" : 0,
-					"s" : mapEntry.size,
+					"s" : 2,
 					"r" : vb.camera.rotation.z
 				};
 				vb.sessionIO.addPiece(data);
@@ -139,12 +125,6 @@ var VBoard = VBoard || {};
 		loadCardOptions: function () {
 			for (var key in vb.board.cardNameMap) {
 				$("#add-card-list").append( new Option(key, key) );
-			}
-		},
-
-		loadDieOptions: function () {
-			for (var key in vb.board.dieNameMap) {
-				$("#add-die-list").append( new Option(key, key) );
 			}
 		},
 
