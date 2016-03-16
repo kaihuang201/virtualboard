@@ -13,5 +13,5 @@ app = tornado.web.Application([
 	(r"/", IndexHandler),
 	(r"/static/(.*)", tornado.web.StaticFileHandler, {"path": os.path.join(os.path.dirname(__file__), "static")}),
 ], settings)
-app.listen(80)
+app.listen(8000)
 tornado.ioloop.IOLoop.instance().start()
