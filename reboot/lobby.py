@@ -162,7 +162,7 @@ class Game:
 				"type" : "announcement",
 				"data" : [
 					{
-						"msg", message
+						"msg" : message
 					}
 				]
 			}
