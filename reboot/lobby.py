@@ -6,12 +6,14 @@ import random
 
 from board_state_reboot import *
 
+json.encoder.FLOAT_REPR = lambda o: format(o, '.3f')
+
 games = {}
 next_game_id = 0
 
 class Game:
 	def __init__(self, name, password, host, id):
-		self.clients = []
+		self.clients = {}
 		self.name = name
 		self.password = password
 		self.next_user_id = 0
@@ -31,7 +33,7 @@ class Game:
 	def get_abridged_clients(self, local):
 		abridged_users = []
 
-		for client in self.clients:
+		for user_id, client in self.clients.iteritems():
 			abridged_users.append({
 				"user" : client.user_id,
 				"name" : client.name,
@@ -42,22 +44,19 @@ class Game:
 		return abridged_users
 
 	#an unfortunate mix of camelCase and snake_case
-	def getClientFromID(self, id):
-		for client in self.clients:
-			if client.user_id == id:
-				return client
+	def get_client_from_id(self, id):
+		if id in self.clients:
+			return self.clients[id];
 		return None
 
 	def connect(self, new_client, name, color, password):
 
-		if not (self.host == new_client or password == self.password):
+		if not (self.host == new_client or (self.password and password == self.password)):
 			response = {
 				"type" : "initFailure",
-				"data" : [
-					{
-						"msg" : "Wrong password"
-					}
-				]
+				"data" : {
+					"msg" : "Wrong password"
+				}
 			}
 			new_client.write_message(json.dumps(response));
 			return
@@ -78,7 +77,9 @@ class Game:
 			]
 		}
 		self.message_all(groupResponse)
-		self.clients.append(new_client)
+
+		#we add the client to self.clients after the message_all to avoid issues
+		self.clients[new_client.user_id] = new_client
 
 		abridged_users = self.get_abridged_clients(new_client)
 		board_data = self.board_state.get_json_obj()
@@ -93,7 +94,9 @@ class Game:
 		new_client.write_message(json.dumps(mainResponse))
 
 	def disconnect(self, client, reason):
-		self.clients.remove(client)
+		del self.clients[client.user_id]
+		client.game = None
+		#socket handler will take care of closing the connection
 
 		if client.user_id == self.host.user_id:
 			if len(self.clients) == 0:
@@ -123,7 +126,7 @@ class Game:
 		self.message_all(groupResponse)
 
 	def message_all(self, response):
-		for client in self.clients:
+		for user_id, client in self.clients.iteritems():
 			client.write_message(json.dumps(response))
 
 	#==========
@@ -132,7 +135,7 @@ class Game:
 
 	def changeHost(self, client, target, message):
 		if self.host.user_id == client.user_id:
-			new_host = self.getClientFromID(target)
+			new_host = self.get_client_from_id(target)
 
 			if new_host is None or new_host.user_id == self.host.user_id:
 				return
@@ -181,7 +184,7 @@ class Game:
 	def kickUser(self, client, target, message):
 		if client is None or self.host.user_id == client.user_id:
 			#yes the host can kick himself, why not
-			victim = self.getClientFromID(target)
+			victim = self.get_client_from_id(target)
 
 			if victim is None:
 				return
@@ -398,7 +401,7 @@ class Game:
 		for pieceData in pieces:
 			piece_id = pieceData["piece"]
 			piece = self.board_state.get_piece(piece_id)
-			if piece == None:
+			if piece is None:
 				error_data = {
 					"type" : "error",
 					"data" : [
@@ -441,7 +444,7 @@ class Game:
 		for pieceData in pieces:
 			piece_id = pieceData["piece"]
 			piece = self.board_state.get_piece(piece_id)
-			if piece == None:
+			if piece is None:
 				error_data = {
 					"type" : "error",
 					"data" : [

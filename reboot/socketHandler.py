@@ -159,7 +159,7 @@ class WebSocketGameHandler(tornado.websocket.WebSocketHandler):
 			#do not need to determine if client is host in this function, that is handled by the Game class
 
 			elif data["type"] == "changeHost":
-				target = data["data"]["id"]
+				target = data["data"]["user"]
 				message = data["data"]["msg"]
 				game.chageHost(self, target, message)
 			elif data["type"] == "announcement":
@@ -167,7 +167,7 @@ class WebSocketGameHandler(tornado.websocket.WebSocketHandler):
 			elif data["type"] == "changeServerInfo":
 				game.changeServerInfo(self, data["data"])
 			elif data["type"] == "kickUser":
-				target = data["data"]["id"]
+				target = data["data"]["user"]
 				message = data["data"]["msg"]
 				game.kickUser(self, target, message)
 			elif data["type"] == "clearBoard":

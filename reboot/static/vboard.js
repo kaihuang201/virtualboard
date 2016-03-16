@@ -11,6 +11,8 @@ var VBoard = VBoard || {};
 	vb.moveHighlightDuration = 500; //milliseconds
 	vb.addHighlightDuration = 500; //milliseconds
 	vb.predictionTimeout = 500; //delay until we roll back the client sided prediction
+
+	//TODO: congestion control should scale based on number of people in the server, and maybe even based average actions per second
 	vb.moveTickDuration = 100; //maximum time to hold onto new positional data before sending it
 	vb.smoothTransitionDuration = 90; //how many milliseconds to smooth out motion received from the server
 
@@ -31,6 +33,7 @@ var VBoard = VBoard || {};
 
 		vb.socket.onopen = function () {
 			//TODO: display some kind of "loading..." animation
+			vb.interface.showLoading();
 
 			//fetch game list
 			vb.limboIO.listGames();
@@ -41,7 +44,7 @@ var VBoard = VBoard || {};
 
 			//TODO: display graphical error message, tell user to refresh page
 			// alert("socket is closed, please refresh page!");
-			vb.interface.alertModal('socket is closed, please refresh page!',1);
+			vb.interface.alertModal('Socket is closed, please refresh page!', 1);
 			clearInterval(VBoard.interface.autoGameListIntervalID);
 
 		};
@@ -171,15 +174,21 @@ var VBoard = VBoard || {};
 
 		joinLobbyRequest: function (lobbyNo, lobbyName) {
 			if (VBoard.interface.userName != "") {
+
+				//I found this switch to be confusing as I did not get redirected back to joining/hosting a game after entering a name
 				vb.interface.switchToJoinLobbyModal(lobbyName);
 				$('#template-modal').modal('show');
 				$('#template-modal #submit-btn-modal-template').unbind();
 				$('#template-modal #submit-btn-modal-template').on("click",function () {
 					var password = $('#lobby-password').val();
 
+					//black should be a valid color, this needs changing
 					if (VBoard.interface.colorSelected[1] != 0 && VBoard.interface.colorSelected[2] != 0 && VBoard.interface.colorSelected[3] != 0) {
+						vb.interface.showLoading();
 						vb.limboIO.joinGame(VBoard.interface.userName,VBoard.interface.colorSelected,lobbyNo,password);
 						vb.interface.clearTemplateModal();
+
+						//why? what if the join failed?
 						VBoard.interface.colorSelected = [0,0,0];
 					} else {
 						vb.interface.setTemplateModalAlert('Please select a color');
@@ -208,30 +217,34 @@ var VBoard = VBoard || {};
 
 					if (gameName != '' && VBoard.interface.colorSelected[1] != 0 && VBoard.interface.colorSelected[2] != 0 && VBoard.interface.colorSelected[3] != 0) {
 						console.log(VBoard.interface.colorSelected + ' <-- test');
+						vb.interface.showLoading();
 						vb.limboIO.hostGame(VBoard.interface.userName,VBoard.interface.colorSelected,gameName,password);	
 						vb.interface.clearTemplateModal();
 						console.log(VBoard.interface.userName+ VBoard.interface.colorSelected + gameName + password);
+
 						VBoard.interface.colorSelected = [0,0,0];
 					} else {
 						vb.interface.setTemplateModalAlert('Please enter a game name/select a color');
 					}
-					
-					
 					// $('#template-modal').modal('hide');
-					
-					
 				});
 			} else {
 				this.userNamePrompt();
 				this.setTemplateModalAlert('Please choose a nickname and try again');
 			}
-
-			
-			
-			
 		},
 
-		
+		showLoading: function () {
+			$("#loading-notification").show("slow");
+		},
+
+		hideLoading: function (instant) {
+			if(instant) {
+				$("#loading-notification").hide();
+			} else {
+				$("#loading-notification").hide("fast");
+			}
+		},
 
 		listLobbiesRequest: function () {
 			vb.limboIO.listGames();
@@ -244,6 +257,7 @@ var VBoard = VBoard || {};
 		// returned msg methods
 		// TODO: most of them
 		showListGames: function (listOfGames) {
+			vb.interface.hideLoading(true);
 			// console.log("list all games");
 			// console.log(JSON.stringify(listOfGames));
 			if (listOfGames.length != 0) {
@@ -270,9 +284,14 @@ var VBoard = VBoard || {};
 
 		// Modal operation functions
 		switchToGameMode: function () {
-			$("#main-page").hide("fast");
+			$("#loading-notification-text").text("Success...");
+
+			$("#main-page").hide("slow", function () {
+				$("#game-page").show(); //("display", "block");
+				vb.interface.hideLoading();
+				//$("#game-page").css("display", "block");
+			});
 			$('#template-modal').modal('hide');
-			$("#game-page").show("fast");
 
 			// stop lobby list refreshing
 			clearInterval(VBoard.interface.autoGameListIntervalID);
@@ -337,6 +356,7 @@ var VBoard = VBoard || {};
 			$('#modal-template-content').html('');
 		},
 
+		//the first character appears as an error for me, can we just stick to ascii please
 		setTemplateModalAlert: function (alertText) {
 			$("#model-template-alert").html('<div class="alert alert-danger" role="alert">\
 									<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span> '+ alertText + '\
@@ -347,7 +367,9 @@ var VBoard = VBoard || {};
 			$("#model-template-alert").html('');
 		},
 
-		alertModal: function (alertText,automaticRefresh) {
+		alertModal: function (alertText, automaticRefresh) {
+			this.hideLoading();
+
 			function sleep(milliseconds) {
 				var start = new Date().getTime();
 				for (var i = 0; i < 1e7; i++) {
@@ -845,8 +867,6 @@ var VBoard = VBoard || {};
 
 		initialize: function () {
 			window.addEventListener("resize", function () {
-				vb.canvas.height = window.innerHeight;
-				vb.canvas.width = window.innerWidth;
 				vb.setCameraPerspective()
 			});
 
@@ -1097,7 +1117,7 @@ var VBoard = VBoard || {};
 				case "pong":
 					break;
 				case "error":
-					vb.interface.alertModal(data["data"]["msg"],1);
+					vb.interface.alertModal(data["data"][0]["msg"], 0);
 					break;
 				case "initSuccess":
 					vb.interface.switchToGameMode();
@@ -1122,7 +1142,7 @@ var VBoard = VBoard || {};
 					
 					break;
 				case "initFailure":
-					vb.interface.alertModal(data["data"]["msg"],1);
+					vb.interface.alertModal(data["data"]["msg"], 0);
 					break;
 				case "listGames":
 					vb.interface.showListGames(data["data"]);
@@ -1765,6 +1785,7 @@ var VBoard = VBoard || {};
 					for(var index in users) {
 						vb.users.changeUserColor(users[index]["user"], users[index]["color"]);
 					}
+					break;
 				case "changeHost":
 					vb.users.changeHost(data["data"]["user"]);
 					break;
@@ -1939,16 +1960,14 @@ var VBoard = VBoard || {};
 	};
 
 	vb.setCameraPerspective = function () {
+		vb.canvas.height = window.innerHeight;
+		vb.canvas.width = window.innerWidth;
 		var ratio = window.innerWidth / window.innerHeight;
 		var size = vb.size;
 		vb.camera.orthoTop = size;
 		vb.camera.orthoBottom = -size;
 		vb.camera.orthoRight = ratio*size;
 		vb.camera.orthoLeft = -ratio*size;
-	};
-
-	vb.loadDummyBlocks = function () {
-		vb.board.generateNewPiece("test piece", vb.users.getLocal(), new BABYLON.Vector2(0, 0));
 	};
 
 	vb.renderLoop = function () {

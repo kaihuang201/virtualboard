@@ -19,7 +19,7 @@ div#menu
 {
 	position: absolute;
 	height: 100%;
-	width: 250px;
+	width: 200px;
 	padding: 15px;
 	top: 0px;
 	left: -300px;
@@ -35,7 +35,7 @@ div#menu
 #viewMenuHover {
 	position: absolute;
 	top: 0px;
-	width : 100px; 
+	width : 30px; 
 	height : 100%;
 	z-index: 800;
 }
@@ -60,6 +60,23 @@ div.context-item:hover{
 	background-color: rgba(120,120,120,0.5);
 }
 
+div#loading-notification {
+	text-align: center;
+	width: 150px;
+	position: fixed;
+	background: #fff;
+	overflow: auto;
+	left: 50%;
+	top: 30%;
+	margin-left: -75px;
+	border-radius: 8px;
+	box-shadow: 0px 0px 15px #000;
+}
+
+div#loading-notification > p {
+	margin-top: 10px;
+	font-weight: bold;
+}
 
 
 /* Tooltip */
