@@ -512,17 +512,23 @@ var VBoard = VBoard || {};
 		},
 
 		chatIncomingMsg: function (msg,needDecoding) {
-			if (!($("#chatbox-inbox").is(":visible"))) $("#chatbox-inbox").fadeIn("fast");
+			if (!($("#chatbox-inbox").is(":visible"))) {
+				$("#chatbox-inbox").fadeIn("fast");
+				setTimeout(function () {$("#chatbox-inbox").fadeOut("slow");},8000);
+			}
 			
-			setTimeout(function () {$("#chatbox-inbox").fadeOut("slow");},8000);
+			
 			// first decode the message
 			var msgDecoded = msg.split("#1ax}#");
 			if (msgDecoded.length == 3) {
-				console.log("handler loop called - chat");
 				var username =  msgDecoded[0] == VBoard.interface.userName? vb.interface.abbrLongStr(msgDecoded[0],10)+"(me)": vb.interface.abbrLongStr(msgDecoded[0],10);
 				var color = msgDecoded[1];
 				if (needDecoding) {
-					$("#chatbox-inbox").prepend('<p><span style="color:'+color+';">'+username+' : </span><span class="chat_message">'+msgDecoded[2]+'</span></p>');
+					// animate new message
+					var tempHTML = '<p id="new-msg" style="display: none;"><span style="color:'+color+';">'+username+' : </span><span class="chat_message">'+msgDecoded[2]+'</span></p>';
+					$("#chatbox-inbox").prepend(tempHTML);
+					$("#new-msg").slideToggle("fast").attr("id","processed");
+
 				} else {
 					$("#chatbox-inbox").prepend('<p><span style="color: #000099;" class="chat_message_system"><strong>'+msg+'</strong></span></p>');
 				}
@@ -1310,9 +1316,9 @@ var VBoard = VBoard || {};
 					break;
 				case "initFailure":
 					if (($("#template-modal").data('bs.modal') || {}).isShown) {
-						vb.interface.setTemplateModalAlert(data["data"][0]["msg"]);
+						vb.interface.setTemplateModalAlert(data["data"]["msg"]);
 					} else {
-						vb.interface.alertModal(data["data"][0]["msg"],0);
+						vb.interface.alertModal(data["data"]["msg"],0);
 					}
 					break;
 				case "listGames":

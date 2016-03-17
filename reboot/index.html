@@ -15,9 +15,9 @@
 		<link rel="stylesheet" href="/static/lib/font-awesome-4.5.0/css/font-awesome.min.css">
 		<script src="/static/lib/sgbeal-colorpicker.jquery.js" type="text/javascript"></script>
 		<script src="/static/lib/vgng.js" type="text/javascript"></script>
-		<link rel="stylesheet" href="/static/board.css">
+		
 		<link rel="stylesheet" href="/static/lib/bootstrap-3.3.6-dist/css/bootstrap.min.css">
-
+		<link rel="stylesheet" href="/static/board.css">
 		<script src="/static/babylon.js"></script>
 		<script src="/static/vboard.js"></script>
 		<script src="/static/menu.js"></script>
@@ -44,7 +44,6 @@
 			</div>
 
 			<ul id="lobby-list" class="list-group" style="width: 60%; padding-top: 20px; margin-left: 20%; margin-right: 20%;">
-				<!-- <a id="lobby-no-1" class="list-group-item"><span class="label label-default label-pill pull-xs-right">14</span>Cras justo odio</a> -->
 			</ul>
 
 
@@ -70,26 +69,18 @@
 				<div id="context-roll" class="context-item">Roll</div>
 			</div>
 
-			<!--
-			<div class="form-group" style="position: absolute;">
-				<label for="Chat">Chat:</label>
-				<input type="text" class="form-control" id="chatinput" style="">
-			</div>
-			-->
 
 			<canvas id="canvas">
 				If you can see this, your browser may not support HTML 5
 			</canvas>
 
 			
-			<div id="chatbox" style="position: fixed; width: 30%; height: 30%; border-radius: 10px; border: 0px solid #aaaaaa; bottom: 30px; left: 20px; padding-top: 10px;">
+			<div id="chatbox">
 				<!-- chat message inbox -->
-				<div id="chatbox-inbox" style="display: none; position: absolute;border-radius: 10px;border: 0px solid #dddddd; height: 80%; overflow: scroll; word-wrap: break-word;background-color: rgba(255,255,255,0.8);left: 1%; width: 98%; padding: 10px;">					
+				<div id="chatbox-inbox">					
 				</div>
-
-				<div id="chatbox-input" style="position: absolute; bottom: 10px;left: 1%; width: 98%;">
+				<div id="chatbox-input">
 					<div class="input-group">
-						
 						<input type="text" class="form-control" placeholder="Enter a chat message..." aria-describedby="basic-addon2" id="chatbox-msg">
 						<span class="input-group-btn">
 							<button class="btn btn-default" type="button" id="send-chat"><i class="fa fa-commenting-o"></i></button>
@@ -177,18 +168,6 @@
 							</div>
 							<div class="row">
 								<div class="col-md-12" id="modal-template-content">
-									<div class="form-group">
-										<label for="color-picker" class="form-control-label">Choose <span id="selected-color">Your Color</span>:</label>
-										<div id="color-picker" style="padding-top: 5px;"></div>
-									</div>
-									<div class="form-group">
-										<label for="lobby-name" class="form-control-label">Name Your Game:</label>
-										<input type="text" class="form-control" id="lobby-name">
-									</div>
-									<div class="form-group">
-										<label for="lobby-password" class="form-control-label">Game Password:</label>
-										<input type="password" class="form-control" id="lobby-password">
-									</div>
 									
 								</div>
 							</div>
