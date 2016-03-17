@@ -64,6 +64,74 @@ var VBoard = VBoard || {};
 		}
 	};
 
+	vb.cookie = {
+
+		// functions for public use
+
+		// set cookie function
+		// adopted from http://www.w3schools.com/js/js_cookies.asp
+		setCookie: function (userName, color, lobbyNo, expireMinutes) {
+		    var d = new Date();
+		    d.setTime(d.getTime() + (expireMinutes*60*1000));
+		    var expires = "expires="+d.toUTCString();
+		    document.cookie = "data=" + userName + "|rgb(" + color.toString() + ")|" + lobbyNo + "; " + expires;
+
+		    console.log("data=" + userName + "|rgb(" + color.toString() + ")|" + lobbyNo + "; " + expires);
+		},
+
+		getUsername: function () {
+			if (this.parseCookie().length == 0) return "";
+			return (this.parseCookie())[0];
+		},
+
+		getUserColor: function () {
+			function strRGB2ArrayRGB(str) {
+				var retRGB = str.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+				return [parseInt(retRGB[1],10),parseInt(retRGB[2],10),parseInt(retRGB[3],10)];
+			}
+
+			if (this.parseCookie().length == 0) return [0,0,0];
+			return strRGB2ArrayRGB((this.parseCookie())[1]);
+		},
+		getLobbyNo: function () {
+			if (this.parseCookie().length == 0) return "";
+			return parseInt((this.parseCookie())[2],10);
+		},
+
+		hasActiveCookie: function () {
+		    var data=this.parseCookie();
+		    if (data.length == 0) {
+		        return false;
+		    }else if ((data[0].split()).length != 3) {
+
+		    	return false;
+		    } else {
+		    	return true;
+		    }
+		},
+
+		deleteCookie: function () {
+			document.cookie = 'data=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+		},
+
+		// function for private use
+
+		parseCookie: function () {
+		    var name = "data=";
+		    var ca = document.cookie.split(';');
+		    for(var i=0; i<ca.length; i++) {
+		        var c = ca[i];
+		        while (c.charAt(0)==' ') c = c.substring(1);
+		        if (c.indexOf(name) == 0) return (c.substring(name.length,c.length)).split('|');
+		    }
+		    return [];
+		}
+
+		
+
+		
+	};
+
 	vb.interface = {
 		// this is for color selected from the interface
 		colorSelected: [0,0,0],
@@ -73,8 +141,31 @@ var VBoard = VBoard || {};
 
 		// interface initializer
 		init: function () {
+			if (vb.cookie.hasActiveCookie()) {
+				console.log(document.cookie);
 
-			// vb.interface.userNamePrompt();
+				var usrnameFromCookie = vb.cookie.getUsername();
+				var colorFromCookie = vb.cookie.getUserColor();
+				var lobbyNoFromCookie = vb.cookie.getLobbyNo();
+				vb.interface.setUserName(usrnameFromCookie);
+				// show and assign the "resume game" button 
+				$('#resume-game').show();
+				$('#resume-game').unbind();
+				$('#resume-game').on('click',function () {
+					vb.interface.switchToResumeGameModal("last game session");
+					$('#template-modal').show("fast");
+					$('#template-modal #submit-btn-modal-template').unbind();
+					$('#template-modal #submit-btn-modal-template').on('click',function () {
+						vb.interface.showLoading();
+						vb.limboIO.joinGame(VBoard.interface.userName,colorFromCookie,lobbyNoFromCookie,password);
+					});
+					
+
+				})
+			} else {
+				vb.interface.userNamePrompt();
+			}
+			
 
 
 
@@ -114,7 +205,6 @@ var VBoard = VBoard || {};
 			// http://wanderinghorse.net/computing/javascript/jquery/colorpicker/demo-colorpicker.html
 			$('#color-picker').empty().addColorPicker({
 				clickCallback: function(c) {
-					// $('#ColorSelectionTarget2').css('border-color',c).css('color',c);
 					$("#selected-color").css('color',c);
 					// $("#selected-color").animate({
 					// 	color: "#fff"
@@ -149,8 +239,7 @@ var VBoard = VBoard || {};
 			$('#template-modal #submit-btn-modal-template').unbind();
 			$('#template-modal #submit-btn-modal-template').on("click",function () {
 				if ($('#user-nickname').val() != '') {
-					VBoard.interface.userName = $('#user-nickname').val();
-					$('#change-username').html("Hello " + VBoard.interface.userName +'!');
+					vb.interface.setUserName($('#user-nickname').val());
 					$('#template-modal').modal('hide');
 					vb.interface.clearTemplateModal();
 				} else {
@@ -172,6 +261,8 @@ var VBoard = VBoard || {};
 			});
 		},
 
+		
+
 		joinLobbyRequest: function (lobbyNo, lobbyName) {
 			if (VBoard.interface.userName != "") {
 
@@ -182,14 +273,11 @@ var VBoard = VBoard || {};
 				$('#template-modal #submit-btn-modal-template').on("click",function () {
 					var password = $('#lobby-password').val();
 
-					//black should be a valid color, this needs changing
+					//black should be a valid color, this needs changing   <--- let's first fix the color selections to the five preset colors
 					if (VBoard.interface.colorSelected[1] != 0 && VBoard.interface.colorSelected[2] != 0 && VBoard.interface.colorSelected[3] != 0) {
 						vb.interface.showLoading();
 						vb.limboIO.joinGame(VBoard.interface.userName,VBoard.interface.colorSelected,lobbyNo,password);
-						vb.interface.clearTemplateModal();
 
-						//why? what if the join failed?
-						VBoard.interface.colorSelected = [0,0,0];
 					} else {
 						vb.interface.setTemplateModalAlert('Please select a color');
 					}
@@ -216,11 +304,11 @@ var VBoard = VBoard || {};
 					var password = $('#lobby-password').val();
 
 					if (gameName != '' && VBoard.interface.colorSelected[1] != 0 && VBoard.interface.colorSelected[2] != 0 && VBoard.interface.colorSelected[3] != 0) {
-						console.log(VBoard.interface.colorSelected + ' <-- test');
+						// console.log(VBoard.interface.colorSelected + ' <-- test');
 						vb.interface.showLoading();
 						vb.limboIO.hostGame(VBoard.interface.userName,VBoard.interface.colorSelected,gameName,password);	
 						vb.interface.clearTemplateModal();
-						console.log(VBoard.interface.userName+ VBoard.interface.colorSelected + gameName + password);
+						// console.log(VBoard.interface.userName+ VBoard.interface.colorSelected + gameName + password);
 
 						VBoard.interface.colorSelected = [0,0,0];
 					} else {
@@ -235,7 +323,7 @@ var VBoard = VBoard || {};
 		},
 
 		showLoading: function () {
-			$("#loading-notification").show("slow");
+			$("#loading-notification").show("fast");
 		},
 
 		hideLoading: function (instant) {
@@ -251,11 +339,10 @@ var VBoard = VBoard || {};
 		},
 
 		leaveLobbyRequest: function () {
-			vb.sessionIO.disconnect();
+			vb.sessionIO.disconnect("disconnected through interface requests");
 		},
 
 		// returned msg methods
-		// TODO: most of them
 		showListGames: function (listOfGames) {
 			vb.interface.hideLoading(true);
 			// console.log("list all games");
@@ -292,6 +379,10 @@ var VBoard = VBoard || {};
 				//$("#game-page").css("display", "block");
 			});
 			$('#template-modal').modal('hide');
+			vb.interface.clearTemplateModal();
+			vb.interface.clearTemplateModalAlert();
+			VBoard.interface.colorSelected = [0,0,0];
+			$('#resume-game').hide();
 
 			// stop lobby list refreshing
 			clearInterval(VBoard.interface.autoGameListIntervalID);
@@ -299,6 +390,7 @@ var VBoard = VBoard || {};
 
 		switchToCreateLobbyModal: function () {
 			vb.interface.clearTemplateModalAlert();
+			vb.interface.clearTemplateModal();
 			$('#modal-template-title').html('Create A Lobby');
 			$('#modal-template-content').html('<div class="form-group"> \
 									<label for="color-picker" class="form-control-label">Choose <span id="selected-color">Your Color</span>:</label> \
@@ -321,6 +413,7 @@ var VBoard = VBoard || {};
 
 		switchToJoinLobbyModal: function (lobbyName) {
 			vb.interface.clearTemplateModalAlert();
+			vb.interface.clearTemplateModal();
 			$('#modal-template-title').html('Join 『' + lobbyName + '』');
 			$('#modal-template-content').html('<div class="form-group"> \
 									<label for="color-picker" class="form-control-label">Choose <span id="selected-color">Your Color</span>:</label> \
@@ -335,8 +428,22 @@ var VBoard = VBoard || {};
 			vb.interface.colorPickerInit();
 		},
 
+		switchToResumeGameModal: function (lobbyName) {
+			vb.interface.clearTemplateModalAlert();
+			vb.interface.clearTemplateModal();
+			$('#modal-template-title').html('Resume 『' + lobbyName + '』');
+
+			$('#modal-template-content').html('<div class="form-group">\
+									<label for="lobby-password" class="form-control-label">Re-enter Game Password:</label>\
+									<input type="password" class="form-control" id="lobby-password">\
+								</div>');
+
+			$('#template-modal #submit-btn-modal-template').show().html('Join '+ lobbyName);
+		},
+
 		switchToUserNicknameModal: function () {
 			vb.interface.clearTemplateModalAlert();
+			vb.interface.clearTemplateModal();
 			$('#modal-template-title').html('Pick a Nickname:');
 
 			$('#modal-template-content').html('<div class="input-group">\
@@ -347,7 +454,6 @@ var VBoard = VBoard || {};
 										</div>');
 
 			$('#random-nickname').unbind().on('click',function(){$('#user-nickname').val(generate_game_name());});
-			// $('#user-nickname').val("test");
 			$('#template-modal #submit-btn-modal-template').show().html('Confirm');
 		},
 
@@ -404,8 +510,14 @@ var VBoard = VBoard || {};
 
 			var randomNum = Math.floor((Math.random() * nameList.length));
 			return nameList[randomNum];
-		}
+		},
 
+		// helper function
+
+		setUserName: function (username) {
+			VBoard.interface.userName = username;
+			$('#change-username').html("Hello " + VBoard.interface.userName +'!');
+		}
 	};
 
 	vb.board = {
@@ -1117,11 +1229,13 @@ var VBoard = VBoard || {};
 				case "pong":
 					break;
 				case "error":
-					vb.interface.alertModal(data["data"][0]["msg"], 0);
+					if (($("#template-modal").data('bs.modal') || {}).isShown) {
+						vb.interface.setTemplateModalAlert(data["data"]["msg"]);
+					} else {
+						vb.interface.alertModal(data["data"]["msg"],0);
+					}
 					break;
 				case "initSuccess":
-					vb.interface.switchToGameMode();
-
 					console.log("Coming to you live from " + data["data"]["gameName"]);
 					var users = data["data"]["users"];
 
@@ -1131,7 +1245,13 @@ var VBoard = VBoard || {};
 						vb.users.createNewUser(userData);
 					}
 
+					// set cookie active for 120 minutes since game starts
+					vb.cookie.deleteCookie();
+					vb.cookie.setCookie(VBoard.interface.username, VBoard.interface.colorSelected, data["data"]["gameID"], 120); // make sure this step comes before switchToGameMode()
+					console.log("cookie setup ->> "+VBoard.interface.username + VBoard.interface.colorSelected + data["data"]["gameID"]);
+
 					//switch from lobby state to game state
+					vb.interface.switchToGameMode();
 					vb.socket.onmessage = vb.sessionIO.messageHandler;
 					vb.launchCanvas();
 
@@ -1708,6 +1828,12 @@ var VBoard = VBoard || {};
 				case "pong":
 					break;
 				case "error":
+					if (($("#template-modal").data('bs.modal') || {}).isShown) {
+						vb.interface.setTemplateModalAlert(data["data"]["msg"]);
+					} else {
+						vb.interface.alertModal(data["data"]["msg"],0);
+					}
+					
 					break;
 				case "chat":
 					break;
@@ -1778,6 +1904,9 @@ var VBoard = VBoard || {};
 						var user = users[index];
 						vb.users.removeUser(user); //TO FIX
 					}
+
+					// TODO: S13  - handle disconnect gracefully
+
 					break;
 				case "changeColor":
 					var users = data["data"];

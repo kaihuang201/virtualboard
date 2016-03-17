@@ -87,6 +87,7 @@ class Game:
 			"type" : "initSuccess",
 			"data" : {
 				"gameName" : self.name,
+				"gameID" : self.game_id,
 				"users" : abridged_users,
 				"board" : board_data
 			}
