@@ -396,7 +396,6 @@ class Game:
 				}
 				client.write_message(json.dumps(error_data))
 				return
-
 			if piece.isDie:
 				max_value = piece.max_roll
 				new_value = random.randint(1, int(max_value))
@@ -427,15 +426,90 @@ class Game:
 		}
 		self.message_all(response)
 
+
 	def createDeck(self, client, pieces):
+		with open("./static/json/cardmap.json", "r") as card_json:
+			card_map = json.loads(card_json.read())
+		card_icons = []
+		for key, val in card_map.iteritems():
+			card_icons.append(val["front_clubs"])
+			card_icons.append(val["front_diamonds"])
+			card_icons.append(val["front_hearts"])
+			card_icons.append(val["front_spades"])
 		for piece in pieces:
-			cards = [
-				#TODO fill with cards
-			]
+			cards = card_icons
 			numpy.random.shuffle(cards)
 			piece["cards"] = cards
-
+		print piece
 		self.pieceAdd(client, pieces)
+
+
+	def drawCard(self, client, pieces):
+		print pieces
+		response_data = []
+		for piece in pieces:
+			piece_id = piece["piece"]
+			deck_piece = self.board_state.get_piece(piece_id)
+			if piece == None:
+				error_data = {
+					"type" : "error",
+					"data" : [
+						{
+							"msg" : "invalid piece id " + id
+						}
+					]
+				}
+				client.write_message(json.dumps(error_data))
+				return
+			if deck_piece.isDeck:
+				if len(deck_piece.cards) == 0:
+					error_data = {
+						"type" : "error",
+						"data" : [
+							{
+								"msg" : "this deck (id = " + id +") is empty"
+							}
+						]
+					}
+					client.write_message(json.dumps(error_data))
+					return
+				new_card_icon = deck_piece.cards.pop(0)
+				deck_count = len(deck_piece.cards)
+				if deck_count == 0:
+					self.pieceRemove(client, [deck_piece])
+				new_card_data = {
+					"pos" : [deck_piece.pos[0] + deck_piece.size + 1, deck_piece.pos[1]],
+					"icon" : new_card_icon,
+					"color" : deck_piece.color,
+					"static" : False,
+					"s" : deck_piece.size,
+					"r" : deck_piece.rotation
+				}
+				print "piece add ", new_card_icon
+				self.pieceAdd(client, [new_card_data])
+				response_data.append({
+					"id" : piece_id,
+					"count" : deck_count
+				})
+			else:
+				error_data = {
+					"type" : "error",
+					"data" : [
+						{
+							"msg" : "this piece (id = " + id +") is not a deck"
+						}
+					]
+				}
+				client.write_message(json.dumps(error_data))
+				return
+		response = {
+			"type": "drawCard",
+			"data": response_data
+		}
+		self.message_all(response)
+				
+
+
 
 	def flipCard(self, client, pieces):
 		response_data = []

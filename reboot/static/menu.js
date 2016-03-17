@@ -212,7 +212,7 @@ var VBoard = VBoard || {};
                 $("#context-menu").css("visibility", "hidden");
             });
             $("#context-draw-card").on("click" , function(){
-
+            	console.log("menu click");
                 if (piece instanceof Deck) {
                     vb.sessionIO.drawCard(piece.id);
                 }

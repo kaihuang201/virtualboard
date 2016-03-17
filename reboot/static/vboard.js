@@ -1205,6 +1205,7 @@ var VBoard = VBoard || {};
 		},
 
 		drawCard: function (deckID) {
+			console.log("draw card" + deckID)
 			if(deckID.constructor === Array) {
 				var pieceData = [];
 
@@ -1216,12 +1217,12 @@ var VBoard = VBoard || {};
 			} else {
 				var pieceData = [
 					{
-						"piece" : id
+						"piece" : deckID
 					}
 				];
 			}
 			var data = {
-				"type" : "pieceTransform",
+				"type" : "drawCard",
 				"data" : pieceData
 			};
 			this.send(data);
@@ -1420,10 +1421,10 @@ var VBoard = VBoard || {};
 				case "drawCard":
 					var decks = data["data"];
 
-					for (var i = 0; i < cards.length; i++) {
+					for (var i = 0; i < decks.length; i++) {
 						var deck = decks[i];
-						var id = card["id"];
-						var newCount = card["count"];
+						var id = deck["id"];
+						var newCount = deck["count"];
 
 						var piece = vb.board.pieceHash[id];
 						piece.drawCard(newCount);
@@ -1662,7 +1663,7 @@ function Deck(pieceData) {
 
 	this.drawCard = function(newCount) {
 		this.numCards = newCount;
-		this.material.diffuseTexture.drawText(this.numCards, null, 64, "Bold 24px Arial", "rgba(255,255,255,1.0)", "black");
+		this.mesh.material.diffuseTexture.drawText(this.numCards, 5, 40, "bold 128px Arial", "rgba(255,255,255,1.0)", "black");
 	}
 
 	return this;

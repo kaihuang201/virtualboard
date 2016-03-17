@@ -1,7 +1,109 @@
 {
+    "ace" : {
+    	"size" : 4,
+    	"back" : "/static/img/card/cardback.png",
+    	"front_clubs" : "/static/img/card/clubs/ace_of_clubs.png",
+    	"front_diamonds" : "/static/img/card/diamonds/ace_of_diamonds.png",
+    	"front_hearts" : "/static/img/card/hearts/ace_of_hearts.png",
+    	"front_spades" : "/static/img/card/spades/ace_of_spades.png"
+    },
+
+    "two" : {
+    	"size" : 4,
+    	"back" : "/static/img/card/cardback.png",
+    	"front_clubs" : "/static/img/card/clubs/2_of_clubs.png",
+    	"front_diamonds" : "/static/img/card/diamonds/2_of_diamonds.png",
+    	"front_hearts" : "/static/img/card/hearts/2_of_hearts.png",
+    	"front_spades" : "/static/img/card/spades/2_of_spades.png"
+    },
+
+    "three" : {
+    	"size" : 4,
+    	"back" : "/static/img/card/cardback.png",
+    	"front_clubs" : "/static/img/card/clubs/3_of_clubs.png",
+    	"front_diamonds" : "/static/img/card/diamonds/3_of_diamonds.png",
+    	"front_hearts" : "/static/img/card/hearts/3_of_hearts.png",
+    	"front_spades" : "/static/img/card/spades/3_of_spades.png"
+    },
+    "four" : {
+    	"size" : 4,
+    	"back" : "/static/img/card/cardback.png",
+    	"front_clubs" : "/static/img/card/clubs/4_of_clubs.png",
+    	"front_diamonds" : "/static/img/card/diamonds/4_of_diamonds.png",
+    	"front_hearts" : "/static/img/card/hearts/4_of_hearts.png",
+    	"front_spades" : "/static/img/card/spades/4_of_spades.png"
+    },
+    "five" : {
+    	"size" : 4,
+    	"back" : "/static/img/card/cardback.png",
+    	"front_clubs" : "/static/img/card/clubs/5_of_clubs.png",
+    	"front_diamonds" : "/static/img/card/diamonds/5_of_diamonds.png",
+    	"front_hearts" : "/static/img/card/hearts/5_of_hearts.png",
+    	"front_spades" : "/static/img/card/spades/5_of_spades.png"
+    },
+     "six" : {
+    	"size" : 4,
+    	"back" : "/static/img/card/cardback.png",
+    	"front_clubs" : "/static/img/card/clubs/6_of_clubs.png",
+    	"front_diamonds" : "/static/img/card/diamonds/6_of_diamonds.png",
+    	"front_hearts" : "/static/img/card/hearts/6_of_hearts.png",
+    	"front_spades" : "/static/img/card/spades/6_of_spades.png"
+    },
+    "seven" : {
+    	"size" : 4,
+    	"back" : "/static/img/card/cardback.png",
+    	"front_clubs" : "/static/img/card/clubs/7_of_clubs.png",
+    	"front_diamonds" : "/static/img/card/diamonds/7_of_diamonds.png",
+    	"front_hearts" : "/static/img/card/hearts/7_of_hearts.png",
+    	"front_spades" : "/static/img/card/spades/7_of_spades.png"
+    },
+     "eight" : {
+    	"size" : 4,
+    	"back" : "/static/img/card/cardback.png",
+    	"front_clubs" : "/static/img/card/clubs/8_of_clubs.png",
+    	"front_diamonds" : "/static/img/card/diamonds/8_of_diamonds.png",
+    	"front_hearts" : "/static/img/card/hearts/8_of_hearts.png",
+    	"front_spades" : "/static/img/card/spades/8_of_spades.png"
+    },
+    "nine" : {
+    	"size" : 4,
+    	"back" : "/static/img/card/cardback.png",
+    	"front_clubs" : "/static/img/card/clubs/9_of_clubs.png",
+    	"front_diamonds" : "/static/img/card/diamonds/9_of_diamonds.png",
+    	"front_hearts" : "/static/img/card/hearts/9_of_hearts.png",
+    	"front_spades" : "/static/img/card/spades/9_of_spades.png"
+    },
+    "ten" : {
+    	"size" : 4,
+    	"back" : "/static/img/card/cardback.png",
+    	"front_clubs" : "/static/img/card/clubs/10_of_clubs.png",
+    	"front_diamonds" : "/static/img/card/diamonds/10_of_diamonds.png",
+    	"front_hearts" : "/static/img/card/hearts/10_of_hearts.png",
+    	"front_spades" : "/static/img/card/spades/10_of_spades.png"
+    },
     "joker" : {
         "size" : 4,
         "back" : "/static/img/card/cardback.png",
-        "front": "/static/img/card/cardfront.png"
-    }
+    	"front_clubs" : "/static/img/card/clubs/jack_of_clubs.png",
+    	"front_diamonds" : "/static/img/card/diamonds/jack_of_diamonds.png",
+    	"front_hearts" : "/static/img/card/hearts/jack_of_hearts.png",
+    	"front_spades" : "/static/img/card/spades/jack_of_spades.png"
+    },
+    "queen" : {
+    	"size" : 4,
+    	"back" : "/static/img/card/cardback.png",
+    	"front_clubs" : "/static/img/card/clubs/queen_of_clubs.png",
+    	"front_diamonds" : "/static/img/card/diamonds/queen_of_diamonds.png",
+    	"front_hearts" : "/static/img/card/hearts/queen_of_hearts.png",
+       	"front_spades" : "/static/img/card/spades/queen_of_spades.png"
+    },
+    "king" : {
+    	"size" : 4,
+    	"back" : "/static/img/card/cardback.png",
+    	"front_clubs" : "/static/img/card/clubs/king_of_clubs.png",
+    	"front_diamonds" : "/static/img/card/diamonds/king_of_diamonds.png",
+    	"front_hearts" : "/static/img/card/hearts/king_of_hearts.png",
+    	"front_spades" : "/static/img/card/spades/king_of_spades.png"
+
+    }  	
 }

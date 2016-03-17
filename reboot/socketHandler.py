@@ -135,8 +135,7 @@ class WebSocketGameHandler(tornado.websocket.WebSocketHandler):
 				print "todo"
 				#Todo: Needs to be implemented
 			elif data["type"] == "drawCard":
-				print "todo"
-				#Todo: Needs to be implemented
+				game.drawCard(self, data["data"])
 			elif data["type"] == "createPrivateZone":
 				print "todo"
 				#Todo: Needs to be implemented
