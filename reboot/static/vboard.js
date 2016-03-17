@@ -236,7 +236,7 @@ var VBoard = VBoard || {};
 			});
 			//TODO: figure out a proper callback
 			
-			vb.interface.setInputFocusAndEnterKeyCallback("#user-nickname","#submit-btn-modal-template");
+			vb.interface.setInputFocusAndEnterKeyCallback("#user-nickname","#submit-btn-modal-template",false);
 		},
 
 		
@@ -506,7 +506,7 @@ var VBoard = VBoard || {};
 			// 	$("#chatbox-inbox").fadeOut("slow");
 			// });
 
-			vb.interface.setInputFocusAndEnterKeyCallback("#chatbox-msg","#send-chat");
+			vb.interface.setInputFocusAndEnterKeyCallback("#chatbox-msg","#send-chat",true);
 
 
 		},
@@ -516,7 +516,6 @@ var VBoard = VBoard || {};
 				$("#chatbox-inbox").fadeIn("fast");
 				setTimeout(function () {$("#chatbox-inbox").fadeOut("slow");},8000);
 			}
-			
 			
 			// first decode the message
 			var msgDecoded = msg.split("#1ax}#");
@@ -532,10 +531,7 @@ var VBoard = VBoard || {};
 				} else {
 					$("#chatbox-inbox").prepend('<p><span style="color: #000099;" class="chat_message_system"><strong>'+msg+'</strong></span></p>');
 				}
-				
 			}
-
-			
 		},
 
 		// helper function
@@ -557,10 +553,13 @@ var VBoard = VBoard || {};
 			var retRGB = str.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
 			return [parseInt(retRGB[1],10),parseInt(retRGB[2],10),parseInt(retRGB[3],10)];
 		},
-		setInputFocusAndEnterKeyCallback: function (textbox,enterKey) {
-			setTimeout(function () {
-				$(textbox).focus();
-			}, 500);
+		setInputFocusAndEnterKeyCallback: function (textbox,enterKey,skipFocus) {
+			if (!skipFocus) {
+				setTimeout(function () {
+					$(textbox).focus();
+				}, 500);
+			}
+			
 			$(textbox).keypress(function (event) {
 				//detect enter keypress while textbox is selected
 				if(event.keyCode == '13') {
@@ -571,6 +570,8 @@ var VBoard = VBoard || {};
 		abbrLongStr: function (originalStr, toLength) {
 			return originalStr.substring(0,Math.min(toLength,originalStr.length)) + "...";
 		}
+
+		
 	};
 
 	vb.board = {
