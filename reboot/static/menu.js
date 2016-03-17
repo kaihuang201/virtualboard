@@ -154,6 +154,7 @@ var VBoard = VBoard || {};
 			$("#context-static").off("click");
             $("#context-flip").off("click");
             $("#context-roll").off("click");
+            $("#context-draw-card").off("click");
 
             //only show flip option if piece is a card
             if (piece instanceof Card) {
@@ -169,6 +170,14 @@ var VBoard = VBoard || {};
             }
             else {
                 $("#context-roll").hide();
+            }
+
+            //only show draw card option in piece is a deck
+            if (piece instanceof Deck) {
+            	$("#context-draw-card").show();
+            }
+            else {
+            	$("#context-draw-card").hide();
             }
 
 			//set new onclick function bindings
@@ -199,6 +208,13 @@ var VBoard = VBoard || {};
 
                 if (piece instanceof Die) {
                     vb.sessionIO.rollDice(piece.id);
+                }
+                $("#context-menu").css("visibility", "hidden");
+            });
+            $("#context-draw-card").on("click" , function(){
+
+                if (piece instanceof Deck) {
+                    vb.sessionIO.drawCard(piece.id);
                 }
                 $("#context-menu").css("visibility", "hidden");
             });

@@ -288,6 +288,9 @@ var VBoard = VBoard || {};
 			else if (pieceData.max_roll) {
 				piece = new Die(pieceData);
 			}
+			else if (pieceData.cards) {
+				piece = new Deck(pieceData);
+			}
 			else {
 				piece = new Piece(pieceData);
 			}
@@ -1201,21 +1204,19 @@ var VBoard = VBoard || {};
 			//TODO
 		},
 
-		drawCard: function (deckID, count) {
+		drawCard: function (deckID) {
 			if(deckID.constructor === Array) {
 				var pieceData = [];
 
 				for(var i=0; i<deckID.length; i++) {
 					pieceData.push({
-						"deck" : deckID[i],
-						"count" : color[i]
+						"deck" : deckID[i]
 					});
 				}
 			} else {
 				var pieceData = [
 					{
-						"piece" : id,
-						"color" : color,
+						"piece" : id
 					}
 				];
 			}
@@ -1416,7 +1417,17 @@ var VBoard = VBoard || {};
 					break;
 				case "addCard":
 					break;
-				case "removeCard":
+				case "drawCard":
+					var decks = data["data"];
+
+					for (var i = 0; i < cards.length; i++) {
+						var deck = decks[i];
+						var id = card["id"];
+						var newCount = card["count"];
+
+						var piece = vb.board.pieceHash[id];
+						piece.drawCard(newCount);
+					}
 					break;
 				case "createPrivateZone":
 					break;
@@ -1633,6 +1644,25 @@ function Die(pieceData) {
 		material.diffuseTexture = new BABYLON.Texture(icon, scene);
 		material.diffuseTexture.hasAlpha = true;
 		this.mesh.material = material;
+	}
+
+	return this;
+}
+
+function Deck(pieceData) {
+	this.base = Piece;
+	this.base(pieceData);
+
+	this.numCards = pieceData["cards"].length;
+	this.cards = pieceData["cards"];
+
+	var scene = VBoard.scene;
+	this.mesh.material.diffuseTexture = new BABYLON.DynamicTexture("dynamic texture", 512, scene);
+	this.mesh.material.diffuseTexture.drawText(this.numCards, null, 64, "Bold 24px Arial", "rgba(255,255,255,1.0)", "black");
+
+	this.drawCard = function(newCount) {
+		this.numCards = newCount;
+		this.material.diffuseTexture.drawText(this.numCards, null, 64, "Bold 24px Arial", "rgba(255,255,255,1.0)", "black");
 	}
 
 	return this;
