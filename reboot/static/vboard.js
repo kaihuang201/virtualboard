@@ -100,13 +100,10 @@ var VBoard = VBoard || {};
 
 		hasActiveCookie: function () {
 		    var data=this.parseCookie();
-		    if (data.length == 0) {
-		        return false;
-		    }else if ((data[0].split()).length != 3) {
-
-		    	return false;
+		    if (data.length == 3) {
+		        return true;
 		    } else {
-		    	return true;
+		    	return false;
 		    }
 		},
 
@@ -170,7 +167,6 @@ var VBoard = VBoard || {};
 
 
 			$("#create-lobby").on("click", function() {
-				// $("#main-page").hide("fast");
 				VBoard.interface.createLobbyRequest();
 			});
 
@@ -233,7 +229,7 @@ var VBoard = VBoard || {};
 
 		// request methods
 
-		userNamePrompt: function () {
+		userNamePrompt: function (additionalCallBackFunction) {
 			vb.interface.switchToUserNicknameModal();
 			$('#template-modal').modal('show');
 			$('#template-modal #submit-btn-modal-template').unbind();
@@ -242,6 +238,7 @@ var VBoard = VBoard || {};
 					vb.interface.setUserName($('#user-nickname').val());
 					$('#template-modal').modal('hide');
 					vb.interface.clearTemplateModal();
+					if (additionalCallBackFunction) setTimeout(additionalCallBackFunction,500);
 				} else {
 					// alert('Please enter a valid username');
 					vb.interface.setTemplateModalAlert('Make sure you put in a valid nickname')
@@ -265,8 +262,6 @@ var VBoard = VBoard || {};
 
 		joinLobbyRequest: function (lobbyNo, lobbyName) {
 			if (VBoard.interface.userName != "") {
-
-				//I found this switch to be confusing as I did not get redirected back to joining/hosting a game after entering a name
 				vb.interface.switchToJoinLobbyModal(lobbyName);
 				$('#template-modal').modal('show');
 				$('#template-modal #submit-btn-modal-template').unbind();
@@ -281,14 +276,10 @@ var VBoard = VBoard || {};
 					} else {
 						vb.interface.setTemplateModalAlert('Please select a color');
 					}
-					
-					// $('#template-modal').modal('hide');
-					
-					// 
 				});
 			} else {
 				this.userNamePrompt();
-				this.setTemplateModalAlert('Please choose a nickname and try again');
+				this.setTemplateModalAlert('Please choose a nickname first');
 			}
 		},
 
@@ -307,18 +298,16 @@ var VBoard = VBoard || {};
 						// console.log(VBoard.interface.colorSelected + ' <-- test');
 						vb.interface.showLoading();
 						vb.limboIO.hostGame(VBoard.interface.userName,VBoard.interface.colorSelected,gameName,password);	
-						vb.interface.clearTemplateModal();
 						// console.log(VBoard.interface.userName+ VBoard.interface.colorSelected + gameName + password);
 
-						VBoard.interface.colorSelected = [0,0,0];
 					} else {
 						vb.interface.setTemplateModalAlert('Please enter a game name/select a color');
 					}
 					// $('#template-modal').modal('hide');
 				});
 			} else {
-				this.userNamePrompt();
-				this.setTemplateModalAlert('Please choose a nickname and try again');
+				this.userNamePrompt(vb.interface.createLobbyRequest);
+				this.setTemplateModalAlert('Please choose a nickname first');
 			}
 		},
 
@@ -1247,8 +1236,8 @@ var VBoard = VBoard || {};
 
 					// set cookie active for 120 minutes since game starts
 					vb.cookie.deleteCookie();
-					vb.cookie.setCookie(VBoard.interface.username, VBoard.interface.colorSelected, data["data"]["gameID"], 120); // make sure this step comes before switchToGameMode()
-					console.log("cookie setup ->> "+VBoard.interface.username + VBoard.interface.colorSelected + data["data"]["gameID"]);
+					vb.cookie.setCookie(VBoard.interface.userName, VBoard.interface.colorSelected, data["data"]["gameID"], 120); // make sure this step comes before switchToGameMode()
+					console.log("cookie setup ->> "+VBoard.interface.userName + VBoard.interface.colorSelected + data["data"]["gameID"]);
 
 					//switch from lobby state to game state
 					vb.interface.switchToGameMode();
