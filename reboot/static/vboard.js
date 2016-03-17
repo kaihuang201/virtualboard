@@ -83,13 +83,8 @@ var VBoard = VBoard || {};
 		},
 
 		getUserColor: function () {
-			function strRGB2ArrayRGB(str) {
-				var retRGB = str.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
-				return [parseInt(retRGB[1],10),parseInt(retRGB[2],10),parseInt(retRGB[3],10)];
-			}
-
 			if (this.parseCookie().length == 0) return [0,0,0];
-			return strRGB2ArrayRGB((this.parseCookie())[1]);
+			return vb.interface.strRGB2ArrayRGB((this.parseCookie())[1]);
 		},
 		getLobbyNo: function () {
 			if (this.parseCookie().length == 0) return "";
@@ -149,7 +144,7 @@ var VBoard = VBoard || {};
 					vb.interface.switchToResumeGameModal("last game session");
 					$('#template-modal').modal("show");
 					$('#template-modal #submit-btn-modal-template').unbind().on('click',function () {
-						// vb.interface.showLoading();
+						vb.interface.showLoading();
 						vb.limboIO.joinGame(VBoard.interface.userName,colorFromCookie,lobbyNoFromCookie,$('#lobby-password').val());
 					});
 					
@@ -186,6 +181,7 @@ var VBoard = VBoard || {};
 
 
 
+
 			// automatic refresh game list
 			VBoard.interface.autoGameListIntervalID = setInterval(function(){VBoard.limboIO.listGames();}, 20000);
 			// enable tooltip @ bootstrap
@@ -201,11 +197,7 @@ var VBoard = VBoard || {};
 					// $("#selected-color").animate({
 					// 	color: "#fff"
 					// },1000);
-					function strRGB2ArrayRGB(str) {
-						var retRGB = str.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
-						return [parseInt(retRGB[1],10),parseInt(retRGB[2],10),parseInt(retRGB[3],10)];
-					};
-					VBoard.interface.colorSelected = strRGB2ArrayRGB(c);
+					VBoard.interface.colorSelected = vb.interface.strRGB2ArrayRGB(c);
 					VBoard.interface.colorLastSelectedStr = c;
 
 					// console.log(VBoard.interface.colorSelected + " <--- test");
@@ -243,15 +235,8 @@ var VBoard = VBoard || {};
 				
 			});
 			//TODO: figure out a proper callback
-			setTimeout(function () {
-				$('#user-nickname').focus();
-			}, 500);
-			$("#user-nickname").keypress(function (event) {
-				//detect enter keypress while textbox is selected
-				if(event.keyCode == '13') {
-					$("#submit-btn-modal-template").click();
-				}
-			});
+			
+			vb.interface.setInputFocusAndEnterKeyCallback("#user-nickname","#submit-btn-modal-template");
 		},
 
 		
@@ -371,6 +356,9 @@ var VBoard = VBoard || {};
 
 			// stop lobby list refreshing
 			clearInterval(VBoard.interface.autoGameListIntervalID);
+
+			// enable chat
+			vb.interface.chatInit();
 		},
 
 		switchToCreateLobbyModal: function () {
@@ -491,7 +479,58 @@ var VBoard = VBoard || {};
 			
 		},
 
-		
+		chatInit: function () {
+			$("#send-chat").on("click", function () {
+				var msg = $("#chatbox-msg").val();
+				if (msg != "") {
+					vb.sessionIO.sendChatMessage(VBoard.interface.userName + "#1ax}#" + VBoard.interface.colorLastSelectedStr + "#1ax}#" + msg);
+					// clear out the input box
+					$("#chatbox-msg").val("");
+				} else {
+					// $("#chatbox-msg").val('<span style="color:red;">Please enter your message</span>');
+				}
+			});
+			$("#chatbox-msg").on("focus",function () {
+				if (!($("#chatbox-inbox").is(":visible"))) $("#chatbox-inbox").fadeIn("fast");
+			});
+			$("#chatbox").on("mouseenter",function () {
+				if (!($("#chatbox-inbox").is(":visible"))) $("#chatbox-inbox").fadeIn("fast");
+			});
+			// $("#chatbox-inbox").on("mouseenter",function () {
+			// 	if (!($("#chatbox-inbox").is(":visible"))) $("#chatbox-inbox").fadeIn("fast");
+			// });
+			$("#chatbox").on("mouseleave",function () {
+				$("#chatbox-inbox").fadeOut("slow");
+			});
+			// $("#chatbox-inbox").on("mouseleave",function () {
+			// 	$("#chatbox-inbox").fadeOut("slow");
+			// });
+
+			vb.interface.setInputFocusAndEnterKeyCallback("#chatbox-msg","#send-chat");
+
+
+		},
+
+		chatIncomingMsg: function (msg,needDecoding) {
+			if (!($("#chatbox-inbox").is(":visible"))) $("#chatbox-inbox").fadeIn("fast");
+			
+			setTimeout(function () {$("#chatbox-inbox").fadeOut("slow");},8000);
+			// first decode the message
+			var msgDecoded = msg.split("#1ax}#");
+			if (msgDecoded.length == 3) {
+				console.log("handler loop called - chat");
+				var username =  msgDecoded[0] == VBoard.interface.userName? vb.interface.abbrLongStr(msgDecoded[0],10)+"(me)": vb.interface.abbrLongStr(msgDecoded[0],10);
+				var color = msgDecoded[1];
+				if (needDecoding) {
+					$("#chatbox-inbox").prepend('<p><span style="color:'+color+';">'+username+' : </span><span class="chat_message">'+msgDecoded[2]+'</span></p>');
+				} else {
+					$("#chatbox-inbox").prepend('<p><span style="color: #000099;" class="chat_message_system"><strong>'+msg+'</strong></span></p>');
+				}
+				
+			}
+
+			
+		},
 
 		// helper function
 
@@ -507,6 +546,24 @@ var VBoard = VBoard || {};
 		},
 		checkLobbyExist: function () {
 
+		},
+		strRGB2ArrayRGB: function (str) {
+			var retRGB = str.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+			return [parseInt(retRGB[1],10),parseInt(retRGB[2],10),parseInt(retRGB[3],10)];
+		},
+		setInputFocusAndEnterKeyCallback: function (textbox,enterKey) {
+			setTimeout(function () {
+				$(textbox).focus();
+			}, 500);
+			$(textbox).keypress(function (event) {
+				//detect enter keypress while textbox is selected
+				if(event.keyCode == '13') {
+					$(enterKey).click();
+				}
+			});
+		},
+		abbrLongStr: function (originalStr, toLength) {
+			return originalStr.substring(0,Math.min(toLength,originalStr.length)) + "...";
 		}
 	};
 
@@ -1830,6 +1887,7 @@ var VBoard = VBoard || {};
 					
 					break;
 				case "chat":
+					vb.interface.chatIncomingMsg(data["data"][0]["msg"],true);
 					break;
 				case "beacon":
 					break;
@@ -1913,6 +1971,8 @@ var VBoard = VBoard || {};
 					vb.users.changeHost(data["data"]["user"]);
 					break;
 				case "announcement":
+					// vb.interface.alertModal(data["data"][0]["msg"]);
+					vb.interface.chatIncomingMsg(data["data"][0]["msg"],false);
 					break;
 				case "listClients":
 					break;
