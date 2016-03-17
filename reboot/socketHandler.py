@@ -72,6 +72,7 @@ class WebSocketGameHandler(tornado.websocket.WebSocketHandler):
 							}
 						]
 					}
+					self.write_message(json.dumps(response))
 			elif data["type"] == "listGames":
 				game_list = []
 
