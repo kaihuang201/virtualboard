@@ -8,12 +8,8 @@ var VBoard = VBoard || {};
 					vb.board.pieceNameMap[key] = value;
 				});
 				vb.menu.loadPieceOptions();
-			});$.getJSON("/static/json/cardmap.json", function (data) {
-				$.each(data, function(key, value) {
-					vb.board.cardNameMap[key] = value;
-				});
-				vb.menu.loadCardOptions();
-			});$.getJSON("/static/json/diemap.json", function (data) {
+			});
+			$.getJSON("/static/json/diemap.json", function (data) {
 				$.each(data, function(key, value) {
 					vb.board.dieNameMap[key] = value;
 				});
@@ -33,9 +29,6 @@ var VBoard = VBoard || {};
 			});
 			$("#addPiece").on("click", function () {
 				$("#add-piece-modal").modal();
-			});
-			$("#addCard").on("click", function () {
-				$("#add-card-modal").modal();
 			});
 			$("#addDie").on("click", function () {
 				$("#add-die-modal").modal();
@@ -83,28 +76,6 @@ var VBoard = VBoard || {};
 				$("#add-piece-modal").modal("toggle");
 			});
 
-			$("#submit-add-card").click(function () {
-				var selectedName = $("#add-card-list").val();
-				var user = null;
-				//TODO: use vb.camera.position.x/y instead of board center
-				//var pos = {x:0, y:0};
-
-				//TODO: replace with actual method
-				//vb.board.generateNewPiece(selectedName, user, pos);
-				var mapEntry = vb.board.cardNameMap[selectedName];
-				var data = {
-					"pos" : [vb.camera.position.x, vb.camera.position.y],
-					"icon" : mapEntry.back,
-					"front_icon" : mapEntry.front,
-					"color" : [255, 255, 255],
-					"static" : 0,
-					"s" : mapEntry.size,
-					"r" : vb.camera.rotation.z
-				};
-				vb.sessionIO.addPiece(data);
-				$("#add-card-modal").modal("toggle");
-			});
-
 			$("#submit-add-die").click(function () {
 				var selectedMax = $("#add-die-max").val();
 				var user = null;
@@ -130,12 +101,6 @@ var VBoard = VBoard || {};
 		loadPieceOptions: function () {
 			for (var key in vb.board.pieceNameMap) {
 				$("#add-piece-list").append( new Option(key, key) );
-			}
-		},
-
-		loadCardOptions: function () {
-			for (var key in vb.board.cardNameMap) {
-				$("#add-card-list").append( new Option(key, key) );
 			}
 		},
 
