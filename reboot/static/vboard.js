@@ -301,6 +301,8 @@ var VBoard = VBoard || {};
 				var user = vb.users.userList[pieceData.user];
 				this.highlightPiece(piece, user.color, vb.addHighlightDuration);
 			}
+
+			return piece;
 		},
 
 		removeSelectedPieces: function () {
@@ -1675,11 +1677,11 @@ function Deck(pieceData) {
 
 	var scene = VBoard.scene;
 	this.mesh.material.diffuseTexture = new BABYLON.DynamicTexture("dynamic texture", 512, scene);
-	this.mesh.material.diffuseTexture.drawText(this.numCards, null, 64, "Bold 24px Arial", "rgba(255,255,255,1.0)", "black");
+	this.mesh.material.diffuseTexture.drawText(this.numCards, null, 50 * this.size, "Bold 128px Arial", "rgba(255,255,255,1.0)", "black");
 
 	this.updateCount = function(newCount) {
 		this.numCards = newCount;
-		this.mesh.material.diffuseTexture.drawText(this.numCards, 5, 40, "bold 128px Arial", "rgba(255,255,255,1.0)", "black");
+		this.mesh.material.diffuseTexture.drawText(this.numCards, null, 50 * this.size, "bold 128px Arial", "rgba(255,255,255,1.0)", "black");
 	}
 
 	return this;
