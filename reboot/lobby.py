@@ -1,15 +1,26 @@
 import tornado.web
 import tornado.websocket
+import tornado.ioloop
 import json
 import time
 import random
+import datetime
+#import sched
 
 from board_state_reboot import *
+from movebuffer import *
 
 json.encoder.FLOAT_REPR = lambda o: format(o, '.3f')
 
 games = {}
 next_game_id = 0
+
+MOVE_TICK_DURATION = 0.05 #50 ms
+
+#maximum allowed "spammable" actions per timeout
+SPAM_FILTER_TIMEOUT = 1
+SPAM_THRESHOLD_WARNING = 15
+SPAM_THRESHOLD_KICK = 30
 
 class Game:
 	def __init__(self, name, password, host, id):
@@ -20,13 +31,19 @@ class Game:
 		self.host = host
 		self.game_id = id
 		self.board_state = BoardState()
+		self.movebuffer = MoveBuffer()
+		self.spam_timeout = None
+
+		#this is just to get the loop going
+		tornado.ioloop.IOLoop.instance().add_callback(self.check_spam)
+		
 
 	def get_basic_info(self):
 		data = {
 			"id" : self.game_id,
 			"name" : self.name,
 			"players" : len(self.clients),
-			"password" : 0 if self.password == "" else 1
+			"password" : 0 if self.password else 1
 		}
 		return data
 
@@ -43,25 +60,51 @@ class Game:
 			})
 		return abridged_users
 
-	#an unfortunate mix of camelCase and snake_case
 	def get_client_from_id(self, id):
 		if id in self.clients:
-			return self.clients[id];
+			return self.clients[id]
 		return None
+
+	#this function must run on the main thread
+	def check_spam(self):
+		if self.spam_timeout is not None:
+			tornado.ioloop.IOLoop.instance().remove_timeout(self.spam_timeout)
+
+		victims = []
+		for user_id, client in self.clients.iteritems():
+			if user_id != self.host.user_id:
+				if client.spam_amount >= SPAM_THRESHOLD_KICK:
+					victims.append(user_id)
+				elif client.spam_amount >= SPAM_THRESHOLD_WARNING:
+					message = {
+						"type" : "error",
+						"data" : [
+							{
+								"msg" : "Stop spamming or you may be kicked automatically"
+							}
+						]
+					}
+					client.write_message(json.dumps(message))
+			client.spam_amount = 0
+
+		for user_id in victims:
+			self.kickUser(None, user_id, "Excessive spamming")
+		tornado.ioloop.IOLoop.instance().add_timeout(datetime.timedelta(seconds=SPAM_FILTER_TIMEOUT), self.check_spam)
 
 	def connect(self, new_client, name, color, password):
 
-		if not (self.host == new_client or (self.password and password == self.password)):
+		if self.password and not (self.host == new_client or password == self.password):
 			response = {
 				"type" : "initFailure",
 				"data" : {
 					"msg" : "Wrong password"
 				}
 			}
-			new_client.write_message(json.dumps(response));
+			new_client.write_message(json.dumps(response))
 			return
-		new_client.name = name;
-		new_client.color = color;
+		new_client.name = name
+		new_client.color = color
+		new_client.spam_amount = 0
 		new_client.user_id = self.next_user_id
 		self.next_user_id += 1
 		new_client.game = self
@@ -80,6 +123,7 @@ class Game:
 
 		#we add the client to self.clients after the message_all to avoid issues
 		self.clients[new_client.user_id] = new_client
+		self.movebuffer.add_client(new_client.user_id)
 
 		abridged_users = self.get_abridged_clients(new_client)
 		board_data = self.board_state.get_json_obj()
@@ -95,6 +139,7 @@ class Game:
 
 	def disconnect(self, client, reason):
 		del self.clients[client.user_id]
+		self.movebuffer.remove_client(client.user_id)
 		client.game = None
 		#socket handler will take care of closing the connection
 
@@ -104,7 +149,7 @@ class Game:
 				del games[self.game_id]
 				return
 			else:
-				self.host = self.clients[0]
+				self.host = self.clients.itervalues().next()
 				newHostMessage = {
 					"type" : "changeHost",
 					"data" : {
@@ -129,6 +174,17 @@ class Game:
 		for user_id, client in self.clients.iteritems():
 			client.write_message(json.dumps(response))
 
+	def send_error(self, client, message):
+		error_message = {
+			"type" : "error",
+			"data" : [
+				{
+					"msg" : message
+				}
+			]
+		}
+		client.write_message(json.dumps(error_message))
+
 	#==========
 	# host only commands
 	#==========
@@ -149,15 +205,7 @@ class Game:
 			}
 			self.message_all(newHostMessage)
 		else:
-			response = {
-				"type" : "error",
-				"data" : [
-					{
-						"msg" : "Only the host can use that command"
-					}
-				]
-			}
-			client.write_message(json.dumps(response))
+			self.send_error(client, "Only the host can use that command")
 
 	def announce(self, client, message):
 		if client is None or self.host.user_id == client.user_id:
@@ -171,15 +219,7 @@ class Game:
 			}
 			self.message_all(announcement)
 		else:
-			response = {
-				"type" : "error",
-				"data" : [
-					{
-						"msg" : "Only the host can use that command"
-					}
-				]
-			}
-			client.write_message(json.dumps(response))
+			self.send_error(client, "Only the host can use that command")
 
 	def kickUser(self, client, target, message):
 		if client is None or self.host.user_id == client.user_id:
@@ -188,18 +228,14 @@ class Game:
 
 			if victim is None:
 				return
-			self.disconnect(victim, "Kicked by host: " + message)
+
+			if client is None:
+				self.disconnect(victim, "Kicked by server: " + message)
+			else:
+				self.disconnect(victim, "Kicked by host: " + message)
 			victim.close()
 		else:
-			response = {
-				"type" : "error",
-				"data" : [
-					{
-						"msg" : "Only the host can use that command"
-					}
-				]
-			}
-			client.write_message(json.dumps(response))
+			self.send_error(client, "Only the host can use that command")
 
 	def changeServerInfo(self, client, data):
 		if client is None or self.host.user_id == client.user_id:
@@ -210,17 +246,9 @@ class Game:
 			if "password" in data:
 				self.password = data["password"]
 
-			self.announce(None, "Server Information updated.");
+			self.announce(None, "Server Information updated.")
 		else:
-			response = {
-				"type" : "error",
-				"data" : [
-					{
-						"msg" : "Only the host can use that command"
-					}
-				]
-			}
-			client.write_message(json.dumps(response))
+			self.send_error(client, "Only the host can use that command")
 
 	def loadBoardState(self, client, boardData):
 		if client is None or self.host.user_id == client.user_id:
@@ -231,19 +259,11 @@ class Game:
 
 			#load pieces
 			pieces = boardData["pieces"]
-			self.pieceAdd(self.host, pieces);
+			self.pieceAdd(self.host, pieces)
 
 			#TODO: private zones
 		else:
-			response = {
-				"type" : "error",
-				"data" : [
-					{
-						"msg" : "Only the host can use that command"
-					}
-				]
-			}
-			client.write_message(json.dumps(response))
+			self.send_error(client, "Only the host can use that command")
 
 	def clearBoard(self, client):
 		if client is None or self.host.user_id == client.user_id:
@@ -255,21 +275,14 @@ class Game:
 			return
 			#TODO
 		else:
-			response = {
-				"type" : "error",
-				"data" : [
-					{
-						"msg" : "Only the host can use that command"
-					}
-				]
-			}
-			client.write_message(json.dumps(response))
+			self.send_error(client, "Only the host can use that command")
 
 	#==========
 	# general commands
 	#==========
 
 	def chat(self, client, messages):
+		client.spam_amount += 1 + 1*len(messages)
 		response_data = []
 		current_time = time.time()
 
@@ -287,6 +300,7 @@ class Game:
 		self.message_all(response)
 
 	def beacon(self, client, beacons):
+		client.spam_amount += 0.5 + 0.5*len(beacons)
 		response_data = []
 
 		for beacon_data in beacons:
@@ -302,7 +316,9 @@ class Game:
 		self.message_all(response)
 
 	def pieceTransform(self, client, pieces):
+		#client.spam_amount += 0.1 + 0.1*len(pieces)
 		response_data = []
+		move_only = True
 
 		for pieceData in pieces:
 			if self.board_state.transform_piece(pieceData):
@@ -317,38 +333,66 @@ class Game:
 
 				if "r" in pieceData:
 					data_entry["r"] = piece.rotation
+					move_only = False
 
 				if "s" in pieceData:
 					data_entry["s"] = piece.size
+					move_only = False
 
 				if "static" in pieceData:
 					data_entry["static"] = 1 if piece.static else 0
+					move_only = False
 
 				if "color" in pieceData:
 					data_entry["color"] = piece.color
+					move_only = False
 
 				if "icon" in pieceData:
 					data_entry["icon"] = piece.icon
+					move_only = False
 
 				response_data.append(data_entry)
 			else:
-				error_data = {
-					"type" : "error",
-					"data" : [
-						{
-							"msg" : "invalid piece id " + id
-						}
-					]
-				}
-				client.write_message(json.dumps(error_data))
+				self.send_error(client, "invalid piece id " + id)
 
-		response = {
-			"type" : "pt",
-			"data" : response_data
-		}
-		self.message_all(response);
+		if move_only:
+			#buffer magic
+			for pieceData in pieces:
+				self.movebuffer.add(pieceData["piece"], pieceData["pos"], client.user_id)
+
+			if self.movebuffer.flush_timeout is None:
+				self.movebuffer.flush_timeout = tornado.ioloop.IOLoop.instance().add_callback(self.end_move_timeout)
+		else:
+			response = {
+				"type" : "pt",
+				"data" : response_data
+			}
+			self.message_all(response)
+
+	#this function must run on the main thread
+	def end_move_timeout(self):
+		instance = tornado.ioloop.IOLoop.instance()
+
+		if self.movebuffer.flush_timeout is not None:
+			instance.remove_timeout(self.movebuffer.flush_timeout)
+
+		if self.movebuffer.has_entries():
+			for user_id, client in self.clients.iteritems():
+				if self.movebuffer.has_entries(user_id):
+					piece_data = self.movebuffer.flush(user_id)
+
+					data = {
+						"type" : "pt",
+						"data" : piece_data
+					}
+					client.write_message(json.dumps(data))
+			self.movebuffer.flush_timeout = instance.add_timeout(datetime.timedelta(seconds=MOVE_TICK_DURATION), self.end_move_timeout)
+		else:
+			#server is not very lively, we can just sit around
+			self.movebuffer.flush_timeout = None
 
 	def pieceAdd(self, client, pieces):
+		client.spam_amount += 3 + 1.5*len(pieces)
 		response_data = []
 
 		for pieceData in pieces:
@@ -364,6 +408,7 @@ class Game:
 		self.message_all(response)
 
 	def pieceRemove(self, client, pieces):
+		client.spam_amount += 0.5 + 0.1*len(pieces) #less spammable because it requires spam to already exist
 		response_data = []
 
 		for pieceData in pieces:
@@ -375,21 +420,13 @@ class Game:
 					"piece" : id
 				})
 			else:
-				error_data = {
-					"type" : "error",
-					"data" : [
-						{
-							"msg" : "invalid piece id " + id
-						}
-					]
-				}
-				client.write_message(json.dumps(error_data))
+				self.send_error(client, "invalid piece id " + id)
 
 		response = {
 			"type" : "pieceRemove",
 			"data" : response_data
 		}
-		self.message_all(response);
+		self.message_all(response)
 
 
 	#==========
@@ -397,6 +434,7 @@ class Game:
 	#==========
 
 	def rollDice(self, client, pieces):
+		client.spam_amount += 0.5 + 0.25*len(pieces)
 		response_data = []
 		for pieceData in pieces:
 			piece_id = pieceData["piece"]
@@ -440,6 +478,7 @@ class Game:
 		self.message_all(response)
 
 	def flipCard(self, client, pieces):
+		client.spam_amount += 0.5 + 0.5*len(pieces)
 		response_data = []
 		for pieceData in pieces:
 			piece_id = pieceData["piece"]
@@ -480,13 +519,9 @@ class Game:
 		}
 		self.message_all(response)
 
-
-	#def toggleStatic(self, client, pieces):
-	#	#TODO
-	#	return
-
 	def setBackground(self, client, backgroundData):
-		self.board_state.background = backgroundData["icon"];
+		client.spam_amount += 3
+		self.board_state.background = backgroundData["icon"]
 
 		response = {
 			"type" : "setBackground",
@@ -494,12 +529,13 @@ class Game:
 				"icon" : self.board_state.background
 			}
 		}
-		self.message_all(response);
+		self.message_all(response)
 
 	#someone can give themselves a rainbow color by spamming this
 	#whatever it probably looks sweet
 	def changeColor(self, client, colorData):
-		client.color = colorData["color"];
+		client.spam_amount += 0.25
+		client.color = colorData["color"]
 
 		response = {
 			"type" : "changeColor",
@@ -510,7 +546,7 @@ class Game:
 				}
 			]
 		}
-		self.message_all(response);
+		self.message_all(response)
 
 	def dump_json(self):
 		return self.board_state.dump_json()

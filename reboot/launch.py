@@ -15,3 +15,4 @@ app = tornado.web.Application([
 ], settings)
 app.listen(8000)
 tornado.ioloop.IOLoop.instance().start()
+print "Systems are go, captain"
