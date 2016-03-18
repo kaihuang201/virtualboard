@@ -188,6 +188,8 @@ var VBoard = VBoard || {};
 			VBoard.interface.autoGameListIntervalID = setInterval(function(){VBoard.limboIO.listGames();}, 20000);
 			// enable tooltip @ bootstrap
 			$('[data-toggle="tooltip"]').tooltip(); 
+
+			$("#refresh-player-list").on("click",function () {vb.sessionIO.getClientList();});
 		},
 
 		colorPickerInit: function () {
@@ -533,6 +535,17 @@ var VBoard = VBoard || {};
 
 		},
 
+		// handler for refresh friend list
+		showPlayerList: function (data) {
+			console.log(JSON.stringify(data));
+			$("#players-list-list").empty();
+			
+			for (var i = data.length - 1; i >= 0; i--) {
+				console.log(JSON.stringify(data[i]));
+				var str = '<p style="color: '+ vb.interface.arrayRGB2StrRGB(data[i]['color'])+';">' + data[i]['name'] + ((data[i]['host'])?"(host)":"") + '</p>';
+				$("#players-list-list").append(str);
+			}
+		},
 		// helper function
 		setUserName: function (username,optionalColor) {
 			VBoard.interface.userName = username;
@@ -541,6 +554,11 @@ var VBoard = VBoard || {};
 				$('#change-username').html('<i class="fa fa-user" style="color: ' + vb.interface.arrayRGB2StrRGB(optionalColor) +'"></i> ' + VBoard.interface.userName);
 				// set color to the border
 				$("#change-username").css("border","1px solid "+ vb.interface.arrayRGB2StrRGB(optionalColor));
+				$("#change-username").hover(function() {
+					$(this).css("box-shadow", "0 0 10px "+ vb.interface.arrayRGB2StrRGB(optionalColor));
+				}, function () {
+					$(this).css("box-shadow", "none");
+				});
 			} else {
 				$('#change-username').html('<i class="fa fa-user"></i> ' + VBoard.interface.userName);
 			}
@@ -2004,6 +2022,7 @@ var VBoard = VBoard || {};
 					vb.interface.chatIncomingMsg(data["data"][0]["msg"],false);
 					break;
 				case "listClients":
+					vb.interface.showPlayerList(data["data"]);
 					break;
 				case "rollDice":
 					var dice = data["data"];

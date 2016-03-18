@@ -22,7 +22,7 @@
 		<script src="/static/vboard.js"></script>
 		<script src="/static/menu.js"></script>
 	</head>
-	<body>
+	<body unselectable="on" onselectstart="return false;">
 
 		<div id="loading-notification">
 			<p id="loading-notification-text"><i class="fa fa-circle-o-notch fa-spin"></i> Please Wait...</p>
@@ -51,7 +51,8 @@
 			</div>
 		</div>
 
-		<div id="game-page" style="display:none;">
+		<!-- game GUI -->
+		<div id="game-page" style="display:none;" >
 
 			<div id="menu" style="visibility: hidden">
 				<button id="addPiece" class="btn btn-success btn-menu" type="button">Add Piece</button>
@@ -92,6 +93,13 @@
 				</div>
 			</div>
 			
+			<div id="players-list">
+				<h6 style="color: white;">Players</h6>
+				<button class="btn btn-default pull-right" id="refresh-player-list"><span class="glyphicon glyphicon-refresh" aria-hidden="true"></span></button>
+				<div id="players-list-list">
+
+				</div>
+			</div>
 
 		</div>
 
