@@ -272,7 +272,8 @@ var VBoard = VBoard || {};
 				$('#template-modal').modal('show');
 				$('#template-modal #submit-btn-modal-template').unbind();
 				$('#template-modal #submit-btn-modal-template').on("click",function () {
-					var gameName = $('#lobby-name').val();
+					// var gameName = $('lobby#-name').val();
+					var gameName = VBoard.interface.userName + "'s Game";
 					var password = $('#lobby-password').val();
 
 					if (gameName != '' && VBoard.interface.colorSelected[1] != 0 && VBoard.interface.colorSelected[2] != 0 && VBoard.interface.colorSelected[3] != 0) {
@@ -282,7 +283,7 @@ var VBoard = VBoard || {};
 						// console.log(VBoard.interface.userName+ VBoard.interface.colorSelected + gameName + password);
 
 					} else {
-						vb.interface.setTemplateModalAlert('Please enter a game name/select a color');
+						vb.interface.setTemplateModalAlert('Please enter a select a color');
 					}
 					// $('#template-modal').modal('hide');
 				});
@@ -322,7 +323,7 @@ var VBoard = VBoard || {};
 				for (var i = listOfGames.length - 1; i >= 0; i--) {
 					var lobbyID = listOfGames[i]["id"];
 					var lobbyName = listOfGames[i]["name"];
-					var singleLobby = '<a id="lobby-' + lobbyID.toString() + '" class="list-group-item"><span class="badge badge-default pull-right">' + listOfGames[i]["players"] + ' ' + ((listOfGames[i]["players"]==1)?'player':'players')+ ' online</span>' + lobbyName + '</a>'
+					var singleLobby = '<a id="lobby-' + lobbyID.toString() + '" class="list-group-item"><span class="badge badge-default pull-right">' + listOfGames[i]["players"] + ' ' + ((listOfGames[i]["players"]==1)?'player':'players')+ ' online</span><h2>' + lobbyName + '</h2></a>'
 					$("#lobby-list").append(singleLobby);
 					var currentLobby = $("#lobby-" + lobbyID.toString());
 					currentLobby.unbind();
@@ -369,13 +370,8 @@ var VBoard = VBoard || {};
 									<label for="color-picker" class="form-control-label">Choose <span id="selected-color">Your Color</span>:</label> \
 									<div id="color-picker" style="padding-top: 5px;"></div>\
 								</div>\
-								<div class="input-group">\
-									<input type="text" class="form-control" placeholder="name your game..." id="lobby-name">\
-										<span class="input-group-btn">\
-										<button class="btn btn-default" type="button" id="random-gamename"><span class="glyphicon glyphicon-refresh" aria-hidden="true"></span></button>\
-										</span>\
-								</div>\
 								<div class="form-group">\
+									<label for="lobby-password" class="form-control-label">Optional Passw**d:</label> \
 									<input type="password" class="form-control" id="lobby-password" placeholder="Password">\
 								</div>');
 			$('#random-gamename').unbind().on('click',function(){$('#lobby-name').val(generate_game_name());});
@@ -538,7 +534,7 @@ var VBoard = VBoard || {};
 
 		setUserName: function (username) {
 			VBoard.interface.userName = username;
-			$('#change-username').html("Hello " + VBoard.interface.userName +'!');
+			$('#change-username').html('<i class="fa fa-user"></i> ' + VBoard.interface.userName);
 		},
 		getRandomName: function () {
 			var nameList = ['Hippo','Fox','Frog','Cat','Sloth','Bunny','Pikachu','Ant','Snake','Dog','Meow','Rat','ET'];

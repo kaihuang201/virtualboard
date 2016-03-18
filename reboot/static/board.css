@@ -1,6 +1,6 @@
 html, body
 {
-/*	font-family:"open sans","helvetica neue",helvetica,arial,sans-serif; */
+	font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; 
 	overflow: hidden;
 	width: 100%;
 	height: 100%;
@@ -8,7 +8,7 @@ html, body
 	margin: 0px;
 }
 
-/*html, body { 
+html, body { 
   background: url(/static/img/bg.jpg) no-repeat center center fixed; 
   -webkit-background-size: cover;
   -moz-background-size: cover;
@@ -17,13 +17,78 @@ html, body
 }
 
 #main-page {
-	background-color: rgba(255,255,255,0.65); 
-	margin-top: 35%;
-	margin-bottom: 15%;
-	padding-top: 10px;
-	padding-bottom: 10px;
-	height: 50%;
-}*/
+	/*position: absolute;*/
+	/*background-color: rgba(255,255,255,0.65); */
+	top: 0%;
+	left: 0%;
+	padding: 20px;
+	height: 100%;
+	width: 100%;
+}
+
+#main-page #main-page-container {
+	position: absolute;
+	width: 100%;
+	height: 40%;
+	top: 30%;
+	left: 0px;
+	background-color: rgba(50,50,50,0.65);
+}
+
+#main-page #user-profile {
+	position: absolute;
+	width: 10%;
+	height: 10%;
+	right: 10px;
+	top: 10px;
+}
+
+#main-page #user-profile > #change-username {
+    border: 1px solid #dddddd;
+    background-color: rgba(50,50,50,0.4);
+}
+
+#main-page #user-profile > #change-username:hover {
+    border: 1px solid #dddddd;
+    background-color: rgba(50,50,250,0.4);
+}
+ 
+#main-page-toolbar {
+	position: absolute;
+	bottom: 10px;
+}
+
+#create-lobby, #resume-game {
+	color: #cccccc;
+	background-color: rgba(50,50,50,0.4);
+	border: 1px solid #dddddd;
+}
+
+#create-lobby:hover, #resume-game:hover {
+	color: white;
+	background-color: transparent;
+	border: 1px solid #dddddd;
+}
+
+#lobby-list {
+	position: absolute;
+	height: 90%;
+	width: 70%;
+	right: 10px;
+	top: 5%;
+	overflow: scroll;
+	background: none;
+}
+
+#lobby-list > a {
+	background: rgba(50,50,50,0.5);
+	color: #eeeeee;
+}
+
+#lobby-list > a:hover {
+	background: transparent;
+	color: #eeeeee;
+}
 
 canvas#canvas
 {
@@ -158,5 +223,61 @@ div#chatbox-input {
 /* Tooltip on right */
 .btn-tooltip + .tooltip.right > .tooltip-arrow {
     border-right: 5px solid #eeeeee;
+}
+
+/*override bootstrop*/
+.btn-outline {
+    background-color: transparent;
+    color: inherit;
+    transition: all .1s;
+    background-image: none;
+    text-shadow: none;
+    border-width: 2px;
+    border-radius: 10px;
+}
+
+.btn-primary.btn-outline {
+    color: #fff;
+}
+
+.btn-success.btn-outline {
+    color: #fff;
+}
+
+.btn-info.btn-outline {
+    color: #5bc0de;
+}
+
+.btn-warning.btn-outline {
+    color: #f0ad4e;
+}
+
+.btn-danger.btn-outline {
+    color: #d9534f;
+}
+
+.btn-primary.btn-outline:hover{
+    color: #fff;
+    background: #428bca;  
+}
+
+.btn-success.btn-outline:hover{
+    color: #fff;
+    background: #5cb85c;    
+}
+
+.btn-info.btn-outline:hover{
+    color: #fff;
+    background: #5bc0de;   
+}
+
+.btn-warning.btn-outline:hover{
+    color: #fff;
+    background: #f0ad4e;     
+}
+
+.btn-danger.btn-outline:hover {
+    color: #fff;
+    background: #d9534f;      
 }
 

@@ -25,28 +25,32 @@
 	<body>
 
 		<div id="loading-notification">
-			<p id="loading-notification-text">Please Wait...</p>
+			<p id="loading-notification-text"><i class="fa fa-circle-o-notch fa-spin"></i> Please Wait...</p>
 		</div>
 
 
 		<!-- pregame GUI -->
 		<div id="main-page">
-
-			<div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups" style="margin-top: 15px; margin-left: 20%; margin-right: 20%;">
-				<div class="btn-group" role="group" aria-label="First group">
-					<button class="btn btn-default" id="create-lobby">Create Lobby</button>
-					<button class="btn btn-success" id="resume-game" style="display:none">Resume Game</button>
-				</div>
-
-				<div class="btn-group pull-right" role="group" aria-label="First group">
-					<button class="btn btn-default btn-tooltip" id="change-username" data-toggle="tooltip" data-placement="right" data-original-title="Change Me!">Click here to set a nickname</button>
-				</div>
+			<div id="user-profile">
+				<button class="btn btn-primary btn-lg pull-right btn-tooltip" id="change-username" data-toggle="tooltip" data-placement="bottom" data-original-title="Click to change my nickname">
+					<i class="fa fa-user-plus"></i> SET NICKNAME
+				</button>
 			</div>
 
-			<ul id="lobby-list" class="list-group" style="width: 60%; padding-top: 20px; margin-left: 20%; margin-right: 20%;">
-			</ul>
+			<div id="main-page-container" class="container-fluid">
+				<div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups" id="main-page-toolbar">
+					<div class="btn-group-vertical btn-group-lg" role="group" aria-label="First group">
+						<button class="btn btn-success" id="resume-game" style="display:none"><span class="glyphicon glyphicon-repeat" aria-hidden="true"></span> Resume</button>
+						<button class="btn btn-primary" id="create-lobby"><span class="glyphicon glyphicon-knight" aria-hidden="true"></span> Create</button>
+					</div>
 
+					
+				</div>
+				<ul id="lobby-list" class="list-group">
+				</ul>
+			</div>
 
+			
 		</div>
 
 		<div id="game-page" style="display:none;">
