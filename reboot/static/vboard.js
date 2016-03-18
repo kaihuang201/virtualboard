@@ -240,7 +240,6 @@ var VBoard = VBoard || {};
 		},
 
 		
-
 		joinLobbyRequest: function (lobbyNo, lobbyName) {
 			if (VBoard.interface.userName != "") {
 				vb.interface.switchToJoinLobbyModal(lobbyName);
@@ -320,14 +319,14 @@ var VBoard = VBoard || {};
 			// console.log(JSON.stringify(listOfGames));
 			if (listOfGames.length != 0) {
 				$("#lobby-list").empty();
-				for (var i = listOfGames.length - 1; i >= 0; i--) {
-					var lobbyID = listOfGames[i]["id"];
-					var lobbyName = listOfGames[i]["name"];
-					var singleLobby = '<a id="lobby-' + lobbyID.toString() + '" class="list-group-item"><span class="badge badge-default pull-right">' + listOfGames[i]["players"] + ' ' + ((listOfGames[i]["players"]==1)?'player':'players')+ ' online</span><h2>' + lobbyName + '</h2></a>'
+				for (let i = listOfGames.length - 1; i >= 0; i--) {
+					// var lobbyID = listOfGames[i]["id"];
+					// var lobbyName = listOfGames[i]["name"];
+					var singleLobby = '<a id="lobby-' + listOfGames[i]["id"].toString() + '" class="list-group-item"><span class="badge badge-default pull-right">' + listOfGames[i]["players"] + ' ' + ((listOfGames[i]["players"]==1)?'player':'players')+ ' online</span><h2>' + listOfGames[i]["name"] + '</h2></a>'
 					$("#lobby-list").append(singleLobby);
-					var currentLobby = $("#lobby-" + lobbyID.toString());
+					var currentLobby = $("#lobby-" + listOfGames[i]["id"].toString());
 					currentLobby.unbind();
-					currentLobby.on("click",function() {vb.interface.joinLobbyRequest(lobbyID,lobbyName);});
+					currentLobby.on("click",function() {vb.interface.joinLobbyRequest(listOfGames[i]["id"],listOfGames[i]["name"]);});
 				}
 			} else {
 				$("#lobby-list").empty();
