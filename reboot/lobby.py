@@ -51,7 +51,7 @@ class Game:
 
 	def connect(self, new_client, name, color, password):
 
-		if not (self.host == new_client or (self.password and password == self.password)):
+		if not (self.host == new_client or (self.password and password == self.password) or (not self.password)):
 			response = {
 				"type" : "initFailure",
 				"data" : {
