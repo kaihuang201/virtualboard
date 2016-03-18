@@ -135,17 +135,15 @@ class WebSocketGameHandler(tornado.websocket.WebSocketHandler):
 			elif data["type"] == "flipCard":
 				game.flipCard(self, data["data"])
 			elif data["type"] == "createDeck":
-				print "todo"
-				#Todo: Needs to be implemented
+				game.createDeck(self, data["data"])
 			elif data["type"] == "addCardPieceToDeck":
-				print "todo"
-				#Todo: Needs to be implemented
+				print data["data"]
+				game.addCardToDeck(self, data["data"])
 			elif data["type"] == "addCardTypeToDeck":
 				print "todo"
 				#Todo: Needs to be implemented
 			elif data["type"] == "drawCard":
-				print "todo"
-				#Todo: Needs to be implemented
+				game.drawCard(self, data["data"])
 			elif data["type"] == "createPrivateZone":
 				print "todo"
 				#Todo: Needs to be implemented

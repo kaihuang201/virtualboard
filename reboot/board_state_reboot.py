@@ -1,3 +1,5 @@
+import random
+
 class Piece:
 	def __init__(self, pieceData, id):
 		#TODO: check for reasonable values
@@ -10,35 +12,39 @@ class Piece:
 		self.rotation = pieceData["r"]
 		self.size = pieceData["s"]
 
+		self.isCard = False
+		self.isDie = False
+		self.isDeck = False
+
 		if "front_icon" in pieceData:
-			#TODO
 			self.isCard = True
 
 			#front_icon is not in the socket protocol
 			#if you want to change the protocol that is fine, but make sure to keep it consistent
 			#and preferably run it by me first
 			self.front_icon = pieceData["front_icon"]
+			self.icon = "/static/img/card/cardback.png"
 		else:
 			self.isCard = False
-
 		#I know dice is plural but "isDie" sounds awkward here, but still, it's proper english
-
-		#max_roll is also not part of the api
-		#I also highly suggest you think about the values of cards and dice mainly in terms of images
-		#and not in terms of values since images are what we really care about in the end
-		#I strongly recommend you use the protocol I outlined, especially because many dice start from 0 and not 1
 		if "max_roll" in pieceData:
-			#TODO
 			self.isDie = True
 			self.max_roll = pieceData["max_roll"]
+			value = random.randint(1, int(self.max_roll))
+			if int(self.max_roll) < 7:
+				face_img_name = "/static/img/die_face/small_die_face_" + str(value) + ".png"
+			elif int(self.max_roll) <= 24:
+				face_img_name = "/static/img/die_face/big_die_face_" + str(value) + ".png"
+			self.icon = face_img_name
 		else:
 			self.isDie = False
+			self.icon = pieceData["icon"]
 
-		#We don't save the icon of a die because depending on its max value we may use text for it
-		#just use an image with the number on it or ignore the icon field
-		#we are definitely not going to throw exceptions everywhere in our code so we don't have to store a string
-		#if not self.isDie:
-		#	self.icon = pieceData["icon"]
+			if "cards" in pieceData:
+				self.isDeck = True
+				self.cards = pieceData["cards"]
+			else:
+				self.isDeck = False
 
 	def get_json_obj(self):
 		data = {
@@ -56,9 +62,10 @@ class Piece:
 
 		if self.isDie:
 			data["max_roll"] = self.max_roll
+		if self.isDeck:
+			data["cards"] = self.cards
 
-		#if not self.isDie:
-		#	data["icon"] = self.icon
+		data["icon"] = self.icon
 
 		return data
 

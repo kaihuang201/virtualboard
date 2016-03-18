@@ -1,4 +1,4 @@
-//initialization
+"/../img/die_face/small_die_face_1.png"//initialization
 
 //==========
 //client to server (pre-game)
@@ -450,28 +450,17 @@
 	"data" : [
 		{
 			"user" : 2,
-			"piece" : 5
+			"piece" : 5,
+			"front_icon" : "/static/img/card/spades/7_of_spaces.png"
 		}
 	]
 }
 
 //drawing cards from/adding cards to a deck will cause the piece corresponding to that card to be removed
-//the reason each client knows all the cards in each deck is for client sided saving
-//we could change the way cards and decks work so clients can't use the console to access secret information
-//but that greatly complicates saving/loading, for now its probably better to do it this way
 {
 	"type" : "createDeck",
 	"data" : [
 		{
-			"cards" : [
-				"/res/queenhearts.png",
-				"/res/2clubs.png",
-				"/res/9spades.png",
-				"/res/kingdiamonds.png"
-			],
-
-			//identical to the data from pieceAdd
-			//the deck itself will be represented by this piece
 			"pieceData" : {
 				"piece" : 6,
 				"user" : 4,
@@ -487,7 +476,13 @@
 					65.2543
 				],
 				"r" : 0.45656,
-				"s" : 1.0
+				"s" : 1.0,
+				"cards" : [
+					"/static/img/cards/hearts/queen_of_hearts.png",
+					"/static/img/cards/clubs/2_of_clubs/clubs.png",
+					"/static/img/cards/spades/9_of_spades.png",
+					"/static/img/cards/diamonds/king_of_diamonds.png"
+				]
 			}
 		}
 	]
@@ -780,37 +775,23 @@
 }
 
 //drawing cards from/adding cards to a deck will cause the piece corresponding to that card to be removed
-//the reason each client knows all the cards in each deck is for client sided saving
-//we could change the way cards and decks work so clients can't use the console to access secret information
-//but that greatly complicates saving/loading, for now its probably better to do it this way
 {
 	"type" : "createDeck",
 	"data" : [
 		{
-			"cards" : [
-				"/res/queenhearts.png",
-				"/res/2clubs.png",
-				"/res/9spades.png",
-				"/res/kingdiamonds.png"
+			"icon" : "/res/deckicon.png",
+			"color" : [
+				255,
+				255,
+				255
 			],
-
-			//identical to the data from pieceAdd
-			//the deck itself will be represented by this piece
-			"pieceData" : {
-				"icon" : "/res/deckicon.png",
-				"color" : [
-					255,
-					255,
-					255
-				],
-				"pos" : [
-					6.6435,
-					65.2543
-				],
-				"r" : 0.45656,
-				"s" : 1.0,
-				"static" : 0
-			}
+			"pos" : [
+				6.6435,
+				65.2543
+			],
+			"r" : 0.45656,
+			"s" : 1.0,
+			"static" : 0
 		}
 	]
 }
@@ -845,8 +826,7 @@
 	"type" : "drawCard",
 	"data" : [
 		{
-			"deck" : 7,
-			"count" : 1
+			"deck" : 7
 		}
 	]
 }

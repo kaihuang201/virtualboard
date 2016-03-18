@@ -801,6 +801,9 @@ var VBoard = VBoard || {};
 			else if (pieceData.max_roll) {
 				piece = new Die(pieceData);
 			}
+			else if (pieceData.cards) {
+				piece = new Deck(pieceData);
+			}
 			else {
 				piece = new Piece(pieceData);
 			}
@@ -1742,37 +1745,48 @@ var VBoard = VBoard || {};
 		},
 
 		createDeck: function (deckData) {
-			//TODO
+			var data = {
+				"type" : "createDeck",
+				"data" : deckData
+			};
+			this.send(data);
 		},
 
+		// Might need to change data format depending on implementation of interface
 		addCardPieceToDeck: function (deckID, cardID) {
-			//TODO
+			var data = {
+				"type" : "addCardPieceToDeck",
+				"data" : [{
+					"deck" : deckID,
+					"card" : cardID
+				}]
+			}
+			this.send(data)
 		},
 
 		addCardTypeToDeck: function (deckID, icon) {
 			//TODO
 		},
 
-		drawCard: function (deckID, count) {
+		drawCard: function (deckID) {
+			console.log("draw card" + deckID)
 			if(deckID.constructor === Array) {
 				var pieceData = [];
 
 				for(var i=0; i<deckID.length; i++) {
 					pieceData.push({
-						"deck" : deckID[i],
-						"count" : color[i]
+						"deck" : deckID[i]
 					});
 				}
 			} else {
 				var pieceData = [
 					{
-						"piece" : id,
-						"color" : color,
+						"piece" : deckID
 					}
 				];
 			}
 			var data = {
-				"type" : "pieceTransform",
+				"type" : "drawCard",
 				"data" : pieceData
 			};
 			this.send(data);
@@ -2007,8 +2021,26 @@ var VBoard = VBoard || {};
 					break;
 				case "addCard":
 					break;
-				case "removeCard":
+				case "drawCard":
+					var decks = data["data"];
+					for (var i = 0; i < decks.length; i++) {
+						var deck = decks[i];
+						var id = deck["id"];
+						var newCount = deck["count"];
+
+						var piece = vb.board.pieceHash[id];
+						piece.updateCount(newCount);
+					}
 					break;
+				case "addCardToDeck":
+					var decks = data["data"];
+					for (var i = 0; i < decks.length; i++) {
+						var deck = decks[i];
+						var id = deck["id"];
+						var newCount = deck["count"];
+						var piece = vb.board.pieceHash[id];
+						piece.updateCount(newCount);
+					}
 				case "createPrivateZone":
 					break;
 				case "removePrivateZone":
@@ -2257,22 +2289,31 @@ function Die(pieceData) {
 	this.max = pieceData.max_roll;
 
 	var scene = VBoard.scene;
-	var diffuseTexture;
+	var material = new BABYLON.StandardMaterial("std", scene);
 
-	diffuseTexture = new BABYLON.DynamicTexture("DynamicTexture", 50, scene, true);
-	diffuseTexture.hasAlpha = true;
-	diffuseTexture.drawText(1, 5, 40, "bold 36px Arial", "black" , "white", true);
+	this.roll = function(icon) {
+		material.diffuseTexture = new BABYLON.Texture(icon, scene);
+		material.diffuseTexture.hasAlpha = true;
+		this.mesh.material = material;
+	}
 
-	this.mesh.material.diffuseTexture = diffuseTexture;
+	return this;
+}
 
-	this.roll = function(value) {
-		this.value = value;
+function Deck(pieceData) {
+	this.base = Piece;
+	this.base(pieceData);
 
-		diffuseTexture = new BABYLON.DynamicTexture("DynamicTexture", 50, scene, true);
-		diffuseTexture.hasAlpha = true;
-		diffuseTexture.drawText(this.value, 5, 40, "bold 36px Arial", "black" , "white", true);
+	this.numCards = pieceData["cards"].length;
+	this.cards = pieceData["cards"];
 
-		this.mesh.material.diffuseTexture = diffuseTexture;
+	var scene = VBoard.scene;
+	this.mesh.material.diffuseTexture = new BABYLON.DynamicTexture("dynamic texture", 512, scene);
+	this.mesh.material.diffuseTexture.drawText(this.numCards, null, 50 * this.size, "Bold 128px Arial", "rgba(255,255,255,1.0)", "black");
+
+	this.updateCount = function(newCount) {
+		this.numCards = newCount;
+		this.mesh.material.diffuseTexture.drawText(this.numCards, null, 50 * this.size, "bold 128px Arial", "rgba(255,255,255,1.0)", "black");
 	}
 
 	return this;
