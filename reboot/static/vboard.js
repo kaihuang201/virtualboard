@@ -204,11 +204,11 @@ var VBoard = VBoard || {};
 
 					// console.log(VBoard.interface.colorSelected + " <--- test");
 				},
-				colors: [ '#FF4351', '#7D79F2', '#1B9AF7', '#A5DE37', '#FEAE1B' ],
+				colors: [ '#00ffcc','#FF4351', '#7D79F2', '#1B9AF7', '#A5DE37', '#FEAE1B' , '#ff9999'],
 				iterationCallback: function(target,elem,color,iterationNumber) {
-		      			if( iterationNumber < 4 /* colors array is undefined here :( */ ) {
+		      			// if( iterationNumber < 4 /* colors array is undefined here :( */ ) {
 		      				target.append('&nbsp;&nbsp;');
-		      			}
+		      			// }
 		      		elem.css("border","1px solid #dddddd")
 		      			.css("padding", "7px")
 		      			.css("border-radius", "10px");
@@ -520,7 +520,7 @@ var VBoard = VBoard || {};
 				// first decode the message
 				var msgDecoded = msg.split("#1ax}#");
 				if (msgDecoded.length == 3) {
-					var username =  msgDecoded[0] == VBoard.interface.userName? vb.interface.abbrLongStr(msgDecoded[0],10)+"(me)": vb.interface.abbrLongStr(msgDecoded[0],10);
+					var username =  (msgDecoded[0] == VBoard.interface.userName)? vb.interface.abbrLongStr(msgDecoded[0],10)+"(me)": vb.interface.abbrLongStr(msgDecoded[0],10);
 					var color = msgDecoded[1];
 					// animate new message
 					var tempHTML = '<p id="new-msg" style="display: none;"><span style="color:'+color+';">'+username+' : </span><span class="chat_message">'+msgDecoded[2]+'</span></p>';
@@ -534,12 +534,13 @@ var VBoard = VBoard || {};
 		},
 
 		// helper function
-
 		setUserName: function (username,optionalColor) {
 			VBoard.interface.userName = username;
 			
 			if (optionalColor) {
 				$('#change-username').html('<i class="fa fa-user" style="color: ' + vb.interface.arrayRGB2StrRGB(optionalColor) +'"></i> ' + VBoard.interface.userName);
+				// set color to the border
+				$("#change-username").css("border","1px solid "+ vb.interface.arrayRGB2StrRGB(optionalColor));
 			} else {
 				$('#change-username').html('<i class="fa fa-user"></i> ' + VBoard.interface.userName);
 			}
@@ -575,7 +576,7 @@ var VBoard = VBoard || {};
 			});
 		},
 		abbrLongStr: function (originalStr, toLength) {
-			return originalStr.substring(0,Math.min(toLength,originalStr.length)) + (originalStr.length > toLength)?"...":"";
+			return originalStr.substring(0,Math.min(toLength,originalStr.length)) + ((originalStr.length > toLength)?"...":"");
 		}
 
 		
