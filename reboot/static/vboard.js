@@ -1196,8 +1196,16 @@ var VBoard = VBoard || {};
 			this.send(data);
 		},
 
+		// Might need to change data format depending on implementation of interface
 		addCardPieceToDeck: function (deckID, cardID) {
-			//TODO
+			var data = {
+				"type" : "addCardPieceToDeck",
+				"data" : [{
+					"deck" : deckID,
+					"card" : cardID
+				}]
+			}
+			this.send(data)
 		},
 
 		addCardTypeToDeck: function (deckID, icon) {
@@ -1420,16 +1428,24 @@ var VBoard = VBoard || {};
 					break;
 				case "drawCard":
 					var decks = data["data"];
-
 					for (var i = 0; i < decks.length; i++) {
 						var deck = decks[i];
 						var id = deck["id"];
 						var newCount = deck["count"];
 
 						var piece = vb.board.pieceHash[id];
-						piece.drawCard(newCount);
+						piece.updateCount(newCount);
 					}
 					break;
+				case "addCardToDeck":
+					var decks = data["data"];
+					for (var i = 0; i < decks.length; i++) {
+						var deck = decks[i];
+						var id = deck["id"];
+						var newCount = deck["count"];
+						var piece = vb.board.pieceHash[id];
+						piece.updateCount(newCount);
+					}
 				case "createPrivateZone":
 					break;
 				case "removePrivateZone":
@@ -1661,7 +1677,7 @@ function Deck(pieceData) {
 	this.mesh.material.diffuseTexture = new BABYLON.DynamicTexture("dynamic texture", 512, scene);
 	this.mesh.material.diffuseTexture.drawText(this.numCards, null, 64, "Bold 24px Arial", "rgba(255,255,255,1.0)", "black");
 
-	this.drawCard = function(newCount) {
+	this.updateCount = function(newCount) {
 		this.numCards = newCount;
 		this.mesh.material.diffuseTexture.drawText(this.numCards, 5, 40, "bold 128px Arial", "rgba(255,255,255,1.0)", "black");
 	}

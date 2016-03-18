@@ -11,32 +11,36 @@ class Piece:
 		self.rotation = pieceData["r"]
 		self.size = pieceData["s"]
 
+		self.isCard = False
+		self.isDie = False
+		self.isDeck = False
+
 		if "front_icon" in pieceData:
-			#TODO
 			self.isCard = True
 			self.front_icon = pieceData["front_icon"]
+			self.icon = "/static/img/card/cardback.png"
 		else:
 			self.isCard = False
 
-		#I know dice is plural but "isDie" sounds awkward here, but still, it's proper english
-		if "max_roll" in pieceData:
-			self.isDie = True
-			self.max_roll = pieceData["max_roll"]
-			value = random.randint(1, int(self.max_roll))
-			if int(self.max_roll) < 7:
-				face_img_name = "/static/img/die_face/small_die_face_" + str(value) + ".png"
-			elif int(self.max_roll) <= 24:
-				face_img_name = "/static/img/die_face/big_die_face_" + str(value) + ".png"
-			self.icon = face_img_name
-		else:
-			self.isDie = False
-			self.icon = pieceData["icon"]
+			#I know dice is plural but "isDie" sounds awkward here, but still, it's proper english
+			if "max_roll" in pieceData:
+				self.isDie = True
+				self.max_roll = pieceData["max_roll"]
+				value = random.randint(1, int(self.max_roll))
+				if int(self.max_roll) < 7:
+					face_img_name = "/static/img/die_face/small_die_face_" + str(value) + ".png"
+				elif int(self.max_roll) <= 24:
+					face_img_name = "/static/img/die_face/big_die_face_" + str(value) + ".png"
+				self.icon = face_img_name
+			else:
+				self.isDie = False
+				self.icon = pieceData["icon"]
 
-		if "cards" in pieceData:
-			self.isDeck = True
-			self.cards = pieceData["cards"]
-		else:
-			self.isDeck = False
+				if "cards" in pieceData:
+					self.isDeck = True
+					self.cards = pieceData["cards"]
+				else:
+					self.isDeck = False
 
 	def get_json_obj(self):
 		data = {

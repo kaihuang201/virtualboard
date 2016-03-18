@@ -198,21 +198,18 @@ var VBoard = VBoard || {};
 				$("#context-menu").css("visibility", "hidden");
 			});
             $("#context-flip").on("click" , function(){
-
                 if (piece instanceof Card) {
                     vb.sessionIO.flipCard(piece.id);
                 }
                 $("#context-menu").css("visibility", "hidden");
             });
             $("#context-roll").on("click" , function(){
-
                 if (piece instanceof Die) {
                     vb.sessionIO.rollDice(piece.id);
                 }
                 $("#context-menu").css("visibility", "hidden");
             });
             $("#context-draw-card").on("click" , function(){
-            	console.log("menu click");
                 if (piece instanceof Deck) {
                     vb.sessionIO.drawCard(piece.id);
                 }

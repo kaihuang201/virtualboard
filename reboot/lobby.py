@@ -4,6 +4,7 @@ import json
 import time
 import random
 import numpy
+import os
 
 from board_state_reboot import *
 
@@ -428,7 +429,8 @@ class Game:
 
 
 	def createDeck(self, client, pieces):
-		with open("./static/json/cardmap.json", "r") as card_json:
+		filename = os.path.abspath(os.path.join(os.path.dirname(__file__), 'static/json/cardmap.json'))
+		with open(filename, "r") as card_json:
 			card_map = json.loads(card_json.read())
 		card_icons = []
 		for key, val in card_map.iteritems():
@@ -440,12 +442,10 @@ class Game:
 			cards = card_icons
 			numpy.random.shuffle(cards)
 			piece["cards"] = cards
-		print piece
 		self.pieceAdd(client, pieces)
 
 
 	def drawCard(self, client, pieces):
-		print pieces
 		response_data = []
 		for piece in pieces:
 			piece_id = piece["piece"]
@@ -476,16 +476,15 @@ class Game:
 				new_card_icon = deck_piece.cards.pop(0)
 				deck_count = len(deck_piece.cards)
 				if deck_count == 0:
-					self.pieceRemove(client, [deck_piece])
+					self.pieceRemove(client, [{"piece" : piece_id}])
 				new_card_data = {
 					"pos" : [deck_piece.pos[0] + deck_piece.size + 1, deck_piece.pos[1]],
-					"icon" : new_card_icon,
+					"front_icon" : new_card_icon,
 					"color" : deck_piece.color,
 					"static" : False,
 					"s" : deck_piece.size,
 					"r" : deck_piece.rotation
 				}
-				print "piece add ", new_card_icon
 				self.pieceAdd(client, [new_card_data])
 				response_data.append({
 					"id" : piece_id,
@@ -509,8 +508,6 @@ class Game:
 		self.message_all(response)
 				
 
-
-
 	def flipCard(self, client, pieces):
 		response_data = []
 		for pieceData in pieces:
@@ -527,7 +524,6 @@ class Game:
 				}
 				client.write_message(json.dumps(error_data))
 				return
-
 			if piece.isCard:
 				response_data.append({
 					"user": client.user_id,
@@ -549,6 +545,68 @@ class Game:
 		response = {
 			"type": "flipCard",
 			"data": response_data
+		}
+		self.message_all(response)
+
+
+	def addCardToDeck(self, client, pieces):
+		print pieces
+		response_data = []
+		for data in pieces:
+			deck_id = data["deck"]
+			deck = self.board_state.get_piece(deck_id)
+			card_id = data["card"]
+			card = self.board_state.get_piece(card_id)
+			if deck == None:
+				ids = deck_id
+				if card == None:
+					ids += ", " + card_id
+				error_data = {
+					"type" : "error",
+					"data" : [
+						{
+							"msg" : "invalid piece id " + ids
+						}
+					]
+				}
+				client.write_message(json.dumps(error_data))
+				return
+			if deck.isDeck:
+				if card.isCard:
+					deck.cards.append(card.front_icon)
+					self.pieceRemove(client, [{"piece" : card_id}])
+					response_data.append({
+						"id" : deck_id,
+						"count" : len(deck.cards)
+					})
+				else:
+					error_data = {
+						"type" : "error",
+						"data" : [
+							{
+								"msg" : "piece id " + card_id + " is not a card"
+							}
+						]
+					}
+					client.write_message(json.dumps(error_data))
+					return
+			else:
+				msg = "piece id " + deck_id + " is not a deck"
+				if not card.isCard:
+					msg += ", piece_id " + card_id + " is not a card"
+				error_data = {
+					"type" : "error",
+					"data" : [
+						{
+							"msg" : msg
+						}
+					]
+				}
+				client.write_message(json.dumps(error_data))
+				return
+		response = {
+			"type" : "addCardToDeck",
+			"data" : response_data
 		}
 		self.message_all(response)
 
