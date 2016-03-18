@@ -564,7 +564,7 @@ var VBoard = VBoard || {};
 			});
 		},
 		abbrLongStr: function (originalStr, toLength) {
-			return originalStr.substring(0,Math.min(toLength,originalStr.length)) + "...";
+			return originalStr.substring(0,Math.min(toLength,originalStr.length)) + (originalStr.length > toLength)?"...":"";
 		}
 
 		
