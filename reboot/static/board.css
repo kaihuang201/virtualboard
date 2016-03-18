@@ -29,7 +29,8 @@ canvas#canvas
 {
 	width: 100%;
 	height: 100%;
-	margin-top: 0px;
+	top: 0px;
+	left: 0px;
 	touch-action: none;
 }
 
@@ -88,12 +89,46 @@ div#loading-notification {
 	top: 30%;
 	margin-left: -75px;
 	border-radius: 8px;
-	box-shadow: 0px 0px 15px #000;
+	box-shadow: 0px 0px 15px #444444;
 }
 
 div#loading-notification > p {
 	margin-top: 10px;
 	font-weight: bold;
+}
+
+
+/* chat box style sheet */
+div#chatbox {
+	position: fixed;
+	width: 30%; 
+	height: 30%; 
+	border-radius: 10px; 
+	border: 0px solid #aaaaaa; 
+	bottom: 30px; 
+	left: 20px; 
+	padding-top: 10px;
+}
+
+div#chatbox-inbox {
+	display: none; 
+	position: absolute;
+	border-radius: 10px;
+	border: 0px solid #dddddd; 
+	height: 80%; 
+	overflow: scroll; 
+	word-wrap: break-word;
+	background-color: rgba(255,255,255,0.8);
+	left: 1%; 
+	width: 98%; 
+	padding: 10px;
+}
+
+div#chatbox-input {
+	position: absolute; 
+	bottom: 10px;
+	left: 1%; 
+	width: 98%;
 }
 
 

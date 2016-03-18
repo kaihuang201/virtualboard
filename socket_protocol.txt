@@ -54,6 +54,7 @@
 	"type" : "initSuccess",
 	"data" : {
 		"gameName" : "coolville",
+		"gameID" : 3,
 		"users" : [
 			{
 				"user" : 0,

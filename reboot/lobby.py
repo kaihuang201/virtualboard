@@ -92,7 +92,6 @@ class Game:
 		tornado.ioloop.IOLoop.instance().add_timeout(datetime.timedelta(seconds=SPAM_FILTER_TIMEOUT), self.check_spam)
 
 	def connect(self, new_client, name, color, password):
-
 		if self.password and not (self.host == new_client or password == self.password):
 			response = {
 				"type" : "initFailure",
@@ -131,6 +130,7 @@ class Game:
 			"type" : "initSuccess",
 			"data" : {
 				"gameName" : self.name,
+				"gameID" : self.game_id,
 				"users" : abridged_users,
 				"board" : board_data
 			}
