@@ -534,6 +534,7 @@ class Game:
 					self.pieceRemove(client, [{"piece" : piece_id}])
 				new_card_data = {
 					"pos" : [deck_piece.pos[0] + deck_piece.size + 1, deck_piece.pos[1]],
+					"icon" : "/static/img/card/cardback.png",
 					"front_icon" : new_card_icon,
 					"color" : deck_piece.color,
 					"static" : False,
