@@ -1,0 +1,21 @@
+UI WISHLIST
+process of joining a lobby
+ - Add a name field to joining/hosting if they do not select one
+ - any modal redirects should not make the user re-click the button they were trying to access
+ - prompt for color with username instead of with lobby
+ - hide password field for servers that do not have one
+
+add refresh button to top of page
+add like a "developed by x, y, z, using etc" at the bottom of the lobby page to make it look less empty
+text inputs on modals should grab keyboard focus
+anything clickable should change the mouse cursor into a clicking hand cursor, especially lobby entries and colors
+hitting the escape key should close a modal
+when getting multiple errors from the server, they should all stack in some kind of scrollable display
+ - this includes errors received while an old error is still up
+we need typing in the chat to not register key events in the game
+sending a chat message maybe should cause the text box to lose focus, but maybe not idk
+static objects should not change the mouse pointer to appear clickable
+page reload on dead socket should be able to be cancelled
+things need to not trigger on mouse move while a piece is being dragged
+
+Oh yeah that's right, we need an actual home page separate from the lobby list as our index page with information
