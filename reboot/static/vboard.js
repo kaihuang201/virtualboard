@@ -328,14 +328,14 @@ var VBoard = VBoard || {};
 			// console.log(JSON.stringify(listOfGames));
 			if (listOfGames.length != 0) {
 				$("#lobby-list").empty();
-				for (let i = listOfGames.length - 1; i >= 0; i--) {
-					// var lobbyID = listOfGames[i]["id"];
-					// var lobbyName = listOfGames[i]["name"];
-					var singleLobby = '<a id="lobby-' + listOfGames[i]["id"].toString() + '" class="list-group-item"><span class="badge badge-default pull-right">' + listOfGames[i]["players"] + ' ' + ((listOfGames[i]["players"]==1)?'player':'players')+ ' online</span><h2>' + listOfGames[i]["name"] + '</h2></a>'
+				for (var i = listOfGames.length - 1; i >= 0; i--) {
+					var lobbyID = listOfGames[i]["id"];
+					var lobbyName = listOfGames[i]["name"];
+					var singleLobby = '<a id="lobby-' + lobbyID.toString() + '" class="list-group-item"><span class="badge badge-default pull-right">' + listOfGames[i]["players"] + ' ' + ((listOfGames[i]["players"]==1)?'player':'players')+ ' online</span><h2>' + lobbyName + '</h2></a>'
 					$("#lobby-list").append(singleLobby);
-					var currentLobby = $("#lobby-" + listOfGames[i]["id"].toString());
+					var currentLobby = $("#lobby-" + lobbyID.toString());
 					currentLobby.unbind();
-					currentLobby.on("click",function() {vb.interface.joinLobbyRequest(listOfGames[i]["id"],listOfGames[i]["name"]);});
+					currentLobby.on("click",function() {vb.interface.joinLobbyRequest(lobbyID,lobbyName);});
 				}
 			} else {
 				$("#lobby-list").empty();
@@ -1335,6 +1335,7 @@ var VBoard = VBoard || {};
 
 					//switch from lobby state to game state
 					vb.interface.switchToGameMode();
+					vb.sessionIO.getClientList();
 					vb.socket.onmessage = vb.sessionIO.messageHandler;
 					vb.launchCanvas();
 
