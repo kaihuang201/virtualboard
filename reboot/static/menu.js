@@ -38,7 +38,7 @@ var VBoard = VBoard || {};
 			});
 
 			$("#addChessBoard").on("click", function () {
-				vb.board.loadChessGame();
+				vb.sessionIO.loadChessGame();
 			});
 
 			$("#quitGame").on("click", function () {
