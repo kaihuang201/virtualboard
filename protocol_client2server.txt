@@ -1,0 +1,67 @@
+{
+	"type" : "pieceAdd",
+	"data" : [
+		{
+			"icon" : "/res/img.png",
+			"pos" : [
+				6.6435,
+				65.2543
+			],
+			"color" : [
+				255,
+				255,
+				255
+			],
+			"r" : 0.45656,
+			"s" : 1.0,
+			"static" : 0,
+
+			//optional parameter only preset if piece is a die
+			"diceData" : {
+				//sets the range of values for the die
+				//if there are not enough face icons provided, defaults will be used
+				//maximum value of faceCount is currently 24
+				//this should be changed to 100 for percentiles probably
+				"max" : 6,
+
+				//when rolled, sets the "icon" field to diceData[faces][value] unless value is out of bounds
+				//in that case, pick from default dice faces
+				"faces" : [
+					"/res/dice1.png",
+					"/res/dice2.png",
+					"/res/dice3.png",
+					"/res/dice4.png",
+					"/res/dice5.png",
+					"/res/dice6.png"
+				]
+			},
+
+			//optional parameter only present if piece is a deck
+			//the data["icon"] field is used as the default back icon
+			"cardData" : {
+
+				//optional parameter that will be assumed to be 1 if absent
+				//if provided, it must be greater than zero
+				"count" : 2,
+
+				//if count is greater than len(cards), default cards will be used
+				//cards are ordered from bottom to top
+				"cards" : [
+					{
+						//cards within a deck can be facing either way
+						"faceDown" : 1,
+
+						"icon" : "/static/img/queenhearts.png",
+
+						//optional parameter, piece.icon will be used instead if absent
+						"back" : "/static/img/cardback.png"
+					}, {
+						"faceDown" : 1,
+						"icon" : "/static/img/aceclubs.png",
+						"back" : "/static/img/cardback.png"
+					}
+				]
+			}
+		}
+	]
+}

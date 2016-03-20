@@ -1,0 +1,47 @@
+{
+	"type" : "pieceAdd",
+	"data" : [
+		{
+			"piece" : 6,
+			"user" : 4,
+			"icon" : "/res/img.png",
+			"static" : 0,
+			"color" : [
+				255,
+				255,
+				255
+			],
+			"pos" : [
+				6.6435,
+				65.2543
+			],
+			"r" : 0.45656,
+			"s" : 1.0,
+
+			//optional parameter only preset if piece is a die
+			"diceData" : {
+				//max might not be equal to len(faces)
+				//this shouldn't be used on the client side for much
+				"max" : 6,
+
+				//when rolled, sets the "icon" field to diceData[faces][value] if it is in bounds
+				//if it is not in bounds, pick from default dice images
+				"faces" : [
+					"/res/dice1.png",
+					"/res/dice2.png",
+					"/res/dice3.png",
+					"/res/dice4.png",
+					"/res/dice5.png",
+					"/res/dice6.png"
+				]
+			},
+
+			//optional parameter only present if piece is a card or deck
+			"cardData" : {
+				//clients only get to see size of deck
+				//this parameter is optional and defaults to 1
+				"count" : 52
+			}
+		}
+	]
+}

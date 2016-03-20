@@ -5,9 +5,6 @@ import json
 import time
 import random
 import datetime
-#import sched
-import numpy
-import os
 
 from board_state_reboot import *
 from movebuffer import *
@@ -148,6 +145,12 @@ class Game:
 		if client.user_id == self.host.user_id:
 			if len(self.clients) == 0:
 				#rip server
+				if self.spam_timeout is not None:
+					tornado.ioloop.IOLoop.instance().remove_timeout(self.spam_timeout)
+
+				if self.movebuffer.flush_timeout is not None:
+					instance.remove_timeout(self.movebuffer.flush_timeout)
+
 				del games[self.game_id]
 				return
 			else:
@@ -271,6 +274,7 @@ class Game:
 		if client is None or self.host.user_id == client.user_id:
 			return
 			#TODO
+			#note that movebuffer needs to be cleared too
 
 	def closeServer(self, client):
 		if client is None or self.host.user_id == client.user_id:
@@ -355,7 +359,7 @@ class Game:
 
 				response_data.append(data_entry)
 			else:
-				self.send_error(client, "invalid piece id " + id)
+				self.send_error(client, "invalid piece id " + str(id))
 
 		if move_only:
 			#buffer magic
@@ -417,12 +421,13 @@ class Game:
 			id = pieceData["piece"]
 
 			if self.board_state.remove_piece(id):
+				self.movebuffer.remove(id)
 				response_data.append({
 					"user" : client.user_id,
 					"piece" : id
 				})
 			else:
-				self.send_error(client, "invalid piece id " + id)
+				self.send_error(client, "invalid piece id " + str(id))
 
 		response = {
 			"type" : "pieceRemove",
@@ -440,236 +445,176 @@ class Game:
 		response_data = []
 		for pieceData in pieces:
 			piece_id = pieceData["piece"]
-			piece = self.board_state.get_piece(piece_id)
-			if piece is None:
-				error_data = {
-					"type" : "error",
-					"data" : [
-						{
-							"msg" : "invalid piece id " + id
-						}
-					]
-				}
-				client.write_message(json.dumps(error_data))
-				return
-			if piece.isDie:
-				max_value = piece.max_roll
-				new_value = random.randint(1, int(max_value))
-				if int(max_value) < 7:
-					new_img = "/static/img/die_face/small_die_face_" + str(new_value) + ".png"
-				elif int(max_value) <= 24:
-					new_img = "/static/img/die_face/big_die_face_" + str(new_value) + ".png"
+			result = self.board_state.roll_dice(piece_id)
+			if result is not None:
 				response_data.append({
-					"user": client.user_id,
-					"piece": piece_id,
-					"result": new_img
+					"user" : client.user_id,
+					"piece" : piece_id,
+					"result" : result
 				})
 			else:
-				error_data = {
-					"type" : "error",
-					"data" : [
-						{
-							"msg" : "piece id " + id + " is not a die"
-						}
-					]
-				}
-				client.write_message(json.dumps(error_data))
-				return
-
+				self.send_error(client, "Invalid dice: " + str(piece_id))
 		response = {
-			"type": "rollDice",
-			"data": response_data
+			"type" : "rollDice",
+			"data" : response_data
 		}
 		self.message_all(response)
-
-
-	def createDeck(self, client, pieces):
-		filename = os.path.abspath(os.path.join(os.path.dirname(__file__), 'static/json/cardmap.json'))
-		with open(filename, "r") as card_json:
-			card_map = json.loads(card_json.read())
-		card_icons = []
-		for key, val in card_map.iteritems():
-			card_icons.append(val["front_clubs"])
-			card_icons.append(val["front_diamonds"])
-			card_icons.append(val["front_hearts"])
-			card_icons.append(val["front_spades"])
-		for piece in pieces:
-			cards = card_icons
-			numpy.random.shuffle(cards)
-			piece["cards"] = cards
-		self.pieceAdd(client, pieces)
-
 
 	def drawCard(self, client, pieces):
-		response_data = []
+		#TODO: spam protection needs to be more advanced here
+
+		#should technically be an ordered dictionary but bleh
+		deck_results = {}
+		piece_add_data = []
+
 		for piece in pieces:
 			piece_id = piece["piece"]
-			deck_piece = self.board_state.get_piece(piece_id)
-			if piece == None:
-				error_data = {
-					"type" : "error",
-					"data" : [
-						{
-							"msg" : "invalid piece id " + id
-						}
-					]
+			response = self.board_state.draw_card(piece_id)
+
+			if response is not None:
+				data = response["new_piece"].get_json_obj()
+				data["user"] = client.user_id
+				piece_add_data.append(data)
+
+				deck_results[piece_id] = {
+					"icon" : response["icon"],
+					"count" : response["count"]
 				}
-				client.write_message(json.dumps(error_data))
-				return
-			if deck_piece.isDeck:
-				if len(deck_piece.cards) == 0:
-					error_data = {
-						"type" : "error",
-						"data" : [
-							{
-								"msg" : "this deck (id = " + id +") is empty"
-							}
-						]
-					}
-					client.write_message(json.dumps(error_data))
-					return
-				new_card_icon = deck_piece.cards.pop(0)
-				deck_count = len(deck_piece.cards)
-				if deck_count == 0:
-					self.pieceRemove(client, [{"piece" : piece_id}])
-				new_card_data = {
-					"pos" : [deck_piece.pos[0] + deck_piece.size + 1, deck_piece.pos[1]],
-					"icon" : "/static/img/card/cardback.png",
-					"front_icon" : new_card_icon,
-					"color" : deck_piece.color,
-					"static" : False,
-					"s" : deck_piece.size,
-					"r" : deck_piece.rotation
-				}
-				self.pieceAdd(client, [new_card_data])
-				response_data.append({
-					"id" : piece_id,
-					"count" : deck_count
-				})
 			else:
-				error_data = {
-					"type" : "error",
-					"data" : [
-						{
-							"msg" : "this piece (id = " + id +") is not a deck"
-						}
-					]
-				}
-				client.write_message(json.dumps(error_data))
-				return
-		response = {
-			"type": "drawCard",
-			"data": response_data
+				self.send_error(client, "invalid deck: " + str(piece_id))
+
+		#send the addpiece response first
+		#this avoids some annoying edge cases
+		deckcount_response = {
+			"type" : "changeDeckCount",
+			"data" : []
 		}
-		self.message_all(response)
-				
+
+		decktransform_response = {
+			"type" : "pieceTransform",
+			"data" : []
+		}
+
+		addpiece_response = {
+			"type" : "pieceRemove",
+			"data" : piece_add_data
+		}
+
+		for deck_id, result in deck_results.iteritems():
+			deckcount_response.append({
+				"user" : client.user_id,
+				"piece" : deck_id,
+				"count" : result["count"]
+			})
+			decktransform_response.append({
+				"user" : client.user_id,
+				"piece" : deck_id,
+				"icon" : result["icon"]
+			})
+
+		#TODO: don't generate decktransform responses when not needed
+		self.message_all(addpiece_response)
+		self.messge_all(deckcount_response)
+		self.message_all(decktransform_response)
 
 	def flipCard(self, client, pieces):
 		client.spam_amount += 0.5 + 0.5*len(pieces)
 		response_data = []
 		for pieceData in pieces:
 			piece_id = pieceData["piece"]
-			piece = self.board_state.get_piece(piece_id)
-			if piece is None:
-				error_data = {
-					"type" : "error",
-					"data" : [
-						{
-							"msg" : "invalid piece id " + id
-						}
-					]
-				}
-				client.write_message(json.dumps(error_data))
-				return
-			if piece.isCard:
+			result = self.board_state.flip_card(piece_id)
+
+			if result is None:
+				self.send_error(client, "invalid deck: " + str(piece_id))
+			else:
 				response_data.append({
-					"user": client.user_id,
-					"piece": piece_id,
-					"front_icon": piece.front_icon
+					"user" : client.user_id,
+					"piece" : piece_id,
+					"icon" : result
 				})
-			else:
-				error_data = {
-					"type" : "error",
-					"data" : [
-						{
-							"msg" : "piece id " + id + " is not a card"
-						}
-					]
-				}
-				client.write_message(json.dumps(error_data))
-				return
 
 		response = {
-			"type": "flipCard",
-			"data": response_data
-		}
-		self.message_all(response)
-
-	def addCardToDeck(self, client, pieces):
-		print pieces
-		response_data = []
-		for data in pieces:
-			deck_id = data["deck"]
-			deck = self.board_state.get_piece(deck_id)
-			card_id = data["card"]
-			card = self.board_state.get_piece(card_id)
-			if deck == None:
-				ids = deck_id
-				if card == None:
-					ids += ", " + card_id
-				error_data = {
-					"type" : "error",
-					"data" : [
-						{
-							"msg" : "invalid piece id " + ids
-						}
-					]
-				}
-				client.write_message(json.dumps(error_data))
-				return
-			if deck.isDeck:
-				if card.isCard:
-					deck.cards.append(card.front_icon)
-					self.pieceRemove(client, [{"piece" : card_id}])
-					response_data.append({
-						"id" : deck_id,
-						"count" : len(deck.cards)
-					})
-				else:
-					error_data = {
-						"type" : "error",
-						"data" : [
-							{
-								"msg" : "piece id " + card_id + " is not a card"
-							}
-						]
-					}
-					client.write_message(json.dumps(error_data))
-					return
-			else:
-				msg = "piece id " + deck_id + " is not a deck"
-				if not card.isCard:
-					msg += ", piece_id " + card_id + " is not a card"
-				error_data = {
-					"type" : "error",
-					"data" : [
-						{
-							"msg" : msg
-						}
-					]
-				}
-				client.write_message(json.dumps(error_data))
-				return
-		response = {
-			"type" : "addCardToDeck",
+			"type" : "flipCard",
 			"data" : response_data
 		}
 		self.message_all(response)
 
+	def addCardToDeck(self, client, pieces):
+		#TODO: spam protection needs to be more advanced here
 
-	#def toggleStatic(self, client, pieces):
-	#	#TODO
-	#	return
+		#should technically be an ordered dictionary but bleh
+		deck_results = {}
+		piece_remove_data = []
+
+		for entry in pieces:
+			deck_id = entry["deck"]
+			card_id = entry["card"]
+
+			result = self.board_state.add_card_to_deck(card_id, deck_id)
+
+			if result is not None:
+				deck_results[deck_id] = result
+				piece_remove_data.append({
+					"user" : client.user_id,
+					"piece" : card_id
+				})
+			else:
+				self.send_error(client, "Invalid card and/or deck: " + str(card_id) + " " + str(deck_id))
+
+		#send the changeDeckCount and pieceTransform messages first
+		#this avoids any edge cases caused by the pieceRemove messages
+		deckcount_response = {
+			"type" : "changeDeckCount",
+			"data" : []
+		}
+
+		decktransform_response = {
+			"type" : "pieceTransform",
+			"data" : []
+		}
+
+		removepiece_response = {
+			"type" : "pieceRemove",
+			"data" : piece_remove_data
+		}
+
+		for deck_id, result in deck_results.iteritems():
+			deckcount_response.append({
+				"user" : client.user_id,
+				"piece" : deck_id,
+				"count" : result["count"]
+			})
+			decktransform_response.append({
+				"user" : client.user_id,
+				"piece" : deck_id,
+				"icon" : result["icon"]
+			})
+
+		#TODO: don't generate decktransform responses when not needed
+		self.messge_all(deckcount_response)
+		self.message_all(decktransform_response)
+		self.message_all(removepiece_response)
+
+	def shuffleDeck(self, client, pieces):
+		response_data = []
+		for piece in pieces:
+			piece_id = piece["piece"]
+			new_icon = self.board_state.shuffle_deck(piece_id)
+
+			if new_icon is not None:
+				response_data.append({
+					"user" : client.user_id,
+					"piece" : piece_id,
+					"icon" : new_icon
+				})
+			else:
+				self.send_error(client, "invalid deck id: " + piece_id)
+
+		response = {
+			"type" : "shuffleDeck",
+			"data" : response_data
+		}
+		this.message_all(response)
 
 	def setBackground(self, client, backgroundData):
 		client.spam_amount += 3

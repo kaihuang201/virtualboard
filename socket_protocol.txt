@@ -123,18 +123,14 @@
 					"r" : 3.14159,
 					"s" : 1.0,
 
-					//optional parameter only present if piece is a card
-					"cardData" : {
-						"faceDown" : 0,
-						"backIcon" : "/res/cardback.png"
-					},
-
 					//optional parameter only preset if piece is a die
 					"diceData" : {
-						"min" : 1,
+						//max might not be equal to len(faces)
+						//this shouldn't be used on the client side for much
 						"max" : 6,
 
-						//when rolled, sets the "icon" field to diceData[faces][value - diceData[min]] unless value is out of bounds
+						//when rolled, sets the "icon" field to diceData[faces][value] unless value is out of bounds
+						//in that case, pick from default dice faces
 						"faces" : [
 							"/res/dice1.png",
 							"/res/dice2.png",
@@ -143,6 +139,12 @@
 							"/res/dice5.png",
 							"/res/dice6.png"
 						]
+					},
+
+					//optional parameter only present if piece is a card or deck
+					"cardData" : {
+						//optional parameter which defaults to 1 (single card)
+						"count" : 52
 					}
 				}
 			]
@@ -286,18 +288,14 @@
 			"r" : 0.45656,
 			"s" : 1.0,
 
-			//optional parameter only present if piece is a card
-			"cardData" : {
-				"faceDown" : 0,
-				"backIcon" : "/res/cardback.png"
-			},
-
 			//optional parameter only preset if piece is a die
 			"diceData" : {
-				"min" : 1,
+				//max might not be equal to len(faces)
+				//this shouldn't be used on the client side for much
 				"max" : 6,
 
-				//when rolled, sets the "icon" field to diceData[faces][value - diceData[min]] unless value is out of bounds
+				//when rolled, sets the "icon" field to diceData[faces][value] if it is in bounds
+				//if it is not in bounds, pick from default dice images
 				"faces" : [
 					"/res/dice1.png",
 					"/res/dice2.png",
@@ -306,6 +304,13 @@
 					"/res/dice5.png",
 					"/res/dice6.png"
 				]
+			},
+
+			//optional parameter only present if piece is a card or deck
+			"cardData" : {
+				//clients only get to see size of deck
+				//this parameter is optional and defaults to 1
+				"count" : 52
 			}
 		}
 	]
@@ -322,7 +327,7 @@
 }
 
 //REMOVED: Use pieceTransform instead
-//{
+// {
 //	"type" : "toggleStatic",
 //	"data" : [
 //		{
@@ -330,7 +335,7 @@
 //			"piece" : 6
 //		}
 //	]
-//}
+// }
 
 {
 	"type" : "setBackground",
@@ -445,70 +450,76 @@
 	]
 }
 
+//decks can also be flippsed
 {
 	"type" : "flipCard",
 	"data" : [
 		{
 			"user" : 2,
 			"piece" : 5,
-			"front_icon" : "/static/img/card/spades/7_of_spaces.png"
+			"icon" : "/static/img/card/spades/7_of_spaces.png"
 		}
 	]
 }
 
-//drawing cards from/adding cards to a deck will cause the piece corresponding to that card to be removed
-{
-	"type" : "createDeck",
-	"data" : [
-		{
-			"pieceData" : {
-				"piece" : 6,
-				"user" : 4,
-				"icon" : "/res/deckicon.png",
-				"static" : 0,
-				"color" : [
-					255,
-					255,
-					255
-				],
-				"pos" : [
-					6.6435,
-					65.2543
-				],
-				"r" : 0.45656,
-				"s" : 1.0,
-				"cards" : [
-					"/static/img/cards/hearts/queen_of_hearts.png",
-					"/static/img/cards/clubs/2_of_clubs/clubs.png",
-					"/static/img/cards/spades/9_of_spades.png",
-					"/static/img/cards/diamonds/king_of_diamonds.png"
-				]
-			}
-		}
-	]
-}
+//REMOVED: use pieceAdd instead with the "cardData" attribute
+//drawing cards from/adding cards to a deck will cause the piece corresponding to that card to be created/removed
+//{
+//	"type" : "createDeck",
+//	"data" : [
+//		{
+//			"pieceData" : {
+//				"piece" : 6,
+//				"user" : 4,
+//				"icon" : "/res/deckicon.png",
+//				"static" : 0,
+//				"color" : [
+//					255,
+//					255,
+//					255
+//				],
+//				"pos" : [
+//					6.6435,
+//					65.2543
+//				],
+//				"r" : 0.45656,
+//				"s" : 1.0,
+//				"cards" : [
+//					"/static/img/cards/hearts/queen_of_hearts.png",
+//					"/static/img/cards/clubs/2_of_clubs/clubs.png",
+//					"/static/img/cards/spades/9_of_spades.png",
+//					"/static/img/cards/diamonds/king_of_diamonds.png"
+//				]
+//			}
+//		}
+//	]
+//}
 
+//this will be accompanied by a pieceAdd/pieceRemove command usually to create/delete the single card
 {
-	"type" : "addCard",
+	"type" : "changeDeckCount",
 	"data" : [
 		{
 			"user" : 2,
 
 			//piece id of deck
 			"piece" : 7,
-			"card" : "/res/aceclubs.png"
+			"count" : 51
 		}
 	]
 }
 
-//typically, removing a card is the followed up immediately by a "pieceAdd" message from the server to actually spawn the card
 {
-	"type" : "removeCard",
+	"type" : "shuffleDeck",
 	"data" : [
 		{
-			"user" : 1,
-			"deck" : 7,
-			"card" : "/res/queenhearts.png"
+			"user" : 2,
+			"piece" : 7,
+
+			//the new icon on top of the deck as a result of the shuffle
+			//the new icon on top of the deck as a result of the shuffle
+			//the new icon on top of the deck as a result of the shuffle
+			"icon" : "/res/cardback.png"
 		}
 	]
 }
@@ -678,18 +689,16 @@
 			"s" : 1.0,
 			"static" : 0,
 
-			//optional parameter only present if piece is a card
-			"cardData" : {
-				"faceDown" : 0,
-				"backIcon" : "/res/cardback.png"
-			},
-
 			//optional parameter only preset if piece is a die
 			"diceData" : {
-				"min" : 1,
+				//sets the range of values for the die
+				//if there are not enough face icons provided, defaults will be used
+				//maximum value of faceCount is currently 24
+				//this should be changed to 100 for percentiles probably
 				"max" : 6,
 
-				//overrides and sets the "icon" field unless value is out of bounds
+				//when rolled, sets the "icon" field to diceData[faces][value] unless value is out of bounds
+				//in that case, pick from default dice faces
 				"faces" : [
 					"/res/dice1.png",
 					"/res/dice2.png",
@@ -697,6 +706,32 @@
 					"/res/dice4.png",
 					"/res/dice5.png",
 					"/res/dice6.png"
+				]
+			},
+
+			//optional parameter only present if piece is a deck
+			//the data["icon"] field is used as the default back icon
+			"cardData" : {
+
+				//optional parameter that will be assumed to be 1 if absent
+				"count" : 2,
+
+				//if count is greater than len(cards), default cards will be used
+				//cards are ordered from bottom to top
+				"cards" : [
+					{
+						//cards within a deck can be facing either way
+						"faceDown" : 1,
+
+						"icon" : "/static/img/queenhearts.png",
+
+						//optional parameter, piece.icon will be used instead if absent
+						"back" : "/static/img/cardback.png"
+					}, {
+						"faceDown" : 1,
+						"icon" : "/static/img/aceclubs.png",
+						"back" : "/static/img/cardback.png"
+					}
 				]
 			}
 		}
@@ -765,6 +800,7 @@
 	]
 }
 
+//this command works on cards/decks
 {
 	"type" : "flipCard",
 	"data" : [
@@ -774,59 +810,73 @@
 	]
 }
 
+//REMOVED: use pieceAdd instead with the "deckData" attribute
 //drawing cards from/adding cards to a deck will cause the piece corresponding to that card to be removed
-{
-	"type" : "createDeck",
-	"data" : [
-		{
-			"icon" : "/res/deckicon.png",
-			"color" : [
-				255,
-				255,
-				255
-			],
-			"pos" : [
-				6.6435,
-				65.2543
-			],
-			"r" : 0.45656,
-			"s" : 1.0,
-			"static" : 0
-		}
-	]
-}
+//{
+//	"type" : "createDeck",
+//	"data" : [
+//		{
+//			"icon" : "/res/deckicon.png",
+//			"color" : [
+//				255,
+//				255,
+//				255
+//			],
+//			"pos" : [
+//				6.6435,
+//				65.2543
+//			],
+//			"r" : 0.45656,
+//			"s" : 1.0,
+//			"static" : 0
+//		}
+//	]
+//}
 
 //moves a card piece from the board into a deck
 {
-	"type" : "addCardPieceToDeck",
+	"type" : "addCardToDeck",
 	"data" : [
 		{
-			//piece id of deck
+			//piece id of receiving deck
 			"deck" : 7,
 
-			//piece id of card
+			//piece id of moved card/deck
 			"card" : 3
 		}
 	]
 }
 
+//REMOVED: meh
 //adds a card type to the deck directly, without referencing a card piece on the board
-{
-	"type" : "addCardTypeToDeck",
-	"data" : [
-		{
-			"deck" : 7,
-			"card" : "/res/kingclubs.png"
-		}
-	]
-}
+//{
+//	"type" : "addCardTypeToDeck",
+//	"data" : [
+//		{
+//			"deck" : 7,
+//			"card" : "/res/kingclubs.png"
+//		}
+//	]
+//}
 
-//typically, removing a card is then followed up immediately by a "pieceAdd" message from the server to actually spawn the card
+//typically, removing a card is then followed up immediately by the following:
+// 1. A change
+// 2. A "pieceAdd" message from the server to actually spawn the card
 {
 	"type" : "drawCard",
 	"data" : [
 		{
-			"deck" : 7
+			//piece id of deck
+			"piece" : 7
+		}
+	]
+}
+
+{
+	"type" : "shuffleDeck",
+	"data" : [
+		{
+			"piece" : 7
 		}
 	]
 }
@@ -962,6 +1012,7 @@
 				]
 			}
 		],
+		//Identical to data field from client to server addPiece command
 		"pieces" : [
 			{
 				"pos" : [
@@ -978,18 +1029,16 @@
 				"r" : 3.14159,
 				"s" : 1.0,
 
-				//optional parameter only present if piece is a card
-				"cardData" : {
-					"faceDown" : 0,
-					"backIcon" : "/res/cardback.png"
-				},
-
 				//optional parameter only preset if piece is a die
 				"diceData" : {
-					"min" : 1,
+					//sets the range of values for the die
+					//if there are not enough face icons provided, defaults will be used
+					//maximum value of faceCount is currently 24
+					//this should be changed to 100 for percentiles probably
 					"max" : 6,
 
-					//when rolled, sets the "icon" field to diceData[faces][value - diceData[min]] unless value is out of bounds
+					//when rolled, sets the "icon" field to diceData[faces][value] unless value is out of bounds
+					//in that case, pick from default dice faces
 					"faces" : [
 						"/res/dice1.png",
 						"/res/dice2.png",
@@ -997,6 +1046,35 @@
 						"/res/dice4.png",
 						"/res/dice5.png",
 						"/res/dice6.png"
+					]
+				},
+
+				//optional parameter only present if piece is a deck
+				//the data["icon"] field is used as the default back icon
+				"cardData" : {
+
+					//optional parameter that will be assumed to be 1 if absent
+					"count" : 2,
+
+					//if count is greater than len(cards), default cards will be used
+					//cards are ordered from bottom to top
+					"cards" : [
+						{
+							//cards within a deck can be facing either way
+							"faceDown" : 1,
+
+							"icon" : "/static/img/queenhearts.png",
+
+							//optional parameter, piece.icon will be used instead if absent
+							"back" : "/static/img/cardback.png"
+						}, {
+							"faceDown" : 1,
+							"icon" : "/static/img/aceclubs.png",
+
+							//note that if a back icon is provided for the final card
+							//that icon will be seen instead of piece.icon (assuming last card is face down)
+							"back" : "/static/img/cardback.png"
+						}
 					]
 				}
 			}

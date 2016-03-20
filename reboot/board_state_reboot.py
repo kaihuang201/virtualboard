@@ -1,5 +1,7 @@
 import random
 
+from deck import *
+
 class Piece:
 	def __init__(self, pieceData, id):
 		#TODO: check for reasonable values
@@ -14,28 +16,29 @@ class Piece:
 
 		self.isCard = False
 		self.isDie = False
-		self.isDeck = False
 
-		if "front_icon" in pieceData:
+		if "cardData" in pieceData:
 			self.isCard = True
 
-			#front_icon is not in the socket protocol
-			#if you want to change the protocol that is fine, but make sure to keep it consistent
-			#and preferably run it by me first
-			self.front_icon = pieceData["front_icon"]
-			self.icon = "/static/img/card/cardback.png"
-		else:
-			self.isCard = False
+			#cards are just a special case of decks where there is only one card
+			self.cardData = Deck(pieceData["cardData"], self.icon)
+			self.icon = self.cardData.get_icon()
+
 		#I know dice is plural but "isDie" sounds awkward here, but still, it's proper english
-		if "max_roll" in pieceData:
+		if "diceData" in pieceData:
 			self.isDie = True
-			self.max_roll = pieceData["max_roll"]
-			value = random.randint(1, int(self.max_roll))
-			if int(self.max_roll) < 7:
-				face_img_name = "/static/img/die_face/small_die_face_" + str(value) + ".png"
-			elif int(self.max_roll) <= 24:
-				face_img_name = "/static/img/die_face/big_die_face_" + str(value) + ".png"
-			self.icon = face_img_name
+			self.max = pieceData["diceData"]["max"]
+
+			#maybe also enforce positive integer here?
+			#hopefully we can enforce that in json schema
+			if self.max > 24:
+				self.max = 24
+			self.faces = []
+
+			for i in range(0, 1 + self.max):
+				if i >= len(pieceData["diceData"]["faces"]):
+					break
+				self.faces.append(pieceData["diceData"]["faces"][i])
 		else:
 			self.isDie = False
 			self.icon = pieceData["icon"]
@@ -46,7 +49,8 @@ class Piece:
 			else:
 				self.isDeck = False
 
-	def get_json_obj(self):
+	#complete - True for downloading the board state, false for sending to clients
+	def get_json_obj(self, complete=False):
 		data = {
 			"pos" : self.pos,
 			"piece" : self.piece_id,
@@ -58,15 +62,13 @@ class Piece:
 		}
 
 		if self.isCard:
-			data["front_icon"] = self.front_icon
+			data["cardData"] = self.cardData.get_json_obj(complete)
 
 		if self.isDie:
-			data["max_roll"] = self.max_roll
-		if self.isDeck:
-			data["cards"] = self.cards
-
-		data["icon"] = self.icon
-
+			data["diceData"] = {
+				"max" : self.max,
+				"faces" : self.faces
+			}
 		return data
 
 class BoardState:
@@ -82,7 +84,7 @@ class BoardState:
 
 	#returns the newly generated piece
 	#color is an array, but if you define an array as a default parameter it is static to the class, not the object
-	def generate_new_piece(self, pieceData): #name="", x=0, y=0, icon="", color):
+	def generate_new_piece(self, pieceData):
 		piece = Piece(pieceData, self.next_piece_id)
 		self.piecemap[self.next_piece_id] = len(self.pieces)
 		self.pieces.append(piece)
@@ -125,7 +127,7 @@ class BoardState:
 				#only for positional changes do we bring the piece to the front
 				#note that this also invalidates the index variable we have
 				if not self.bring_to_front(piece.piece_id):
-					print "error bringing transformed piece to front"
+					raise Exception("error bringing transformed piece to front")
 
 			if "r" in pieceData:
 				piece.rotation = pieceData["r"]
@@ -182,11 +184,114 @@ class BoardState:
 
 		#TODO: clear private zones
 
-	def get_json_obj(self):
+	#special pieces
+
+	#returns value on success, None otherwise
+	def roll_dice(self, piece_id):
+		if piece_id in self.piecemap:
+			index = self.piecemap[piece_id]
+			piece = self.pieces[index]
+
+			if piece.isDie:
+				value = random.randint(0, self.max-1)
+
+				if value < len(piece.faces):
+					piece.icon = faces[value]
+				else:
+					if piece.max_roll < 7:
+						piece.icon = "/static/img/die_face/small_die_face_" + str(value) + ".png"
+					else:
+						piece.icon = "/static/img/die_face/big_die_face_" + str(value) + ".png"
+				return value
+		return None
+
+	#returns the revealed icon on success, None otherwise
+	def flip_card(self, piece_id):
+		if piece_id in self.piecemap:
+			index = self.piecemap[piece_id]
+			piece = self.pieces[index]
+
+			if piece.isCard:
+				piece.cardData.flip_card()
+				piece.icon = piece.cardData.get_icon()
+				return piece.icon
+		return None
+
+	#returns an object {new_piece, count, icon} on success, None otherwise
+	def draw_card(self, piece_id):
+		if piece_id in self.piecemap:
+			index = self.piecemap[piece_id]
+			piece = self.pieces[index]
+
+			if piece.isCard:
+				if piece.cardData.get_size() > 1:
+					data = piece.cardData.draw_card()
+					piece.icon = piece.cardData.get_icon()
+
+					new_piece = self.generate_new_piece({
+						"icon" : data["icon"] if data["face_down"] else data["back"],
+						"pos" : list(piece["pos"]),
+						"color" : list(piece["color"]),
+						"r" : piece["r"],
+						"s" : piece["s"],
+						"static" : 0,
+						"cardData" : {
+							"count" : 1,
+							"cards" : [
+								{
+									"faceDown" : data["face_down"],
+									"icon" : data["icon"],
+									"back" : data["back"]
+								}
+							]
+						}
+					})
+					return {
+						"new_piece" : new_piece,
+						"icon" : piece.icon,
+						"count" : len(piece.cardData.get_size())
+					}
+		return None
+
+	#returns the revealed icon on success, None otherwise
+	def shuffle_deck(self, piece_id):
+		if piece_id in self.piecemap:
+			index = self.piecemap[piece_id]
+			piece = self.pieces[index]
+
+			if piece.isCard:
+				piece.cardData.shuffle()
+				piece.icon = piece.cardData.get_icon()
+				return piece.icon
+		return None
+
+	#returns an object {icon, count} describing the deck on success, None otherwise
+	#note that the 'card' can actually be a deck of cards too
+	def add_card_to_deck(self, card_id, deck_id):
+		if card_id in self.piecemap and deck_id in self.piecemap:
+			card_index = self.piecemap[card_id]
+			deck_index = self.piecemap[deck_id]
+			card = self.pieces[card_index]
+			deck = self.pieces[deck_index]
+
+			if card.isCard and deck.isCard:
+				deck.cardData.absorb(card.cardData)
+				deck.icon = deck.cardData.get_icon()
+
+				if not self.remove_piece(card_id):
+					raise Exception("unable to remove absorbed card")
+				return {
+					"icon" : deck.icon,
+					"count" : deck.cardData.get_size()
+				}
+		return None
+
+	#complete is set to true when the board state is being saved
+	def get_json_obj(self, complete=False):
 		pieces_json = []
 
 		for piece in self.pieces:
-			pieces_json.append(piece.get_json_obj())
+			pieces_json.append(piece.get_json_obj(complete))
 
 		return {
 			"background" : self.background,
