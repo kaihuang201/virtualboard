@@ -1,4 +1,6 @@
 import random
+import copy
+import math
 
 from deck import *
 
@@ -179,8 +181,8 @@ class BoardState:
 
 	def clear_board(self):
 		#TODO: maybe it's better to iterate through pieces and call remove_piece for each one
-		self.pieces = [];
-		self.piecemap = {};
+		self.pieces = []
+		self.piecemap = {}
 
 		#TODO: clear private zones
 
@@ -212,28 +214,36 @@ class BoardState:
 			piece = self.pieces[index]
 
 			if piece.isCard:
-				piece.cardData.flip_card()
+				piece.cardData.flip()
 				piece.icon = piece.cardData.get_icon()
 				return piece.icon
 		return None
 
 	#returns an object {new_piece, count, icon} on success, None otherwise
-	def draw_card(self, piece_id):
+	def draw_card(self, piece_id, rotation):
 		if piece_id in self.piecemap:
 			index = self.piecemap[piece_id]
 			piece = self.pieces[index]
 
 			if piece.isCard:
-				if piece.cardData.get_size() > 1:
-					data = piece.cardData.draw_card()
+				data = piece.cardData.draw()
+
+				if data is not None:
 					piece.icon = piece.cardData.get_icon()
 
+					pos = list(piece.pos)
+
+					if rotation is not None:
+						#TODO: this may need adjusting
+						pos[0] -= piece.size * math.cos(rotation)
+						pos[1] -= piece.size * math.sin(rotation)
+
 					new_piece = self.generate_new_piece({
-						"icon" : data["icon"] if data["face_down"] else data["back"],
-						"pos" : list(piece["pos"]),
-						"color" : list(piece["color"]),
-						"r" : piece["r"],
-						"s" : piece["s"],
+						"icon" : data["back"] if data["face_down"] else data["icon"],
+						"pos" : pos,
+						"color" : list(piece.color),
+						"r" : piece.rotation,
+						"s" : piece.size,
 						"static" : 0,
 						"cardData" : {
 							"count" : 1,
@@ -249,7 +259,7 @@ class BoardState:
 					return {
 						"new_piece" : new_piece,
 						"icon" : piece.icon,
-						"count" : len(piece.cardData.get_size())
+						"count" : piece.cardData.get_size()
 					}
 		return None
 

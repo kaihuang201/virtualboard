@@ -1,3 +1,79 @@
+//==========
+//server to client protocol
+//==========
+
+{
+	"type" : "chat",
+	"data" : [
+		{
+			"user" : 1,
+			"time" : 802983477.643, //seconds since epoc
+			"msg" : "actual text here"
+		},
+		{
+			"user" : 2,
+			"time" : 802983477.648,
+			"msg" : "more actual text here"
+		}
+	]
+}
+
+//pinging the board at a position to notify other users
+//maybe we add different kinds of pings in the future (!, ?, X, etc)
+{
+	"type" : "beacon",
+	"data" : [
+		{
+			"user" : 1,
+			"pos" : [
+				54.352,
+				65.454
+			]
+		}
+	]
+}
+
+{
+	"type" : "pieceTransform",
+
+	//alternatively, the following shorthand is acceptable
+	"type" : "pt",
+
+	//optionally, a user may be specified at this top level which would then be used for all following pieces
+	//	the functions handling the socket api should propogate this field to all entries in the data array
+	//	before passing the json data on to other functions
+	//	(not implemented yet)
+	"u" : 4,
+
+	"data" : [
+		{
+			"piece" : 3,
+			"user" : 4,
+
+			//alternatively to the two parameters above, the following can be used instead
+			//	the functions handling the socket api should immediately convert to the expanded version
+			//	before passing the json data on to other functions
+			"p" : 3,
+			"u" : 4
+
+			//optional parameters
+			"icon" : "/res/img.png",
+			"color" : [
+				255,
+				255,
+				255
+			],
+			"pos" : [
+				6.98721345,
+				90.6532
+			],
+			"r" : 0.45656,
+			"s" : 1.0,
+			"static" : 0
+		}
+	]
+}
+
 {
 	"type" : "pieceAdd",
 	"data" : [
@@ -42,6 +118,228 @@
 				//this parameter is optional and defaults to 1
 				"count" : 52
 			}
+		}
+	]
+}
+
+{
+	"type" : "pieceRemove",
+	"data" : [
+		{
+			"piece" : 6,
+			"user" : 4
+		}
+	]
+}
+
+{
+	"type" : "setBackground",
+	"data" : {
+		"user" : 2,
+		"icon" : "/res/img/background.png"
+	}
+}
+
+{
+	"type" : "clearBoard"
+}
+
+{
+	"type" : "userConnect",
+	"data" : [
+		{
+			"user" : 5,
+			"name" : "phil",
+			"color" : [
+				255,
+				0,
+				0
+			]
+		}
+	]
+}
+
+{
+	"type" : "userDisconnect",
+	"data" : [
+		{
+			"user" : 5,
+			"msg" : "lost connection"
+		}
+	]
+}
+
+{
+	"type" : "changeColor",
+	"data" : [
+		{
+			"user" : 5,
+			"color" : [
+				0,
+				255,
+				0
+			]
+		}
+	]
+}
+
+//this one doesn't use array format since only last one matters
+{
+	"type" : "changeHost",
+	"data" : {
+		"user" : 2,
+		"msg" : "previous host disconnected"
+	}
+}
+
+{
+	"type" : "announcement",
+	"data" : [
+		{
+			"msg" : "words go here"
+		}
+	]
+}
+
+{
+	"type" : "listClients",
+	"data" : [
+		{
+			"user" : 0,
+			"name" : "sam",
+			"host" : 1,
+			"local" : 0,
+			"color" : [
+				255,
+				0,
+				0
+			]
+		},
+		{
+			"user" : 3,
+			"name": "fred",
+			"host" : 0,
+			"local" : 1,
+			"color" : [
+				255,
+				0,
+				255
+			]
+		}
+	]
+}
+
+//Special objet control
+
+{
+	"type" : "rollDice",
+	"data" : [
+		{
+			"user" : 2,
+			//piece id refers to a piece that is hopefully a dice type
+			"piece" : 12,
+
+			//when rolled, sets the "icon" field to diceData[faces][value - diceData[min]] unless value is out of bounds
+			"result" : 6
+		}
+	]
+}
+
+//decks can also be flippsed
+{
+	"type" : "flipCard",
+	"data" : [
+		{
+			"user" : 2,
+			"piece" : 5,
+			"icon" : "/static/img/card/spades/7_of_spaces.png"
+		}
+	]
+}
+
+//this will be accompanied by a pieceAdd/pieceRemove command usually to create/delete the single card
+//maybe this should include an optional icon parameter if the icon of the deck also changes
+{
+	"type" : "changeDeckCount",
+	"data" : [
+		{
+			"user" : 2,
+
+			//piece id of deck
+			"piece" : 7,
+			"count" : 51
+		}
+	]
+}
+
+{
+	"type" : "shuffleDeck",
+	"data" : [
+		{
+			"user" : 2,
+			"piece" : 7,
+
+			//the new icon on top of the deck as a result of the shuffle
+			"icon" : "/res/cardback.png"
+		}
+	]
+}
+
+//TODO: private zones
+{
+	"type" : "createPrivateZone",
+	"data" : [
+		{
+			"id" : 8,
+			"user" : 4,
+			"color" : [
+				255,
+				0,
+				0
+			],
+			"pos" : [
+				1.045,
+				-8.53
+			],
+			"size" : [
+				7,
+				2
+			],
+			"r" : 3.14159265
+		}
+	]
+}
+
+{
+	"removePrivateZone",
+	"data" : [
+		{
+			"user" : 2,
+			"id" : 3 //id of private zone
+		}
+	]
+}
+
+{
+	"type" : "drawScribble",
+	"data" : [
+		{
+			"user" : 4,
+			"ttl" : 10,
+			"points" : [
+				[
+					-6.573456,
+					1.54352
+				],
+				[
+					-6.4652,
+					1.462453
+				],
+				[
+					-6.4642,
+					1.41877
+				]
+			]
 		}
 	]
 }

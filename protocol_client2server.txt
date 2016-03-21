@@ -1,3 +1,65 @@
+
+//==========
+//client to server protocol
+//==========
+
+{
+	"type" : "chat",
+	"data" : [
+		{
+			"msg" : "actual text here"
+		}
+	]
+}
+
+{
+	"type" : "beacon",
+	"data" : [
+		{
+			"pos" : [	
+				54.5435,
+				0.534
+			]
+		}
+	]
+}
+
+//maybe we remove toggleStatic and just make it a field in pieceTransform?
+//additionally, we can make it so color changes are managed here
+{
+	"type" : "pieceTransform",
+
+	"data" :  [
+		{
+			"piece" : 3,
+
+			//alternatively to the piece parameter above, the following can be used instead
+			//	the functions handling the socket api should immediately convert to the expanded version
+			//	before passing the json data on to other functions
+			"p" : 3,
+
+			//optional parameters
+			"icon" : "/res/img.png",
+			"pos" : [
+				6.98721345,
+				90.6532
+			],
+			"r" : 0.45656,
+			"s" : 1.0,
+			"color" : [
+				0,
+				0,
+				0
+			],
+			"static" : 1
+		}
+	]
+}
+
+//TODO: piece pickup/drop?
+//alternatively we can just have clients infer pickup/drop based on piece movement
+//and have some timeout for the highlight to go away
+
 {
 	"type" : "pieceAdd",
 	"data" : [
@@ -41,7 +103,6 @@
 			"cardData" : {
 
 				//optional parameter that will be assumed to be 1 if absent
-				//if provided, it must be greater than zero
 				"count" : 2,
 
 				//if count is greater than len(cards), default cards will be used
@@ -64,4 +125,304 @@
 			}
 		}
 	]
+}
+
+{
+	"type" : "pieceRemove",
+	"data" : [
+		{
+			"piece" : 6,
+		}
+	]
+}
+
+//maybe this should be host only
+{
+	"type" : "setBackground",
+	"data" : {
+		"icon" : "/res/img/background.png"
+	}
+}
+
+{
+	"type" : "disconnect",
+	"data" : {
+		"msg" : "brb food"
+	}
+}
+
+{
+	"type" : "listClients"
+}
+
+{
+	"type" : "changeColor",
+	"data" : {
+		"color" : [
+			0,
+			255,
+			0
+		]
+	}
+}
+
+//special objects
+
+{
+	"type" : "rollDice",
+	"data" : [
+		{
+			//piece id refers to a piece that is hopefully a dice type
+			"piece" : 12,
+		}
+	]
+}
+
+//this command works on cards/decks
+{
+	"type" : "flipCard",
+	"data" : [
+		{
+			"piece" : 5
+		}
+	]
+}
+
+//moves a card piece from the board into a deck
+{
+	"type" : "addCardToDeck",
+	"data" : [
+		{
+			//piece id of receiving deck
+			"deck" : 7,
+
+			//piece id of moved card/deck
+			"card" : 3
+		}
+	]
+}
+
+//typically, removing a card is then followed up immediately by the following:
+// 1. A change
+// 2. A "pieceAdd" message from the server to actually spawn the card
+{
+	"type" : "drawCard",
+	"data" : [
+		{
+			//piece id of deck
+			"piece" : 7,
+
+			//optional parameter, specifies the rotation of the client's camera
+			//drawn piece will be spawned below the deck relative to the client if possible
+			//0 is to the right, going counter clockwise
+			"cameraRotation" : 3.14159
+		}
+	]
+}
+
+{
+	"type" : "shuffleDeck",
+	"data" : [
+		{
+			"piece" : 7
+		}
+	]
+}
+
+//TODO: private zones
+{
+	"type" : "createPrivateZone",
+	"data" : [
+		{
+			"color" : [
+				255,
+				0,
+				0
+			],
+			"pos" : [
+				1.045,
+				-8.53
+			],
+			"size" : [
+				7,
+				2
+			],
+			"r" : 3.14159265
+		}
+	]
+}
+
+{
+	"removePrivateZone",
+	"data" : [
+		{
+			"id" : 3 //id of private zone
+		}
+	]
+}
+
+//scribbles will not be saved by the server and exist only temporarily.
+//we can add support for having scribbles stay indefinitely (ttl of -1)
+//but if someone new joins they will not see previous scribbles
+{
+	"type" : "drawScribble",
+	"data" : [
+		{
+			"ttl" : 10,
+			"points" : [
+				//first index is x, second is y
+				//this seems better than { "x" : 5.364, "y" : 77.76}
+				[
+					-6.573456,
+					1.54352
+				],
+				[
+					-6.4652,
+					1.462453
+				],
+				[
+					-6.4642,
+					1.41877
+				]
+			]
+		}
+	]
+}
+
+//==========
+//host only client to server commands
+//==========
+//maybe these can be made into array formats for consistency with other protocols
+
+{
+	"type" : "changeHost",
+	"data" : {
+		"user" : 2,
+		"msg" : "he paid me $5 to make him host"
+	}
+}
+
+{
+	"type" : "announcement",
+	"data" : {
+		"msg" : "this is important"
+	}
+}
+
+{
+	"type" : "changeServerInfo",
+	"data" : {
+		"name" : "coolville 2",
+		"password" : "542512"
+	}
+}
+
+{
+	"type" : "kickUser",
+	"data" : {
+		"user" : 1,
+		"msg" : "stop scribbling everywhere"
+	}
+}
+
+{
+	"type" : "clearBoard"
+}
+
+{
+	"type" : "closeServer"
+}
+
+//this will add a set of pieces and private zones to the existing board state
+//host can clear the board first if desired
+{
+	"type" : "loadBoardState",
+	"data" : {
+		"background" : "/res/img/background.png",
+		"privateZones" : [
+			{
+				"pos" : [
+					5.426,
+					-7.234
+				],
+				"size" : [
+					2,
+					5
+				],
+				"r" : 0,
+				"color" : [
+					255,
+					0,
+					0
+				]
+			}
+		],
+		//Identical to data field from client to server addPiece command
+		"pieces" : [
+			{
+				"pos" : [
+					5.734,
+					3.64
+				],
+				"icon" : "static/img/crown.png",
+				"color" : [
+					255,
+					0,
+					0
+				],
+				"static" : 0,
+				"r" : 3.14159,
+				"s" : 1.0,
+
+				//optional parameter only preset if piece is a die
+				"diceData" : {
+					//sets the range of values for the die
+					//if there are not enough face icons provided, defaults will be used
+					//maximum value of faceCount is currently 24
+					//this should be changed to 100 for percentiles probably
+					"max" : 6,
+
+					//when rolled, sets the "icon" field to diceData[faces][value] unless value is out of bounds
+					//in that case, pick from default dice faces
+					"faces" : [
+						"/res/dice1.png",
+						"/res/dice2.png",
+						"/res/dice3.png",
+						"/res/dice4.png",
+						"/res/dice5.png",
+						"/res/dice6.png"
+					]
+				},
+
+				//optional parameter only present if piece is a deck
+				//the data["icon"] field is used as the default back icon
+				"cardData" : {
+
+					//optional parameter that will be assumed to be 1 if absent
+					"count" : 2,
+
+					//if count is greater than len(cards), default cards will be used
+					//cards are ordered from bottom to top
+					"cards" : [
+						{
+							//cards within a deck can be facing either way
+							"faceDown" : 1,
+
+							"icon" : "/static/img/queenhearts.png",
+
+							//optional parameter, piece.icon will be used instead if absent
+							"back" : "/static/img/cardback.png"
+						}, {
+							"faceDown" : 1,
+							"icon" : "/static/img/aceclubs.png",
+
+							//note that if a back icon is provided for the final card
+							//that icon will be seen instead of piece.icon (assuming last card is face down)
+							"back" : "/static/img/cardback.png"
+						}
+					]
+				}
+			}
+		]
+	}
 }

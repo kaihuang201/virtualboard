@@ -469,7 +469,12 @@ class Game:
 
 		for piece in pieces:
 			piece_id = piece["piece"]
-			response = self.board_state.draw_card(piece_id)
+
+			if "cameraRotation" in piece:
+				rotation = piece["cameraRotation"]
+			else:
+				rotation = None
+			response = self.board_state.draw_card(piece_id, rotation)
 
 			if response is not None:
 				data = response["new_piece"].get_json_obj()
@@ -496,17 +501,17 @@ class Game:
 		}
 
 		addpiece_response = {
-			"type" : "pieceRemove",
+			"type" : "pieceAdd",
 			"data" : piece_add_data
 		}
 
 		for deck_id, result in deck_results.iteritems():
-			deckcount_response.append({
+			deckcount_response["data"].append({
 				"user" : client.user_id,
 				"piece" : deck_id,
 				"count" : result["count"]
 			})
-			decktransform_response.append({
+			decktransform_response["data"].append({
 				"user" : client.user_id,
 				"piece" : deck_id,
 				"icon" : result["icon"]
@@ -514,7 +519,7 @@ class Game:
 
 		#TODO: don't generate decktransform responses when not needed
 		self.message_all(addpiece_response)
-		self.messge_all(deckcount_response)
+		self.message_all(deckcount_response)
 		self.message_all(decktransform_response)
 
 	def flipCard(self, client, pieces):
@@ -579,12 +584,12 @@ class Game:
 		}
 
 		for deck_id, result in deck_results.iteritems():
-			deckcount_response.append({
+			deckcount_response["data"].append({
 				"user" : client.user_id,
 				"piece" : deck_id,
 				"count" : result["count"]
 			})
-			decktransform_response.append({
+			decktransform_response["data"].append({
 				"user" : client.user_id,
 				"piece" : deck_id,
 				"icon" : result["icon"]

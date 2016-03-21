@@ -38,7 +38,7 @@ var VBoard = VBoard || {};
 			});
 
 			$("#addChessBoard").on("click", function () {
-				vb.sessionIO.loadChessGame();
+				vb.content.loadChessGame();
 			});
 
 			$("#quitGame").on("click", function () {
@@ -50,14 +50,7 @@ var VBoard = VBoard || {};
 
 
 			$("#addDeck").on("click", function () {
-				vb.sessionIO.createDeck([{
-					"pos" : [vb.camera.position.x, vb.camera.position.y],
-					"color" : [255, 255, 255],
-					"static" : 0,
-					"s" : 4,
-					"r" : vb.camera.rotation.z,
-					"icon" : "/static/img/card/cardback.png"
-				}]);
+				vb.content.createDefaultDeck();
 			});
 
 			//$("#penTool").on("click", function () {
@@ -128,75 +121,76 @@ var VBoard = VBoard || {};
 			$("#context-back").off("click");
 			$("#context-front").off("click");
 			$("#context-static").off("click");
-            $("#context-flip").off("click");
-            $("#context-roll").off("click");
-            $("#context-draw-card").off("click");
+			$("#context-flip").off("click");
+			$("#context-roll").off("click");
+			$("#context-draw-card").off("click");
+			$("#context-shuffle-deck").off("click");
 
-            //only show flip option if piece is a card
-            if (piece instanceof Card) {
-                $("#context-flip").show();
-            }
-            else {
-                $("#context-flip").hide();
-            }
+			//only show flip option if piece is a card
+			if (piece.isCard) {
+				$("#context-flip").show();
+				$("#context-draw-card").show();
 
-            //only show roll option if piece is a die
-            if (piece instanceof Die) {
-                $("#context-roll").show();
-            }
-            else {
-                $("#context-roll").hide();
-            }
+				if(piece.numCards > 1) {
+					$("#context-shuffle-deck").show();
+				} else {
+					$("#context-shuffle-deck").hide();
+				}
+			}
+			else {
+				$("#context-flip").hide();
+				$("#context-draw-card").hide();
+				$("#context-shuffle-deck").hide();
+			}
 
-            //only show draw card option in piece is a deck
-            if (piece instanceof Deck) {
-            	$("#context-draw-card").show();
-            }
-            else {
-            	$("#context-draw-card").hide();
-            }
+			//only show roll option if piece is a die
+			if (piece.isDie) {
+				$("#context-roll").show();
+			}
+			else {
+				$("#context-roll").hide();
+			}
 
 			//set new onclick function bindings
 			$("#context-delete").on("click", function(){
-				vb.board.remove(piece);
+				//vb.board.remove(piece);
+				vb.sessionIO.removePiece(piece.id);
 				$("#context-menu").css("visibility", "hidden");
 			});
 			$("#context-back").on("click", function(){
+				//note: this is not sent to other users
+				//this should probably be changed or removed
 				vb.board.pushToBack(piece);
 				$("#context-menu").css("visibility", "hidden");
 			});
 			$("#context-front").on("click", function(){
+				//note: this is not sent to other users
+				//this should probably be changed or removed
 				vb.board.bringToFront(piece);
 				$("#context-menu").css("visibility", "hidden");
 			});
 			$("#context-static").on("click" , function(){
-				vb.board.toggleStatic(piece);
+				//vb.board.toggleStatic(piece);
+				vb.sessionIO.toggleStatic(piece.id);
 				$("#context-menu").css("visibility", "hidden");
 			});
-            $("#context-flip").on("click" , function(){
-                if (piece instanceof Card) {
-                    vb.sessionIO.flipCard(piece.id);
-                }
-                $("#context-menu").css("visibility", "hidden");
-            });
-            $("#context-roll").on("click" , function(){
-                if (piece instanceof Die) {
-                    vb.sessionIO.rollDice(piece.id);
-                }
-                $("#context-menu").css("visibility", "hidden");
-            });
-            $("#context-draw-card").on("click" , function(){
-                if (piece instanceof Deck) {
-                    vb.sessionIO.drawCard(piece.id);
-                }
-                $("#context-menu").css("visibility", "hidden");
-            });
+			$("#context-flip").on("click" , function(){
+				vb.sessionIO.flipCard(piece.id);
+				$("#context-menu").css("visibility", "hidden");
+			});
+			$("#context-roll").on("click" , function(){
+				vb.sessionIO.rollDice(piece.id);
+				$("#context-menu").css("visibility", "hidden");
+			});
+			$("#context-draw-card").on("click" , function(){
+				  vb.sessionIO.drawCard(piece.id);
+				$("#context-menu").css("visibility", "hidden");
+			});
+			$("#context-shuffle-deck").on("click" , function(){
+				vb.sessionIO.shuffleDeck(piece.id);
+				$("#context-menu").css("visibility", "hidden");
+			});
 		}
 	};
 
 })(VBoard);
-
-
-$(document).ready(function () {
-	VBoard.menu.init();
-});

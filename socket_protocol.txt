@@ -1,4 +1,4 @@
-"/../img/die_face/small_die_face_1.png"//initialization
+//initialization
 
 //==========
 //client to server (pre-game)
@@ -496,6 +496,7 @@
 //}
 
 //this will be accompanied by a pieceAdd/pieceRemove command usually to create/delete the single card
+//maybe this should include an optional icon parameter if the icon of the deck also changes
 {
 	"type" : "changeDeckCount",
 	"data" : [
@@ -516,8 +517,6 @@
 			"user" : 2,
 			"piece" : 7,
 
-			//the new icon on top of the deck as a result of the shuffle
-			//the new icon on top of the deck as a result of the shuffle
 			//the new icon on top of the deck as a result of the shuffle
 			"icon" : "/res/cardback.png"
 		}
@@ -867,7 +866,12 @@
 	"data" : [
 		{
 			//piece id of deck
-			"piece" : 7
+			"piece" : 7,
+
+			//optional parameter, specifies the rotation of the client's camera
+			//drawn piece will be spawned below the deck relative to the client if possible
+			//0 is to the right, going counter clockwise
+			"cameraRotation" : 3.14159
 		}
 	]
 }

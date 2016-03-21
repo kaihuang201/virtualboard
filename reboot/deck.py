@@ -63,7 +63,7 @@ class Deck:
 		self.flipped = False
 		self.cards = collections.deque()
 
-		if count in cardData:
+		if "count" in cardData:
 			count = cardData["count"]
 		else:
 			count = 1
@@ -76,7 +76,6 @@ class Deck:
 					"icon" : card_entry["icon"],
 					"face_down" : card_entry["faceDown"] == 1
 				}
-				card = cardData[i]
 
 				if "back" in card_entry:
 					card["back"] = card_entry["back"]
@@ -94,13 +93,16 @@ class Deck:
 				}
 				self.cards.append(card)
 
+		if "shuffle" in cardData and cardData["shuffle"] == 1:
+			self.shuffle()
+
 	def get_icon(self):
 		if self.flipped:
-			piece = self.pieces[0]
+			piece = self.cards[0]
 		else:
-			peice = self.pieces[-1]
+			piece = self.cards[-1]
 
-		if piece["face_down"]:
+		if piece["face_down"] != self.flipped:
 			return piece["back"]
 		return piece["icon"]
 
@@ -111,12 +113,13 @@ class Deck:
 		self.flipped = not self.flipped
 
 	def draw(self):
-		if self.flipped:
-			card = self.popleft()
-			card["face_down"] = not card["face_down"]
-			return card
-		else:
-			return self.pop()
+		if len(self.cards) > 1:
+			if self.flipped:
+				card = self.cards.popleft()
+				card["face_down"] = not card["face_down"]
+				return card
+			return self.cards.pop()
+		return None
 
 	#front - string
 	#back - string
