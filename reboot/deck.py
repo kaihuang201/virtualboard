@@ -2,6 +2,9 @@ import collections
 import random
 
 class Deck:
+	#Uses a double ended queue for constant time flip operations
+	#in theory it may be possible for combining two decks to be done in constant time
+	#but that requires effort
 
 	#class variable
 	defaults = [

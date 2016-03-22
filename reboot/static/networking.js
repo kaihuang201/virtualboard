@@ -83,7 +83,6 @@ var VBoard = VBoard || {};
 					var boardData = data["data"]["board"];
 					vb.board.loadBoardData(boardData);
 
-					
 					break;
 				case "initFailure":
 					if (($("#template-modal").data('bs.modal') || {}).isShown) {
@@ -201,9 +200,9 @@ var VBoard = VBoard || {};
 				//default values
 				var pieceData = {
 					"icon" : "/static/img/crown.png",
-					"pos" : [0, 0],
+					"pos" : [vb.camera.position.x, vb.camera.position.y],
 					"color" : [255, 255, 255],
-					"r" : 0,
+					"r" : Math.atan2(vb.camera.upVector.y, vb.camera.upVector.x) - Math.PI/2,
 					"s" : 1,
 					"static" : 0
 				};
@@ -777,13 +776,16 @@ var VBoard = VBoard || {};
 
 					for (var i = 0; i < dice.length; i++) {
 						var die = dice[i];
+						vb.board.rollDiePiece(die);
 
 						//TODO: this logic should be moved out of networking
-						var id = die["piece"];
-						var value = die["result"];
+						//var id = die["piece"];
+						//var value = die["result"];
 
-						var piece = vb.board.pieceHash[id];
-						piece.roll(value);
+						//var user = vb.users.userList[die["user"]];
+						//var piece = vb.board.pieceHash[id];
+						//vb.board.highlightPiece(piece, user.color, vb.addHighlightDuration);
+						//piece.roll(value);
 					}
 					break;
 				case "flipCard":
@@ -791,13 +793,16 @@ var VBoard = VBoard || {};
 
 					for (var i = 0; i < cards.length; i++) {
 						var card = cards[i];
+						vb.board.flipCardPiece(card);
 
 						//TODO: this logic should be moved out of networking
-						var id = card["piece"];
-						var frontIcon = card["icon"];
+						//var id = card["piece"];
+						//var frontIcon = card["icon"];
 
-						var piece = vb.board.pieceHash[id];
-						piece.flip(frontIcon);
+						//var user = vb.users.userList[card["user"]];
+						//var piece = vb.board.pieceHash[id];
+						//vb.board.highlightPiece(piece, user.color, vb.addHighlightDuration);
+						//piece.flip(frontIcon);
 					}
 					break;
 				case "changeDeckCount":

@@ -28,6 +28,7 @@
 		<script src="/static/networking.js"></script>
 		<script src="/static/users.js"></script>
 		<script src="/static/content.js"></script>
+		<script src="/static/selection.js"></script>
 	</head>
 	<body unselectable="on" onselectstart="return false;">
 
@@ -78,10 +79,11 @@
 				<div id="context-flip" class="context-item">Flip</div>
 				<div id="context-roll" class="context-item">Roll</div>
 				<div id="context-draw-card" class="context-item">Draw Card</div>
+				<div id="context-shuffle-deck" class="context-item">Shuffle Deck</div>
 			</div>
 
 
-			<canvas id="canvas">
+			<canvas id="canvas" oncontextmenu="javascript:VBoard.inputs.onRightClick();return false;">
 				If you can see this, your browser may not support HTML 5
 			</canvas>
 

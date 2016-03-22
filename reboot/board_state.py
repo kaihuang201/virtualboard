@@ -1,5 +1,4 @@
 import random
-import copy
 import math
 
 from deck import *
@@ -220,6 +219,7 @@ class BoardState:
 		return None
 
 	#returns an object {new_piece, count, icon} on success, None otherwise
+	#icon will be None if it does not change
 	def draw_card(self, piece_id, rotation):
 		if piece_id in self.piecemap:
 			index = self.piecemap[piece_id]
@@ -229,7 +229,11 @@ class BoardState:
 				data = piece.cardData.draw()
 
 				if data is not None:
-					piece.icon = piece.cardData.get_icon()
+					icon_changed = False
+
+					if piece.icon != piece.cardData.get_icon():
+						piece.icon = piece.cardData.get_icon()
+						icon_changed = True
 
 					pos = list(piece.pos)
 
@@ -258,7 +262,7 @@ class BoardState:
 					})
 					return {
 						"new_piece" : new_piece,
-						"icon" : piece.icon,
+						"icon" : piece.icon if icon_changed else None,
 						"count" : piece.cardData.get_size()
 					}
 		return None

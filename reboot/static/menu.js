@@ -69,12 +69,8 @@ var VBoard = VBoard || {};
 				//vb.board.generateNewPiece(selectedName, user, pos);
 				var mapEntry = vb.board.pieceNameMap[selectedName];
 				var data = {
-					"pos" : [vb.camera.position.x, vb.camera.position.y],
 					"icon" : mapEntry.icon,
-					"color" : [255, 255, 255],
-					"static" : 0,
-					"s" : mapEntry.size,
-					"r" : vb.camera.rotation.z
+					"s" : mapEntry.size
 				};
 				vb.sessionIO.addPiece(data);
 				$("#add-piece-modal").modal("toggle");
@@ -88,13 +84,19 @@ var VBoard = VBoard || {};
 
 				//TODO: replace with actual method
 				//vb.board.generateNewPiece(selectedName, user, pos);
+				var icon = "/static/img/die_face/small_die_face_1.png";
+
+				if(selectedMax > 6) {
+					icon = "/static/img/die_face/big_die_face_1.png";
+				}
+
 				var data = {
-					"pos" : [vb.camera.position.x, vb.camera.position.y],
-					"max_roll" : selectedMax,
-					"color" : [255, 255, 255],
-					"static" : 0,
-					"s" : 2,
-					"r" : vb.camera.rotation.z
+					"icon" : icon,
+					"diceData" : {
+						"max" : selectedMax,
+						"faces" : []
+					},
+					"s" : 2
 				};
 				vb.sessionIO.addPiece(data);
 				$("#add-die-modal").modal("toggle");
@@ -129,12 +131,13 @@ var VBoard = VBoard || {};
 			//only show flip option if piece is a card
 			if (piece.isCard) {
 				$("#context-flip").show();
-				$("#context-draw-card").show();
 
 				if(piece.numCards > 1) {
 					$("#context-shuffle-deck").show();
+					$("#context-draw-card").show();
 				} else {
 					$("#context-shuffle-deck").hide();
+					$("#context-draw-card").hide();
 				}
 			}
 			else {

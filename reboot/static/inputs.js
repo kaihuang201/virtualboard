@@ -36,11 +36,12 @@ var VBoard = VBoard || {};
 			});
 
 			window.addEventListener("mouseup", function (evt) {
-				vb.board.removeSelectedPieces();
+				vb.selection.removePieces();
 			});
 
 			window.addEventListener("mousemove", function (evt) {
-				if(vb.board.selectedPieces.length > 0) {
+				//TODO: needs rework
+				if(vb.selection.pieces.length > 0) {
 					var mousePos = vb.board.screenToGameSpace(new BABYLON.Vector2(vb.scene.pointerX, vb.scene.pointerY));
 					vb.inputs.onDrag(mousePos.x - vb.lastDragX, mousePos.y - vb.lastDragY);
 					vb.lastDragX = mousePos.x;
@@ -98,57 +99,12 @@ var VBoard = VBoard || {};
 
 		//we should use the data from the mouse event rather than scene.pointer
 		onDrag: function (dx, dy) {
-			var ids = [];
-			var xs = [];
-			var ys = [];
+			vb.selection.drag(dx, dy);
+		},
 
-			for(var index = 0; index < vb.board.selectedPieces.length; index++) {
-				var piece = vb.board.selectedPieces[index];
-				clearTimeout(piece.predictTimeout);
-
-				//we should use a difference in mouse position instead of having the piece's center snap to the mouse
-				//if a corner is clicked and dragged, then the mouse should stay relative to that corner
-				//var newPos = this.screenToGameSpace(new BABYLON.Vector2(vb.scene.pointerX, vb.scene.pointerY));
-
-				//static pieces should simply not beadded to selectedPieces in the first place
-				var newX = piece.mesh.position.x + dx;
-				var newY = piece.mesh.position.y + dy;
-
-				if(newX > vb.boardWidth) {
-					newX = vb.boardWidth;
-				}
-
-				if(newX < -vb.boardWidth) {
-					newX = -vb.boardWidth;
-				}
-
-				if(newY > vb.boardHeight) {
-					newY = vb.boardHeight;
-				}
-
-				if(newY < -vb.boardHeight) {
-					newY = -vb.boardHeight;
-				}
-
-				piece.mesh.position.x = newX;
-				piece.mesh.position.y = newY;
-
-				//todo: send one update for all pieces rather than call this for each selected piece
-				//vb.sessionIO.movePiece(piece.id, newX, newY);
-				ids.push(piece.id);
-				xs.push(newX);
-				ys.push(newY);
-
-				piece.predictTimeout = setTimeout(function () {
-					vb.board.undoPrediction(piece);
-					piece.predictTimeout = null;
-				}, vb.predictionTimeout);
-				//todo: set timeout
-				//more TODO: keep track of where piece is released
-				//then override the local ignore when that final position arrives
-				//this fixes a race condition where 2 users move the same piece at the same time
-			}
-			vb.sessionIO.movePiece(ids, xs, ys);
+		onRightClick: function () {
+			mesh = vb.scene.pick(vb.scene.pointerX, vb.scene.pointerY);
+			vb.menu.createContextMenu(mesh.piece);
 		},
 
 		processInputs: function (elapsed) {
@@ -190,7 +146,12 @@ var VBoard = VBoard || {};
 						var upY = up.x*Math.sin(elapsed/inertia) + up.y * Math.cos(elapsed/inertia);
 						vb.camera.upVector = new BABYLON.Vector3(upX, upY, 0);
 						break;
+					case 70: //f
+						break;
+					case 46: //delete
+						break;
 					case 8: //backspace
+					case 32: //spacebar
 						//resets the camera to default
 						//or at least it would in theory if backspace didn't also go back a page
 						vb.camera.position.x = 0;

@@ -103,6 +103,7 @@
 			"cardData" : {
 
 				//optional parameter that will be assumed to be 1 if absent
+				//if provided, it must be greater than zero
 				"count" : 2,
 
 				//if count is greater than len(cards), default cards will be used

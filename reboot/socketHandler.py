@@ -13,6 +13,7 @@ class WebSocketGameHandler(tornado.websocket.WebSocketHandler):
 
 	def on_message(self, message):
 		print(message)
+		message_length = len(message)
 
 		try:
 			data = json.loads(message);

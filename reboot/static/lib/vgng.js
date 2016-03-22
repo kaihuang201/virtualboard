@@ -18,7 +18,7 @@ $.get('/static/lib/video_game_names.txt', function(data) {
 var word_list = new Array(3);
 
 function build_list(big_list) {
-  var words = big_list.split("\n");
+  var words = big_list.split(/\r?\n/i);
   window.word_list[0] = []
   var word_list_index = 0;
   for (var word in words) {

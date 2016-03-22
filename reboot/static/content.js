@@ -91,7 +91,7 @@ var VBoard = VBoard || {};
 				"pos" : [vb.camera.position.x, vb.camera.position.y],
 				"icon" : "/static/img/card/cardback.png",
 				"s" : 4,
-				"r" : Math.atan2(vb.camera.upVector.y, vb.camera.upVector.x),
+				"r" : Math.atan2(vb.camera.upVector.y, vb.camera.upVector.x) - Math.PI/2,
 				"cardData" : {
 					"count" : 52,
 					"shuffle" : 1,

@@ -17,7 +17,14 @@ var VBoard = VBoard || {};
 		cardNameMap: {},
 		dieNameMap: {},
 
-		selectedPieces: [],
+		//key - a texture url that has been reqested
+		//value - a set of piece objects waiting on this texture
+		pendingTextures: {},
+
+		//a map from texture urls to texture objects
+		//fully loaded textures only
+		textureMap: {},
+		unknownTexture: null,
 
 		background: "",
 
@@ -111,14 +118,13 @@ var VBoard = VBoard || {};
 			this.highlightPiece(piece, user.color, vb.moveHighlightDuration);
 
 			if(pieceData.hasOwnProperty("icon")) {
-				var material = new BABYLON.StandardMaterial("std", vb.scene);
-				material.diffuseTexture = new BABYLON.Texture(pieceData["icon"], vb.scene);
-				material.diffuseTexture.hasAlpha = true;
-				piece.mesh.material = material;
+				this.setIcon(piece, pieceData["icon"]);
 			}
 
 			if(pieceData.hasOwnProperty("color")) {
-				piece.mesh.material.diffuseColor = new BABYLON.Color3(pieceData["color"][0], pieceData["color"][1], pieceData["color"][2]);
+				var c = pieceData["color"];
+				piece.color = new BABYLON.Color3(c[0]/255, c[1]/255, c[2]/255);
+				piece.mesh.material.diffuseColor = piece.color;
 			}
 
 			if(pieceData.hasOwnProperty("pos")) {
@@ -134,8 +140,6 @@ var VBoard = VBoard || {};
 					//if we have no expectation for this piece's position
 					//then we should update the mesh's position immediately, regardless of who moved it
 
-					//piece.mesh.position.x = pieceData["pos"][0];
-					//piece.mesh.position.y = pieceData["pos"][1];
 					this.smoothTransition(piece); //, pieceData["pos"][0], pieceData["pos"][1]);
 				} else {
 					clearTimeout(piece.predictTimeout);
@@ -169,12 +173,12 @@ var VBoard = VBoard || {};
 			}
 
 			if(pieceData.hasOwnProperty("r")) {
-				piece.mesh.rotation.z = pieceData.r;
+				piece.mesh.rotation.z = pieceData["r"];
 			}
 
 			if(pieceData.hasOwnProperty("s")) {
-				piece.mesh.scaling.x = pieceData.s;
-				piece.mesh.scaling.y = pieceData.s;
+				piece.mesh.scaling.y = pieceData["s"];
+				piece.adjustWidth();
 			}
 
 			if(pieceData.hasOwnProperty("static")) {
@@ -235,24 +239,18 @@ var VBoard = VBoard || {};
 
 		//{ constructors for various piece types
 		//Either we should get rid of these or change a lot of code to align with this design scheme
-
+/*
 		Piece : (function () {
 			function Piece(pieceData) {
 				var me = this;
 
-				//TODO: create a mapping from icons to materials/textures as they are created instead of making new ones each time
-				var material = new BABYLON.StandardMaterial("std", vb.scene);
-				icon = pieceData.icon;
-				size = pieceData.s;
+				this.size = pieceData.s;
+				this.color = new BABYLON.Color3(pieceData.color[0], pieceData.color[1], pieceData.color[2]);
 
-				material.diffuseTexture = new BABYLON.Texture(icon, vb.scene);
-				material.diffuseColor = new BABYLON.Color3(pieceData.color[0], pieceData.color[1], pieceData.color[2]);
-				material.diffuseTexture.hasAlpha = true;
-
-				var plane = BABYLON.Mesh.CreatePlane("plane", size, vb.scene);
-				plane.material = material;
+				var plane = BABYLON.Mesh.CreatePlane("plane", this.size, vb.scene);
 				plane.position = new BABYLON.Vector3(pieceData.pos[0], pieceData.pos[1], 0);
 				plane.rotation.z = pieceData.r;
+				plane.piece = this;
 
 				//position - last server confirmed position		
 				//targetPosition - the same as position except for when the local user is moving the piece		
@@ -261,13 +259,12 @@ var VBoard = VBoard || {};
 				this.id = pieceData.piece;
 				this.position = new BABYLON.Vector2(pieceData.pos[0], pieceData.pos[1]);
 				this.mesh = plane;
-				this.icon = icon;
 				this.static = pieceData.static == 1;
-				this.size = pieceData.s;
 				this.highlightTimeout = null;
 				this.predictTimeout = null;
 				this.isCard = false;
 				this.isDie = false;
+				this.setIcon(pieceData.icon);
 
 				plane.actionManager = new BABYLON.ActionManager(vb.scene);
 
@@ -278,7 +275,7 @@ var VBoard = VBoard || {};
 				plane.actionManager.registerAction(
 					new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnLeftPickTrigger, function (evt) {
 					if(me.static == false) {
-						vb.board.setSelectedPieces([me]);
+						vb.selection.setPieces([me]);
 
 						var pos = vb.board.screenToGameSpace(new BABYLON.Vector2(vb.scene.pointerX, vb.scene.pointerY));
 						vb.lastDragX = pos.x;
@@ -291,13 +288,31 @@ var VBoard = VBoard || {};
 					}
 				}));
 			}
+
+			Piece.prototype.setIcon = function (icon) {
+				this.icon = icon;
+
+				//TODO: create a mapping from icons to materials/textures as they are created instead of making new ones each time
+				var material = new BABYLON.StandardMaterial("std", vb.scene);
+				material.diffuseTexture = new BABYLON.Texture(icon, vb.scene);
+				material.diffuseColor = this.color;
+				material.diffuseTexture.hasAlpha = true;
+				this.mesh.material = material;
+				this.adjustWidth();
+			};
+
+			Piece.prototype.adjustWidth = function () {
+				var t = this.mesh.material.diffusetexture._texture;
+				this.mesh.scaling.y = this.mesh.scaling.x * t._baseWidth / t._baseHeight;
+			}
 			return Piece;
 		})(),
 
 		Card: (function () {
 			function Card(pieceData) {
-				this.base = vb.board.Piece;
-				this.base(pieceData);
+				//this.base = vb.board.Piece;
+				//this.base(pieceData);
+				this.prototype = new vb.board.Piece(pieceData);
 				this.isCard = true;
 
 				if(pieceData["cardData"].hasOwnProperty("count")) {
@@ -315,21 +330,22 @@ var VBoard = VBoard || {};
 				material.diffuseTexture.hasAlpha = true;
 
 				this.mesh.material = material;
-			}
+			};
 
 			Card.prototype.updateCount = function(newCount) {
 				//TODO: remove text when only one is remaining
 				//TODO: figure out how to overlay text on actual background
 				this.numCards = newCount;
 				//this.mesh.material.diffuseTexture.drawText(this.numCards, null, 50 * this.size, "bold 128px Arial", "rgba(255,255,255,1.0)", "black");
-			}
+			};
 			return Card;
 		})(),
 
 		Die: (function () {
 			function Die(pieceData) {
-				this.base = Piece;
-				this.base(pieceData);
+				//this.base = Piece;
+				//this.base(pieceData);
+				this.prototype = vb.board.Piece(pieceData);
 				this.isDie = true;
 
 				this.max = pieceData["diceData"]["max"];
@@ -341,6 +357,7 @@ var VBoard = VBoard || {};
 
 				self.faces = pieceData["diceData"]["faces"]
 			}
+			Die.prototype = new vb.board.Piece()
 
 			//TODO: the only reason to have a roll function separate from pieeTransform is to have an animation
 			Die.prototype.roll = function(value) {
@@ -359,59 +376,87 @@ var VBoard = VBoard || {};
 			}
 			return Die;
 		})(),
-
+*/
 		//} //end constructors
 
 		//takes JSON formatted data from socket handler
 		generateNewPiece: function (pieceData) {
-			var piece;
+			var piece = {};
 
-			if(pieceData.hasOwnProperty("cardData")){
-				piece = new this.Card(pieceData);
-			} else if(pieceData.hasOwnProperty("diceData")) {
-				piece = new this.Die(pieceData);
-			} else {
-				piece = new this.Piece(pieceData);
+			piece.size = pieceData["s"];
+			var c = pieceData["color"];
+			piece.color = new BABYLON.Color3(c[0]/255, c[1]/255, c[2]/255);
+
+			var plane = BABYLON.Mesh.CreatePlane("plane", piece.size, vb.scene);
+			var material = new BABYLON.StandardMaterial("std", vb.scene);
+			plane.position = new BABYLON.Vector3(pieceData["pos"][0], pieceData["pos"][1], 0);
+			plane.rotation.z = pieceData["r"];
+			plane.piece = piece;
+			plane.material = material;
+
+			//position - last server confirmed position		
+			//targetPosition - the same as position except for when the local user is moving the piece		
+			//					specifically, targetPosition is where the piece will end up after transition smoothing		
+			//mesh.position - where the piece is being rendered
+			piece.id = pieceData["piece"];
+			piece.position = new BABYLON.Vector2(pieceData["pos"][0], pieceData["pos"][1]);
+			piece.mesh = plane;
+			piece.static = pieceData["static"] == 1;
+			piece.highlightTimeout = null;
+			piece.predictTimeout = null;
+			piece.isCard = false;
+			piece.isDie = false;
+			this.setIcon(piece, pieceData["icon"]);
+
+			if(pieceData.hasOwnProperty("cardData")) {
+				piece.isCard = true;
+
+				if(pieceData["cardData"].hasOwnProperty("count")) {
+					vb.board.setCardCount(piece, pieceData["cardData"]["count"]);
+				} else {
+					vb.board.setCardCount(piece, 1);
+				}
 			}
+
+			if(pieceData.hasOwnProperty("diceData")) {
+				piece.isDie = true;
+				piece.max = pieceData["diceData"]["max"];
+				self.faces = pieceData["diceData"]["faces"];
+			}
+
+			plane.actionManager = new BABYLON.ActionManager(vb.scene);
+
+			//TODO: instead of attaching a code action to each piece
+			//		we should just have a scene.pick trigger in a global event listener
+			//		We also should be able to right click anywhere to bring up a menu
+			//		that lets us add a piece at that location.
+
+			//TODO: do not register if static, make a register/unregister block in transformPiece
+			plane.actionManager.registerAction(
+				new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnLeftPickTrigger, function (evt) {
+
+					if(piece.static == false) {
+						vb.selection.setPieces([piece]);
+
+						var pos = vb.board.screenToGameSpace(new BABYLON.Vector2(vb.scene.pointerX, vb.scene.pointerY));
+						vb.lastDragX = pos.x;
+						vb.lastDragY = pos.y;
+					}
+
+					//check that the shift key was pressed for the context menu
+					if(vb.inputs.keysPressed.indexOf(16) >= 0) {
+						vb.menu.createContextMenu(piece);
+					}
+				})
+			);
 
 			this.add(piece);
 
 			if(pieceData.hasOwnProperty("user")) {
-				var user = vb.users.userList[pieceData.user];
+				var user = vb.users.userList[pieceData["user"]];
 				this.highlightPiece(piece, user.color, vb.addHighlightDuration);
 			}
 			return piece;
-		},
-
-		removeSelectedPieces: function () {
-			if(this.selectedPieces.length > 0) {
-				//for(index in this.selectedPieces) {
-					//this.selectedPieces[index].pickedUp = false;
-					//this.selectedPieces[index].user = vb.users.getNone();
-
-					//todo: disable the highlight
-				// }
-				this.selectedPieces = [];
-			}
-		},
-
-		//pieces should be in order from bottom element to top element
-		//that way the order won't get jumbled as the pieces move
-		setSelectedPieces: function (pieces) {
-			//maybe this should be called first?
-			this.removeSelectedPieces();
-
-			this.selectedPieces = pieces;
-			//piece.pickedUp = true;
-			//piece.user = vb.users.getLocal();
-			//todo: enable the highlight
-		},
-
-		//pieces in this.selectedPieces should be ordered based on depth
-		//we cannot simply insert this piece at the end of the array
-		addSelectedPiece: function (piece) {
-			//TODO
-			//needs to make sure that piece is not already contained in this.selectedPieces
 		},
 
 		undoPrediction: function (piece) {
@@ -485,18 +530,57 @@ var VBoard = VBoard || {};
 			//TODO: private zones
 		},
 
-		//special pieces
-		changeDeckCount: function (deckData) {
-			var userID = deckData["user"];
-			var deckID = deckData["piece"];
-			var count = deckData["count"];
+		//TODO: maybe a toggle for auto resizing
+		setIcon: function (piece, icon) {
+			//THEPIECE = piece;
+			//console.debug(piece);
+			if(this.pendingTextures.hasOwnProperty(piece.icon)) {
+				delete this.pendingTextures[piece.icon][piece.id];
+			}
+			piece.icon = icon;
 
-			var deck = this.pieceHash[deckID];
-			var user = vb.users.userList[userID];
+			if(this.textureMap.hasOwnProperty(icon)) {
+				piece.mesh.material.diffuseTexture = this.textureMap[icon];
+				vb.board.adjustPieceWidth(piece);
+			} else {
+				if(!this.pendingTextures.hasOwnProperty(icon)) {
+					this.pendingTextures[icon] = {};
 
-			this.highlightPiece(deck, user.color, vb.moveHighlightDuration);
-			deck.updateCount(count);
+					var texture = new BABYLON.Texture(icon, vb.scene, void(0), void(0), void(0), function () {
+						vb.board.textureMap[icon] = texture;
+						texture.hasAlpha = true;
+
+						for(var piece_id in vb.board.pendingTextures[icon]) {
+							if(vb.board.pendingTextures[icon].hasOwnProperty(piece_id)) {
+								//piece may have been removed in the meantime
+								if(vb.board.pieceHash.hasOwnProperty(piece_id)) {
+									var p = vb.board.pieceHash[piece_id];
+									p.mesh.material.diffuseTexture = texture;
+									vb.board.adjustPieceWidth(p);
+								}
+							}
+						}
+						delete vb.board.pendingTextures[icon];
+					});
+				}
+				this.pendingTextures[icon][piece.id] = true;
+
+				if(this.unknownTexture === null) {
+					this.unknownTexture = new BABYLON.Texture("/static/img/unknown.png", vb.scene);
+					this.unknownTexture.hasAlpha = true;
+				}
+				piece.mesh.material.diffuseTexture = this.unknownTexture;
+			}
 		},
+
+		adjustPieceWidth: function (piece) {
+			var t = piece.mesh.material.diffuseTexture._texture;
+			//for some bizzare reason, not using the intermediate ratio variable makes this not work
+			ratio = piece.mesh.scaling.y * t._baseWidth / t._baseHeight;
+			piece.mesh.scaling.x = ratio;
+		},
+
+		//special pieces
 
 		shuffleDeck: function (deckData) {
 			var userID = deckData["user"];
@@ -506,11 +590,78 @@ var VBoard = VBoard || {};
 			var user = vb.users.userList[userID];
 
 			this.highlightPiece(deck, user.color, vb.moveHighlightDuration);
+			this.setIcon(deck, deckData["icon"]);
+		},
 
-			var scene = vb.scene;
-			var material = new BABYLON.StandardMaterial("std", scene);
-			material.diffuseTexture.hasAlpha = true;
-			deck.mesh.material = material;
+		//TODO: the naming doesn't make a ton of sense here, needs some updating
+		//I did it this way to reflect how remove/removePiece was done
+		rollDiePiece: function (pieceData) {
+			var id = pieceData["piece"];
+			var value = pieceData["result"];
+
+			var user = vb.users.userList[pieceData["user"]];
+			var piece = vb.board.pieceHash[id];
+			this.highlightPiece(piece, user.color, vb.addHighlightDuration);
+			this.rollDice(piece, value);
+		},
+
+		//TODO: the only reason to have a roll function separate from pieceTransform is to have an animation
+		rollDice: function(piece, value) {
+			if(!piece.isDie) {
+				console.log("Warning: rollDice called on non-dice piece");
+			}
+			var icon = "";
+
+			if(value < piece.faces.length) {
+				icon = piece.faces[value];
+			} else {
+				if(piece.max < 7) {
+					icon = "/static/img/die_face/small_die_face_" + value + ".png"
+				} else {
+					icon = "/static/img/die_face/big_die_face_" + value + ".png"
+				}
+			}
+			this.setIcon(piece, icon);
+		},
+
+		flipCardPiece: function (pieceData) {
+			var id = pieceData["piece"];
+			var frontIcon = pieceData["icon"];
+			var user = vb.users.userList[pieceData["user"]];
+			var piece = vb.board.pieceHash[id];
+			this.highlightPiece(piece, user.color, vb.addHighlightDuration);
+			this.flipCard(piece, frontIcon);
+		},
+
+		//TODO: the only reason to have a flip function separate from pieceTransform(icon) is to do some kind of flipping animation
+		flipCard: function (piece, frontIcon) {
+			if(!piece.isCard) {
+				console.log("Warning: flipCard called on non-card piece");
+			}
+			//TODO: animation
+			this.setIcon(piece, frontIcon);
+		},
+
+		changeDeckCount: function (deckData) {
+			var userID = deckData["user"];
+			var deckID = deckData["piece"];
+			var count = deckData["count"];
+
+			var deck = this.pieceHash[deckID];
+			var user = vb.users.userList[userID];
+
+			this.highlightPiece(deck, user.color, vb.moveHighlightDuration);
+			this.setCardCount(deck, count);
+		},
+
+		setCardCount: function(piece, newCount) {
+			if(!piece.isCard) {
+				console.log("Warning: setCardCount called on non-card piece");
+			}
+			//TODO: remove text when only one is remaining
+			//TODO: figure out how to overlay text on actual background
+			piece.numCards = newCount;
+			//this.mesh.material.diffuseTexture.drawText(this.numCards, null, 50 * this.size, "bold 128px Arial", "rgba(255,255,255,1.0)", "black");
 		}
 	};
 })(VBoard);

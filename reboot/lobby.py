@@ -3,10 +3,9 @@ import tornado.websocket
 import tornado.ioloop
 import json
 import time
-import random
 import datetime
 
-from board_state_reboot import *
+from board_state import *
 from movebuffer import *
 
 json.encoder.FLOAT_REPR = lambda o: format(o, '.3f')
@@ -35,7 +34,6 @@ class Game:
 
 		#this is just to get the loop going
 		tornado.ioloop.IOLoop.instance().add_callback(self.check_spam)
-		
 
 	def get_basic_info(self):
 		data = {
@@ -75,15 +73,7 @@ class Game:
 				if client.spam_amount >= SPAM_THRESHOLD_KICK:
 					victims.append(user_id)
 				elif client.spam_amount >= SPAM_THRESHOLD_WARNING:
-					message = {
-						"type" : "error",
-						"data" : [
-							{
-								"msg" : "Stop spamming or you may be kicked automatically"
-							}
-						]
-					}
-					client.write_message(json.dumps(message))
+					self.send_error(client, "Stop spamming or you may be kicked automatically")
 			client.spam_amount = 0
 
 		for user_id in victims:
@@ -299,6 +289,9 @@ class Game:
 				"msg" : message_data["msg"]
 			})
 
+		if len(response_data) == 0:
+			return
+
 		response = {
 			"type" : "chat",
 			"data" : response_data
@@ -314,6 +307,9 @@ class Game:
 				"user" : client.user_id,
 				"pos" : beacon_data["pos"]
 			})
+
+		if len(response_data) == 0:
+			return
 
 		response = {
 			"type" : "beacon",
@@ -361,6 +357,9 @@ class Game:
 			else:
 				self.send_error(client, "invalid piece id " + str(id))
 
+		if len(response_data) == 0:
+			return
+
 		if move_only:
 			#buffer magic
 			for pieceData in pieces:
@@ -407,6 +406,9 @@ class Game:
 			data_entry["user"] = client.user_id
 			response_data.append(data_entry)
 
+		if len(response_data) == 0:
+			return
+
 		response = {
 			"type" : "pieceAdd",
 			"data" : response_data
@@ -428,6 +430,9 @@ class Game:
 				})
 			else:
 				self.send_error(client, "invalid piece id " + str(id))
+
+		if len(response_data) == 0:
+			return
 
 		response = {
 			"type" : "pieceRemove",
@@ -454,6 +459,10 @@ class Game:
 				})
 			else:
 				self.send_error(client, "Invalid dice: " + str(piece_id))
+
+		if len(response_data) == 0:
+			return
+
 		response = {
 			"type" : "rollDice",
 			"data" : response_data
@@ -488,6 +497,9 @@ class Game:
 			else:
 				self.send_error(client, "invalid deck: " + str(piece_id))
 
+		if len(piece_add_data) == 0:
+			return
+
 		#send the addpiece response first
 		#this avoids some annoying edge cases
 		deckcount_response = {
@@ -511,16 +523,19 @@ class Game:
 				"piece" : deck_id,
 				"count" : result["count"]
 			})
-			decktransform_response["data"].append({
-				"user" : client.user_id,
-				"piece" : deck_id,
-				"icon" : result["icon"]
-			})
+			if result["icon"] is not None:
+				decktransform_response["data"].append({
+					"user" : client.user_id,
+					"piece" : deck_id,
+					"icon" : result["icon"]
+				})
 
 		#TODO: don't generate decktransform responses when not needed
 		self.message_all(addpiece_response)
 		self.message_all(deckcount_response)
-		self.message_all(decktransform_response)
+
+		if len(decktransform_response["data"]) > 0:
+			self.message_all(decktransform_response)
 
 	def flipCard(self, client, pieces):
 		client.spam_amount += 0.5 + 0.5*len(pieces)
@@ -537,6 +552,9 @@ class Game:
 					"piece" : piece_id,
 					"icon" : result
 				})
+
+		if len(response_data) == 0:
+			return
 
 		response = {
 			"type" : "flipCard",
@@ -566,6 +584,9 @@ class Game:
 			else:
 				self.send_error(client, "Invalid card and/or deck: " + str(card_id) + " " + str(deck_id))
 
+		if len(piece_remove_data) == 0:
+			return
+
 		#send the changeDeckCount and pieceTransform messages first
 		#this avoids any edge cases caused by the pieceRemove messages
 		deckcount_response = {
@@ -589,15 +610,18 @@ class Game:
 				"piece" : deck_id,
 				"count" : result["count"]
 			})
-			decktransform_response["data"].append({
-				"user" : client.user_id,
-				"piece" : deck_id,
-				"icon" : result["icon"]
-			})
+			if result["icon"] is not None:
+				decktransform_response["data"].append({
+					"user" : client.user_id,
+					"piece" : deck_id,
+					"icon" : result["icon"]
+				})
 
 		#TODO: don't generate decktransform responses when not needed
 		self.messge_all(deckcount_response)
-		self.message_all(decktransform_response)
+
+		if len(decktransform_response["data"]) > 0:
+			self.message_all(decktransform_response)
 		self.message_all(removepiece_response)
 
 	def shuffleDeck(self, client, pieces):
@@ -614,6 +638,9 @@ class Game:
 				})
 			else:
 				self.send_error(client, "invalid deck id: " + piece_id)
+
+		if len(response_data) == 0:
+			return
 
 		response = {
 			"type" : "shuffleDeck",
