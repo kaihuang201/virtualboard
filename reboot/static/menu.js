@@ -77,7 +77,7 @@ var VBoard = VBoard || {};
 			});
 
 			$("#submit-add-die").click(function () {
-				var selectedMax = $("#add-die-max").val();
+				var selectedMax = parseInt($("#add-die-max").val());
 				var user = null;
 				//TODO: use vb.camera.position.x/y instead of board center
 				//var pos = {x:0, y:0};

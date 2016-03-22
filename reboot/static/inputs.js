@@ -103,8 +103,13 @@ var VBoard = VBoard || {};
 		},
 
 		onRightClick: function () {
-			mesh = vb.scene.pick(vb.scene.pointerX, vb.scene.pointerY);
-			vb.menu.createContextMenu(mesh.piece);
+			var pick = vb.scene.pick(vb.scene.pointerX, vb.scene.pointerY);
+
+			if(pick.hit) {
+				vb.menu.createContextMenu(pick.pickedMesh.piece);
+				return false;
+			}
+			return true;
 		},
 
 		processInputs: function (elapsed) {

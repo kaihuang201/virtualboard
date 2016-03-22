@@ -73,6 +73,10 @@ var VBoard = VBoard || {};
 			clearTimeout(piece.predictTimeout);
 			vb.sessionIO.moveBuffer.remove(piece.id);
 
+			if(this.pendingTextures.hasOwnProperty(piece.icon)) {
+				delete this.pendingTextures[piece.icon][piece.id];
+			}
+
 			this.pieces.pop();
 			delete this.pieceHash[piece.id];
 			piece.mesh.dispose();
@@ -237,148 +241,6 @@ var VBoard = VBoard || {};
 			}, duration);
 		},
 
-		//{ constructors for various piece types
-		//Either we should get rid of these or change a lot of code to align with this design scheme
-/*
-		Piece : (function () {
-			function Piece(pieceData) {
-				var me = this;
-
-				this.size = pieceData.s;
-				this.color = new BABYLON.Color3(pieceData.color[0], pieceData.color[1], pieceData.color[2]);
-
-				var plane = BABYLON.Mesh.CreatePlane("plane", this.size, vb.scene);
-				plane.position = new BABYLON.Vector3(pieceData.pos[0], pieceData.pos[1], 0);
-				plane.rotation.z = pieceData.r;
-				plane.piece = this;
-
-				//position - last server confirmed position		
-				//targetPosition - the same as position except for when the local user is moving the piece		
-				//					specifically, targetPosition is where the piece will end up after transition smoothing		
-				//mesh.position - where the piece is being rendered
-				this.id = pieceData.piece;
-				this.position = new BABYLON.Vector2(pieceData.pos[0], pieceData.pos[1]);
-				this.mesh = plane;
-				this.static = pieceData.static == 1;
-				this.highlightTimeout = null;
-				this.predictTimeout = null;
-				this.isCard = false;
-				this.isDie = false;
-				this.setIcon(pieceData.icon);
-
-				plane.actionManager = new BABYLON.ActionManager(vb.scene);
-
-				//TODO: instead of attaching a code action to each piece
-				//		we should just have a scene.pick trigger in a global event listener
-				//		We also should be able to right click anywhere to bring up a menu
-				//		that lets us add a piece at that location.
-				plane.actionManager.registerAction(
-					new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnLeftPickTrigger, function (evt) {
-					if(me.static == false) {
-						vb.selection.setPieces([me]);
-
-						var pos = vb.board.screenToGameSpace(new BABYLON.Vector2(vb.scene.pointerX, vb.scene.pointerY));
-						vb.lastDragX = pos.x;
-						vb.lastDragY = pos.y;
-					}
-
-					//check that the shift key was pressed for the context menu
-					if(vb.inputs.keysPressed.indexOf(16) >= 0) {
-						vb.menu.createContextMenu(me);
-					}
-				}));
-			}
-
-			Piece.prototype.setIcon = function (icon) {
-				this.icon = icon;
-
-				//TODO: create a mapping from icons to materials/textures as they are created instead of making new ones each time
-				var material = new BABYLON.StandardMaterial("std", vb.scene);
-				material.diffuseTexture = new BABYLON.Texture(icon, vb.scene);
-				material.diffuseColor = this.color;
-				material.diffuseTexture.hasAlpha = true;
-				this.mesh.material = material;
-				this.adjustWidth();
-			};
-
-			Piece.prototype.adjustWidth = function () {
-				var t = this.mesh.material.diffusetexture._texture;
-				this.mesh.scaling.y = this.mesh.scaling.x * t._baseWidth / t._baseHeight;
-			}
-			return Piece;
-		})(),
-
-		Card: (function () {
-			function Card(pieceData) {
-				//this.base = vb.board.Piece;
-				//this.base(pieceData);
-				this.prototype = new vb.board.Piece(pieceData);
-				this.isCard = true;
-
-				if(pieceData["cardData"].hasOwnProperty("count")) {
-					this.updateCount(pieceData["cardData"]["count"]);
-				} else {
-					this.updateCount(1);
-				}
-			}
-
-			//TODO: the only reason to have a flip function separate from pieceTransform(icon) is to do some kind of flipping animation
-			Card.prototype.flip = function (frontIcon) {
-				var scene = vb.scene;
-				var material = new BABYLON.StandardMaterial("std", scene);
-				material.diffuseTexture = new BABYLON.Texture(frontIcon, scene);
-				material.diffuseTexture.hasAlpha = true;
-
-				this.mesh.material = material;
-			};
-
-			Card.prototype.updateCount = function(newCount) {
-				//TODO: remove text when only one is remaining
-				//TODO: figure out how to overlay text on actual background
-				this.numCards = newCount;
-				//this.mesh.material.diffuseTexture.drawText(this.numCards, null, 50 * this.size, "bold 128px Arial", "rgba(255,255,255,1.0)", "black");
-			};
-			return Card;
-		})(),
-
-		Die: (function () {
-			function Die(pieceData) {
-				//this.base = Piece;
-				//this.base(pieceData);
-				this.prototype = vb.board.Piece(pieceData);
-				this.isDie = true;
-
-				this.max = pieceData["diceData"]["max"];
-
-				var scene = vb.scene;
-				var material = new BABYLON.StandardMaterial("std", scene);
-				material.diffuseTexture.hasAlpha = true;
-				this.mesh.material = material;
-
-				self.faces = pieceData["diceData"]["faces"]
-			}
-			Die.prototype = new vb.board.Piece()
-
-			//TODO: the only reason to have a roll function separate from pieeTransform is to have an animation
-			Die.prototype.roll = function(value) {
-				if(value < this.faces.length) {
-					this.icon = this.faces[value];
-				} else {
-					if(this.max < 7) {
-						this.icon = "/static/img/die_face/small_die_face_" + value + ".png"
-					} else {
-						this.icon = "/static/img/die_face/big_die_face_" + value + ".png"
-					}
-				}
-				material.diffuseTexture = new BABYLON.Texture(this.icon, vb.scene);
-				material.diffuseTexture.hasAlpha = true;
-				this.mesh.material = material;
-			}
-			return Die;
-		})(),
-*/
-		//} //end constructors
-
 		//takes JSON formatted data from socket handler
 		generateNewPiece: function (pieceData) {
 			var piece = {};
@@ -421,7 +283,7 @@ var VBoard = VBoard || {};
 			if(pieceData.hasOwnProperty("diceData")) {
 				piece.isDie = true;
 				piece.max = pieceData["diceData"]["max"];
-				self.faces = pieceData["diceData"]["faces"];
+				piece.faces = pieceData["diceData"]["faces"];
 			}
 
 			plane.actionManager = new BABYLON.ActionManager(vb.scene);
@@ -546,20 +408,24 @@ var VBoard = VBoard || {};
 				if(!this.pendingTextures.hasOwnProperty(icon)) {
 					this.pendingTextures[icon] = {};
 
+					//function Texture(url, scene, noMipmap, invertY, samplingMode, onLoad, onError, buffer, deleteBuffer)
 					var texture = new BABYLON.Texture(icon, vb.scene, void(0), void(0), void(0), function () {
+						//onload
 						vb.board.textureMap[icon] = texture;
 						texture.hasAlpha = true;
 
 						for(var piece_id in vb.board.pendingTextures[icon]) {
 							if(vb.board.pendingTextures[icon].hasOwnProperty(piece_id)) {
-								//piece may have been removed in the meantime
-								if(vb.board.pieceHash.hasOwnProperty(piece_id)) {
-									var p = vb.board.pieceHash[piece_id];
-									p.mesh.material.diffuseTexture = texture;
-									vb.board.adjustPieceWidth(p);
-								}
+								var p = vb.board.pieceHash[piece_id];
+								p.mesh.material.diffuseTexture = texture;
+								vb.board.adjustPieceWidth(p);
 							}
 						}
+						delete vb.board.pendingTextures[icon];
+					}, function () {
+						//onerror
+						console.log("Failed to load texture: " + icon);
+						vb.board.textureMap[icon] = vb.board.unknownTexture;
 						delete vb.board.pendingTextures[icon];
 					});
 				}
@@ -616,9 +482,9 @@ var VBoard = VBoard || {};
 				icon = piece.faces[value];
 			} else {
 				if(piece.max < 7) {
-					icon = "/static/img/die_face/small_die_face_" + value + ".png"
+					icon = "/static/img/die_face/small_die_face_" + (value+1) + ".png"
 				} else {
-					icon = "/static/img/die_face/big_die_face_" + value + ".png"
+					icon = "/static/img/die_face/big_die_face_" + (value+1) + ".png"
 				}
 			}
 			this.setIcon(piece, icon);
