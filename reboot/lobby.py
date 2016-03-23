@@ -618,7 +618,7 @@ class Game:
 				})
 
 		#TODO: don't generate decktransform responses when not needed
-		self.messge_all(deckcount_response)
+		self.message_all(deckcount_response)
 
 		if len(decktransform_response["data"]) > 0:
 			self.message_all(decktransform_response)
@@ -646,7 +646,7 @@ class Game:
 			"type" : "shuffleDeck",
 			"data" : response_data
 		}
-		this.message_all(response)
+		self.message_all(response)
 
 	def setBackground(self, client, backgroundData):
 		client.spam_amount += 3

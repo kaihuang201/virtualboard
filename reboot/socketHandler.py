@@ -140,6 +140,8 @@ class WebSocketGameHandler(tornado.websocket.WebSocketHandler):
 				game.addCardToDeck(self, data["data"])
 			elif data["type"] == "drawCard":
 				game.drawCard(self, data["data"])
+			elif data["type"] == "shuffleDeck":
+				game.shuffleDeck(self, data["data"])
 			elif data["type"] == "createPrivateZone":
 				print "todo"
 				#Todo: Needs to be implemented
@@ -176,7 +178,7 @@ class WebSocketGameHandler(tornado.websocket.WebSocketHandler):
 					"type" : "error",
 					"data" : [
 						{
-							"msg" : "unknown command"
+							"msg" : "unknown command: " + data["type"]
 						}
 					]
 				}

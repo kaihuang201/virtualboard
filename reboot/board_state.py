@@ -106,7 +106,7 @@ class BoardState:
 		if piece_id in self.piecemap:
 			index = self.piecemap[piece_id]
 			piece = self.pieces[index]
-			self.bring_to_front(index)
+			self.bring_to_front(piece_id)
 			self.pieces.pop()
 			del self.piecemap[piece.piece_id]
 			return True
@@ -288,7 +288,7 @@ class BoardState:
 			card = self.pieces[card_index]
 			deck = self.pieces[deck_index]
 
-			if card.isCard and deck.isCard:
+			if card.isCard and deck.isCard and card_id != deck_id:
 				deck.cardData.absorb(card.cardData)
 				deck.icon = deck.cardData.get_icon()
 
