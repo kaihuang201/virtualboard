@@ -17,38 +17,31 @@ class Piece:
 
 		self.isCard = False
 		self.isDie = False
+		self.isDeck = False
 
-		if "cardData" in pieceData:
+		if "front_icon" in pieceData:
 			self.isCard = True
+			self.faceup = False
+			self.front_icon = pieceData["front_icon"]
+			self.icon = "/static/img/card/cardback.png"
 
-			#cards are just a special case of decks where there is only one card
-			self.cardData = Deck(pieceData["cardData"], self.icon)
-			self.icon = self.cardData.get_icon()
-
-		#I know dice is plural but "isDie" sounds awkward here, but still, it's proper english
-		if "diceData" in pieceData:
+		if "max_roll" in pieceData:
 			self.isDie = True
-			self.max = pieceData["diceData"]["max"]
+			self.max_roll = pieceData["max_roll"]
+			value = random.randint(1, int(self.max_roll))
+			if int(self.max_roll) < 7:
+				face_img_name = "/static/img/die_face/small_die_face_" + str(value) + ".png"
+			elif int(self.max_roll) <= 24:
+				face_img_name = "/static/img/die_face/big_die_face_" + str(value) + ".png"
+			self.icon = face_img_name
 
-			#maybe also enforce positive integer here?
-			#hopefully we can enforce that in json schema
-			if self.max > 24:
-				self.max = 24
-			self.faces = []
-
-			for i in range(0, 1 + self.max):
-				if i >= len(pieceData["diceData"]["faces"]):
-					break
-				self.faces.append(pieceData["diceData"]["faces"][i])
-		else:
-			self.isDie = False
+		if not (self.isCard or self.isDie):
 			self.icon = pieceData["icon"]
 
-			if "cards" in pieceData:
-				self.isDeck = True
-				self.cards = pieceData["cards"]
-			else:
-				self.isDeck = False
+		if "cards" in pieceData:
+			self.isDeck = True
+			self.cards = pieceData["cards"]
+			self.count = len(self.cards)
 
 	#complete - True for downloading the board state, false for sending to clients
 	def get_json_obj(self, complete=False):
@@ -63,13 +56,22 @@ class Piece:
 		}
 
 		if self.isCard:
-			data["cardData"] = self.cardData.get_json_obj(complete)
+			if self.faceup or complete:
+				data["front_icon"] = self.front_icon
+			else:
+				data["front_icon"] = "/static/img/card/cardquestion.png"
+
+			data["faceup"] = self.faceup
 
 		if self.isDie:
-			data["diceData"] = {
-				"max" : self.max,
-				"faces" : self.faces
-			}
+			data["max_roll"] = self.max_roll
+
+		if self.isDeck:
+			if complete:
+				data["cards"] = self.cards
+
+			data["count"] = self.count
+
 		return data
 
 class BoardState:

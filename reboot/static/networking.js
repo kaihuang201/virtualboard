@@ -469,6 +469,14 @@ var VBoard = VBoard || {};
 
 		//interacting with special pieces
 
+		createDeck: function (deckData) {
+            var data = {
+                "type" : "createDeck",
+                "data" : deckData
+            };
+            this.send(data);
+        },
+
 		rollDice: function (id) {
 			if(id.constructor === Array) {
 				var pieceData = [];
@@ -543,22 +551,19 @@ var VBoard = VBoard || {};
 
 		drawCard: function (deckID) {
 			console.log("draw card" + deckID)
-			var cameraRotation = Math.atan2(vb.camera.upVector.y, vb.camera.upVector.x);
 
 			if(deckID.constructor === Array) {
 				var pieceData = [];
 
 				for(var i=0; i<deckID.length; i++) {
 					pieceData.push({
-						"piece" : deckID[i],
-						"cameraRotation" : cameraRotation
+						"piece" : deckID[i]
 					});
 				}
 			} else {
 				var pieceData = [
 					{
-						"piece" : deckID,
-						"cameraRotation" : cameraRotation
+						"piece" : deckID
 					}
 				];
 			}
@@ -776,16 +781,7 @@ var VBoard = VBoard || {};
 
 					for (var i = 0; i < dice.length; i++) {
 						var die = dice[i];
-						vb.board.rollDiePiece(die);
-
-						//TODO: this logic should be moved out of networking
-						//var id = die["piece"];
-						//var value = die["result"];
-
-						//var user = vb.users.userList[die["user"]];
-						//var piece = vb.board.pieceHash[id];
-						//vb.board.highlightPiece(piece, user.color, vb.addHighlightDuration);
-						//piece.roll(value);
+						vb.board.rollDie(die);
 					}
 					break;
 				case "flipCard":
@@ -793,16 +789,7 @@ var VBoard = VBoard || {};
 
 					for (var i = 0; i < cards.length; i++) {
 						var card = cards[i];
-						vb.board.flipCardPiece(card);
-
-						//TODO: this logic should be moved out of networking
-						//var id = card["piece"];
-						//var frontIcon = card["icon"];
-
-						//var user = vb.users.userList[card["user"]];
-						//var piece = vb.board.pieceHash[id];
-						//vb.board.highlightPiece(piece, user.color, vb.addHighlightDuration);
-						//piece.flip(frontIcon);
+						vb.board.flipCard(card);
 					}
 					break;
 				case "changeDeckCount":

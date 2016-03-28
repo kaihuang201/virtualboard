@@ -87,20 +87,14 @@ var VBoard = VBoard || {};
 		},
 
 		createDefaultDeck: function () {
-			var properties = {
-				"pos" : [vb.camera.position.x, vb.camera.position.y],
-				"icon" : "/static/img/card/cardback.png",
-				"s" : 4,
-				"r" : Math.atan2(vb.camera.upVector.y, vb.camera.upVector.x) - Math.PI/2,
-				"cardData" : {
-					"count" : 52,
-					"shuffle" : 1,
-
-					//by sending an empty cards array, default pieces will be used
-					"cards" : []
-				}
-			};
-			vb.sessionIO.addPiece(properties);
+			vb.sessionIO.createDeck([{
+                "pos" : [vb.camera.position.x, vb.camera.position.y],
+                "color" : [255, 255, 255],
+                "static" : 0,
+                "s" : 4,
+                "r" : vb.camera.rotation.z,
+                "icon" : "/static/img/card/cardback.png"
+            }]);
 		}
 	};
 })(VBoard);

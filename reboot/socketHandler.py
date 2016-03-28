@@ -132,6 +132,8 @@ class WebSocketGameHandler(tornado.websocket.WebSocketHandler):
 
 			#special piece interactions
 
+			elif data["type"] == "createDeck":
+				game.createDeck(self, data["data"])
 			elif data["type"] == "rollDice":
 				game.rollDice(self, data["data"])
 			elif data["type"] == "flipCard":
