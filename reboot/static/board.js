@@ -445,11 +445,12 @@ var VBoard = VBoard || {};
 		},
 
 		//TODO: the only reason to have a roll function separate from pieceTransform is to have an animation
-		rollDie: function(pieceData, value) {
+		rollDie: function(pieceData) {
 			var id = pieceData["piece"];
 			var value = pieceData["result"];
 			var user = vb.users.userList[pieceData["user"]];
-			var piece = vb.board.pieceHash[id];
+			var index = vb.board.pieceHash[id];
+			var piece = vb.board.pieces[index];
 
 			if(!(piece instanceof vb.Die)) {
 				console.log("Warning: rollDice called on non-dice piece");
@@ -464,7 +465,8 @@ var VBoard = VBoard || {};
 			var id = pieceData["piece"];
 			var frontIcon = pieceData["front_icon"];
 			var user = vb.users.userList[pieceData["user"]];
-			var piece = vb.board.pieceHash[id];
+			var index = vb.board.pieceHash[id];
+			var piece = vb.board.pieces[index];
 
 			if(!(piece instanceof vb.Card)) {
 				console.log("Warning: flipCard called on non-card piece");
