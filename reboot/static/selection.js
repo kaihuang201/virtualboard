@@ -1,7 +1,10 @@
 var VBoard = VBoard || {};
 (function (vb) {
 	vb.selection = {
-		pieces : [],
+		pieces: [],
+
+		//on the next mouse up event, clear selection and set it to just this piece
+		clearAndSetOnMouseUp: null,
 
 		//map from piece ids to the index in the pieces array
 		pieceMap : {},
@@ -10,30 +13,134 @@ var VBoard = VBoard || {};
 		//that way the order won't get jumbled as the pieces move
 		setPieces: function (pieces) {
 			//maybe this should be called first?
-			this.removePieces();
+			this.clear();
 
-			this.pieces = pieces;
+			for(var i=0; i<pieces.length; i++) {
+				var piece = pieces[i];
+				this.pieces.push(piece);
+				this.pieceMap[piece.id] = i;
+				vb.board.outlinePiece(piece, vb.users.getLocal().color, true);
+			}
+
 			//piece.pickedUp = true;
 			//piece.user = vb.users.getLocal();
 			//todo: enable the highlight
 		},
 
+		isEmpty: function () {
+			return this.pieces.length == 0;
+		},
+
+		hasPiece: function (piece) {
+			return this.pieceMap.hasOwnProperty(piece.id);
+		},
+
+		//triggered by mouse up
+		clearAndSelect: function () {
+			if(this.clearAndSetOnMouseUp === null) {
+				return;
+			}
+			this.setPieces([this.clearAndSetOnMouseUp]);
+			this.clearAndSetOnMouseUp = null;
+		},
+
 		//pieces in this.selectedPieces should be ordered based on depth
 		//we cannot simply insert this piece at the end of the array
 		addPiece: function (piece) {
-			//TODO
-			//needs to make sure that piece is not already contained in this.selectedPieces
+			if(this.pieceMap.hasOwnProperty(piece.id)) {
+				return;
+			}
+			this.pieceMap[piece.id] = this.pieces.length;
+			this.pieces.push(piece);
+
+			var pIndex = vb.board.pieceHash[piece.id];
+
+			for(var i = this.pieces.length-1; i > 0; i--) {
+				var p = this.pieces[i-1];
+
+				if(vb.board.pieceHash[p.id] < pIndex) {
+					break;
+				}
+				this.pieceMap[p.id] = i;
+				this.pieceMap[piece.id] = i-1;
+				this.pieces[i] = p;
+				this.pieces[i-1] = piece;
+			}
+			vb.board.outlinePiece(piece, vb.users.getLocal().color, true);
 		},
 
-		removePieces: function () {
-			if(this.pieces.length > 0) {
-				//for(index in this.selectedPieces) {
-					//this.selectedPieces[index].pickedUp = false;
-					//this.selectedPieces[index].user = vb.users.getNone();
+		removePiece: function (piece) {
+			if(!this.pieceMap.hasOwnProperty(piece.id)) {
+				return;
+			}
 
-					//todo: disable the highlight
-				// }
+			for(var i=this.pieceMap[piece.id]; i<this.pieces.length-1; i++) {
+				var p = this.pieces[i+1];
+				this.pieceMap[p.id] = i;
+				this.pieces[i] = p;
+			}
+			vb.board.outlinePiece(piece, null, false);
+			this.pieces.pop();
+			delete this.pieceMap[piece.id];
+		},
+
+		//makes it so no pieces are currently selected
+		clear: function () {
+			if(this.pieces.length > 0) {
+				for(var i=0; i<this.pieces.length; i++) {
+					var piece = this.pieces[i];
+					vb.board.outlinePiece(piece, null, false);
+				}
 				this.pieces = [];
+				this.pieceMap = {};
+			}
+		},
+
+		remove: function () {
+			var ids = [];
+
+			for(var i=0; i<this.pieces.length; i++) {
+				var piece = this.pieces[i];
+				ids.push(piece.id);
+			}
+
+			if(ids.length > 0) {
+				vb.sessionIO.removePiece(ids);
+			}
+		},
+
+		//attempts to flip all selected pieces
+		flip: function () {
+			var ids = [];
+
+			for(var i=0; i<this.pieces.length; i++) {
+				var piece = this.pieces[i];
+
+				if(piece.isCard) {
+					ids.push(piece.id);
+				}
+			}
+
+			if(ids.length > 0) {
+				vb.sessionIO.flipCard(ids);
+			}
+		},
+
+		addToDeck: function (deck) {
+			var ids = [];
+			var decks = [];
+
+			for(var i=0; i<this.pieces.length; i++) {
+				var piece = this.pieces[i];
+
+				if(piece.isCard) {
+					ids.push(piece.id);
+					decks.push(deck.id);
+				}
+			}
+
+			if(ids.length > 0) {
+				vb.sessionIO.addCardToDeck(ids, decks);
 			}
 		},
 

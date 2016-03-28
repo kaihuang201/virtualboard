@@ -13,6 +13,7 @@ text inputs on modals should grab keyboard focus
 anything clickable should change the mouse cursor into a clicking hand cursor, especially lobby entries and colors
 hitting the escape key should close a modal
 Oh yeah that's right, we need an actual home page separate from the lobby list as our index page with information
+resume should only appear if the old lobby exists
 
 In-Game/General
 ==========
@@ -28,6 +29,8 @@ things need to not trigger on mouse move while a piece is being dragged
 right click context menus, since we need shift+click for selecting multiple items probably
 some sort of drag threshold for when the user may be trying to shift+click or draw
 Indicator for decks vs single cards
+context menus should not go off edge of screen
+right now it seems the camera is limited in movement but pieces are not
 
 Feature Ideas
 ==========

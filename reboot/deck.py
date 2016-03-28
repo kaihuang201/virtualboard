@@ -145,7 +145,7 @@ class Deck:
 
 	def absorb(self, other):
 		if other.flipped:
-			for card_entry in reversed(other.cards):
+			for entry in reversed(other.cards):
 				self.add(entry["icon"], entry["back"], not entry["face_down"])
 		else:
 			for entry in other.cards:

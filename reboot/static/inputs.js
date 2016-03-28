@@ -4,6 +4,9 @@ var VBoard = VBoard || {};
 	vb.inputs = {
 		//to do: separate system from polling buttons (wasd, etc) versus event buttons (backspace, space, etc)
 		keysPressed: [],
+		mouseDown: false,
+		lastDragX: 0,
+		lastDragY: 0,
 
 		initialize: function () {
 			window.addEventListener("resize", function () {
@@ -36,16 +39,41 @@ var VBoard = VBoard || {};
 			});
 
 			window.addEventListener("mouseup", function (evt) {
-				vb.selection.removePieces();
+				this.mouseDown = false;
+
+				vb.selection.clearAndSelect();
+
+				if(!vb.selection.isEmpty()) {
+					var piece = vb.inputs.getPieceUnderMouse(true);
+
+					if(piece !== null && piece.isCard) {
+						vb.selection.addToDeck(piece);
+					}
+					//vb.selection.clear();
+				}
 			});
 
 			window.addEventListener("mousemove", function (evt) {
 				//TODO: needs rework
-				if(vb.selection.pieces.length > 0) {
+				if(this.mouseDown && vb.selection.pieces.length > 0) {
+					vb.selection.clearAndSetOnMouseUp = null;
 					var mousePos = vb.board.screenToGameSpace(new BABYLON.Vector2(vb.scene.pointerX, vb.scene.pointerY));
-					vb.inputs.onDrag(mousePos.x - vb.lastDragX, mousePos.y - vb.lastDragY);
-					vb.lastDragX = mousePos.x;
-					vb.lastDragY = mousePos.y;
+					vb.inputs.onDrag(mousePos.x - this.lastDragX, mousePos.y - this.lastDragY);
+					this.lastDragX = mousePos.x;
+					this.lastDragY = mousePos.y;
+				}
+			});
+
+			window.addEventListener("mousedown", function (evt) {
+				this.mouseDown = true;
+				console.log("mouseDown: " + evt.handled);
+
+				var pos = vb.board.screenToGameSpace(new BABYLON.Vector2(vb.scene.pointerX, vb.scene.pointerY));
+				this.lastDragX = pos.x;
+				this.lastDragY = pos.y;
+
+				if(!evt.handled) {
+					vb.selection.clear();
 				}
 			});
 		},
@@ -102,11 +130,41 @@ var VBoard = VBoard || {};
 			vb.selection.drag(dx, dy);
 		},
 
-		onRightClick: function () {
-			var pick = vb.scene.pick(vb.scene.pointerX, vb.scene.pointerY);
+		getPieceUnderMouse: function (ignoreSelection, ignoreStatic) {
+			if(ignoreSelection === void 0) {
+				ignoreSelection = false;
+			}
+
+			if(ignoreStatic === void 0) {
+				ignoreStatic = false;
+			}
+
+			//console.debug("get piece under mouse: " + ignoreSelection);
+
+			var pick = vb.scene.pick(vb.scene.pointerX, vb.scene.pointerY, function (mesh) {
+				if(ignoreSelection) {
+					if(vb.selection.hasPiece(mesh.piece)) {
+						return false;
+					}
+				}
+
+				if(ignoreStatic) {
+					return !mesh.piece.static;
+				}
+				return true;
+			});
 
 			if(pick.hit) {
-				vb.menu.createContextMenu(pick.pickedMesh.piece);
+				return pick.pickedMesh.piece;
+			}
+			return null;
+		},
+
+		onRightClick: function () {
+			var piece = this.getPieceUnderMouse();
+
+			if(piece !== null) {
+				vb.menu.createContextMenu(piece);
 				return false;
 			}
 			return true;
@@ -152,8 +210,29 @@ var VBoard = VBoard || {};
 						vb.camera.upVector = new BABYLON.Vector3(upX, upY, 0);
 						break;
 					case 70: //f
+						if(vb.selection.isEmpty()) {
+							var piece = this.getPieceUnderMouse(false, true);
+
+							if(piece !== null && piece.isCard) {
+								vb.sessionIO.flipCard(piece.id);
+							}
+						} else {
+							vb.selection.flip();
+						}
 						break;
 					case 46: //delete
+						if(vb.selection.isEmpty()) {
+							var piece = this.getPieceUnderMouse(false, true);
+
+							if(piece !== null) {
+								vb.sessionIO.removePiece(piece.id);
+							}
+						} else {
+							vb.selection.remove();
+						}
+						break;
+					case 27: //escape
+						vb.selection.clear();
 						break;
 					case 8: //backspace
 					case 32: //spacebar

@@ -114,8 +114,39 @@ var VBoard = VBoard || {};
 				$('#user-nickname').val(VBoard.interface.userName);
 			});
 
+			// right panel
+			
 
+			$("#player-list-toggler").click(function () {
+				if(!($("#players-list").is(':visible')) && vb.interface.rightPanelIsShown()) {
+					$("#chat-box-toggler").click();
+					$("#right-panel").promise().done(function () {$("#players-list").show();vb.interface.toggleRightPanel("show");});
+				} else if (!($("#players-list").is(':visible')) && (!vb.interface.rightPanelIsShown())) {
+					$("#players-list").show();
+					vb.interface.toggleRightPanel("show");
+				} else if ($("#players-list").is(':visible') && (!vb.interface.rightPanelIsShown())) {
+					vb.interface.toggleRightPanel("show");
+				} else {
+					vb.interface.toggleRightPanel("hide",function(){$("#players-list").hide();})
+				}
+				// send a refresh request
+				// vb.sessionIO.getClientList();
+			});
 
+			$("#chat-box-toggler").click(function () {
+				if(!($("#chat").is(':visible')) && vb.interface.rightPanelIsShown()) {
+					$("#player-list-toggler").click();
+					$("#right-panel").promise().done(function () {$("#chat").show();vb.interface.toggleRightPanel("show");});					
+				} else if (!($("#chat").is(':visible')) && (!vb.interface.rightPanelIsShown())) {
+					$("#chat").show();
+					vb.interface.toggleRightPanel("show");
+				} else if ($("#chat").is(':visible') && (!vb.interface.rightPanelIsShown())) {
+					vb.interface.toggleRightPanel("show");
+				} else {
+					vb.interface.toggleRightPanel("hide",function(){$("#chat").hide();})
+				}
+
+			});
 
 			// automatic refresh game list
 			VBoard.interface.autoGameListIntervalID = setInterval(function(){VBoard.limboIO.listGames();}, 20000);
@@ -175,7 +206,6 @@ var VBoard = VBoard || {};
 				}
 			});
 			//TODO: figure out a proper callback
-
 			vb.interface.setInputFocusAndEnterKeyCallback("#user-nickname","#submit-btn-modal-template",false);
 		},
 
@@ -269,17 +299,16 @@ var VBoard = VBoard || {};
 					var currentLobby = $("#lobby-" + listOfGames[j]["id"].toString());
 					currentLobby.unbind();
 
-					// this line fixes
+					// this line fixes the infamous loop closure thing
 					func[j] = (function(a,b){currentLobby.on("click",function() {vb.interface.joinLobbyRequest(a,b);});})(lobbyID,lobbyName);
 
 					// currentLobby.on("click",function() {vb.interface.joinLobbyRequest(lobbyID,lobbyName);});
-
 				}
 			} else {
 				$("#lobby-list").empty();
 				$("#lobby-list").append('<a id="retry-btn" class="list-group-item">No Games Found, but you can Create a Lobby!</a>');
 				$('#retry-btn').unbind();
-				// $('#retry-btn').on('click',function() {vb.interface.listLobbiesRequest();})
+				$('#retry-btn').on('click',function() {vb.interface.listLobbiesRequest();})
 			}
 		},
 
@@ -464,18 +493,36 @@ var VBoard = VBoard || {};
 
 		},
 
+		// right-panel handlers:
 		// handler for refresh friend list
+		toggleRightPanel: function(option,additionalCallBackFunction) {
+				if ($("#right-panel").css("right") != "0px") { // when hidden, show the panel
+					if (option != "hide") {
+						console.log("show the panel");
+						$("#right-panel").promise().done($("#right-panel").animate({"right":('+=' + $("#right-panel").css("width"))},350,additionalCallBackFunction));
+					}
+				} else { // when shown, hide the panel
+					if (option != "show") {
+						console.log("hide the panel");
+						$("#right-panel").promise().done($("#right-panel").animate({"right":('-=' + $("#right-panel").css("width"))},350,additionalCallBackFunction));
+					}
+				}
+				// if(additionalCallBackFunction) additionalCallBackFunction();
+		},
 		showPlayerList: function (data) {
 			console.log(JSON.stringify(data));
 			$("#players-list-list").empty();
 			
 			for (var i = data.length - 1; i >= 0; i--) {
 				console.log(JSON.stringify(data[i]));
-				var str = '<p style="color: '+ vb.interface.arrayRGB2StrRGB(data[i]['color'])+';">' + data[i]['name'] + ((data[i]['host'])?"(host)":"") + '</p>';
+				var str = '<p><i class="fa fa-user"  style="color: '+ vb.interface.arrayRGB2StrRGB(data[i]['color'])+';"></i> ' + vb.interface.abbrLongStr(data[i]['name'],10) + ((data[i]['host'])?" (host)":"") + '</p>'; 
 				$("#players-list-list").append(str);
 			}
 		},
 		// helper function
+		rightPanelIsShown: function () {
+			return ($("#right-panel").css("right") == "0px");
+		},
 		setUserName: function (username,optionalColor) {
 			VBoard.interface.userName = username;
 			
@@ -514,7 +561,6 @@ var VBoard = VBoard || {};
 					$(textbox).focus();
 				}, 500);
 			}
-
 			$(textbox).keypress(function (event) {
 				//detect enter keypress while textbox is selected
 				if(event.keyCode == '13') {

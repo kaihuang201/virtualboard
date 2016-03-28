@@ -7,8 +7,7 @@ var VBoard = VBoard || {};
 					//we may want to keep separate lists for static and non-static pieces
 					//or we can just not push static pieces to the back
 
-		pieceHash: {},	//unordered hash map of pieces
-						//maps from piece ids to piece objects
+		pieceHash: {},	//maps from piece ids to indicies in pieces array
 
 		//a map from private zone id's to private zone objects
 		privateZones: {},
@@ -33,19 +32,25 @@ var VBoard = VBoard || {};
 		//adds a new piece to the front of the board
 		//should only be called by the generateNewPiece() method
 		add: function (piece) {
+			this.pieceHash[piece.id] = this.pieces.length;
 			this.pieces.push(piece);
-			this.pieceHash[piece.id] = piece;
 			var z = this.getZIndex(this.pieces.length-1);
 			piece.mesh.position.z = z;
 		},
 
 		ourIndexOf: function (piece) {
-			for(var i = 0; i < this.pieces.length; i++) {
-				if(this.pieces[i].id == piece.id) {
-					return i;
-				}
+			if(this.pieceHash.hasOwnProperty(piece.id)) {
+				return this.pieceHash[piece.id];
 			}
+			console.log("NOT FOUND: " + piece.id);
 			return -1;
+		},
+
+		getFromID: function (pieceID) {
+			if(this.pieceHash.hasOwnProperty(pieceID)) {
+				return this.pieces[this.pieceHash[pieceID]];
+			}
+			return null;
 		},
 
 		//function to calculate z index given a position in the pieces array
@@ -55,7 +60,8 @@ var VBoard = VBoard || {};
 
 		//takes JSON formatted data from web handler
 		removePiece: function (pieceData) {
-			var piece = this.pieceHash[pieceData["piece"]];
+			var index = this.pieceHash[pieceData["piece"]];
+			var piece = this.pieces[index];
 			this.remove(piece);
 		},
 
@@ -63,9 +69,12 @@ var VBoard = VBoard || {};
 		remove: function (piece) {
 			//we should call bringToFront instead of doing this probably
 			var index = this.ourIndexOf(piece);
+
 			for(var i = index; i < this.pieces.length-1; i++) {
-				this.pieces[i] = this.pieces[i+1];
-				this.pieces[i].mesh.position.z = this.getZIndex(i);
+				var p = this.pieces[i+1];
+				this.pieceHash[p.id] = i;
+				this.pieces[i] = p;
+				p.mesh.position.z = this.getZIndex(i);
 			}
 
 			//TODO: disable highlight on piece if it exists
@@ -87,9 +96,12 @@ var VBoard = VBoard || {};
 			var index = this.ourIndexOf(piece);
 
 			for(var i = index; i > 0; i--) {
-				this.pieces[i] = this.pieces[i-1];
-				this.pieces[i].mesh.position.z = this.getZIndex(i);
+				var p = this.pieces[i-1];
+				this.pieceHash[p.id] = i;
+				this.pieces[i] = p;
+				p.mesh.position.z = this.getZIndex(i);
 			}
+			this.pieceHash[piece.id] = 0;
 			this.pieces[0] = piece;
 			piece.mesh.position.z = this.getZIndex(0);
 		},
@@ -97,26 +109,30 @@ var VBoard = VBoard || {};
 		//moves a piece to the front of the board (lowest z index)
 		bringToFront: function (piece) {
 			var index = this.ourIndexOf(piece);
+
 			for(var i = index; i < this.pieces.length-1; i++) {
-				this.pieces[i] = this.pieces[i+1];
-				this.pieces[i].mesh.position.z = this.getZIndex(i);
+				var p = this.pieces[i+1];
+				this.pieceHash[p.id] = i;
+				this.pieces[i] = p;
+				p.mesh.position.z = this.getZIndex(i);
 			}
-			this.pieces[this.pieces.length-1] = piece;
-			piece.mesh.position.z = this.getZIndex(this.pieces.length-1);
+
+			var end = this.pieces.length-1;
+			this.pieceHash[piece.id] = end;
+			this.pieces[end] = piece;
+			piece.mesh.position.z = this.getZIndex(end);
 		},
 
 		//toggles whether a piece should be static or not
-		toggleStatic: function (piece) {
-			piece.static = !piece.static;
-			//if(piece.static){
-				//TODO: should not push new static element behind existing static elements
-			//	this.pushToBack(piece);
-			// }
-		},
+		//should not be used
+		//toggleStatic: function (piece) {
+		//	piece.static = !piece.static;
+		//},
 
 		//called by web socket handler upon receiving an update
 		transformPiece: function (pieceData) {
-			var piece = this.pieceHash[pieceData["piece"]];
+			var index = this.pieceHash[pieceData["piece"]];
+			var piece = this.pieces[index];
 			var user = vb.users.userList[pieceData["user"]];
 
 			this.highlightPiece(piece, user.color, vb.moveHighlightDuration);
@@ -182,7 +198,7 @@ var VBoard = VBoard || {};
 
 			if(pieceData.hasOwnProperty("s")) {
 				piece.mesh.scaling.y = pieceData["s"];
-				piece.adjustWidth();
+				this.adjustPieceWidth(piece);
 			}
 
 			if(pieceData.hasOwnProperty("static")) {
@@ -206,7 +222,8 @@ var VBoard = VBoard || {};
 			for(id in this.smoothedPieces) {
 				if(this.smoothedPieces.hasOwnProperty(id)) {
 					var moveInfo = this.smoothedPieces[id];
-					var piece = this.pieceHash[id];
+					var index = this.pieceHash[id];
+					var piece = this.pieces[index];
 					moveInfo.time += dt;
 
 					if(moveInfo.time >= vb.smoothTransitionDuration) {
@@ -231,6 +248,10 @@ var VBoard = VBoard || {};
 		highlightPiece: function (piece, color, duration) {
 			clearTimeout(piece.highlightTimeout);
 
+			if(piece.outlined) {
+				piece.mesh.renderOutline = false;
+			}
+
 			//var babylonColor = new BABYLON.Color3(color[0]/255, color[1]/255, color[2]/255);
 
 			piece.mesh.overlayColor = color;
@@ -238,7 +259,30 @@ var VBoard = VBoard || {};
 			piece.highlightTimeout = setTimeout(function () {
 				piece.mesh.renderOverlay = false;
 				piece.highlightTimeout = null;
+
+				if(piece.outlined) {
+					piece.mesh.renderOutline = true;
+				}
 			}, duration);
+		},
+
+		//although the engine has outlines override overlays
+		//I want overlays to override outlines
+		outlinePiece: function (piece, color, on) {
+			if(on === void 0) {
+				on = true;
+			}
+			piece.outlined = on;
+
+			if(on) {
+				piece.mesh.outlineColor = color;
+
+				if(!piece.mesh.renderOverlay) {
+					piece.mesh.renderOutline = true;
+				}
+			} else {
+				piece.mesh.renderOutline = false;
+			}
 		},
 
 		//takes JSON formatted data from socket handler
@@ -353,9 +397,10 @@ var VBoard = VBoard || {};
 						vb.board.textureMap[icon] = texture;
 						texture.hasAlpha = true;
 
-						for(var piece_id in vb.board.pendingTextures[icon]) {
-							if(vb.board.pendingTextures[icon].hasOwnProperty(piece_id)) {
-								var p = vb.board.pieceHash[piece_id];
+						for(var pieceID in vb.board.pendingTextures[icon]) {
+							if(vb.board.pendingTextures[icon].hasOwnProperty(pieceID)) {
+								var index = vb.board.pieceHash[pieceID];
+								var p = vb.board.pieces[index];
 								p.mesh.material.diffuseTexture = texture;
 								vb.board.adjustPieceWidth(p);
 							}
@@ -391,7 +436,8 @@ var VBoard = VBoard || {};
 			var userID = deckData["user"];
 			var deckID = deckData["piece"];
 
-			var deck = this.pieceHash[deckID];
+			var index = this.pieceHash[deckID];
+			var deck = this.pieces[index];
 			var user = vb.users.userList[userID];
 
 			this.highlightPiece(deck, user.color, vb.moveHighlightDuration);
@@ -432,7 +478,8 @@ var VBoard = VBoard || {};
 			var deckID = deckData["piece"];
 			var count = deckData["count"];
 
-			var deck = this.pieceHash[deckID];
+			var index = this.pieceHash[deckID];
+			var deck = this.pieces[index];
 			var user = vb.users.userList[userID];
 
 			this.highlightPiece(deck, user.color, vb.moveHighlightDuration);

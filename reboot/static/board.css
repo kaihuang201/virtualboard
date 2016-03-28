@@ -184,7 +184,7 @@ div#chatbox {
 	padding-top: 10px;
 }
 
-div#chatbox-inbox {
+div#chatbox > div#chatbox-inbox {
 	display: none; 
 	position: absolute;
 	border-radius: 10px;
@@ -198,26 +198,51 @@ div#chatbox-inbox {
 	padding: 10px;
 }
 
-div#chatbox-input {
+div#chatbox > div#chatbox-input {
 	position: absolute; 
 	bottom: 10px;
 	left: 1%; 
 	width: 98%;
 }
 
-div#players-list {
+div#right-panel {
 	position: absolute;
 	height: 100%;
-	width: 15%;
+	width: 200px;
 	top: 0px;
-	right: 0px;
+	right: -200px;
 	background-color: #333333;
 	padding: 10px;
+}
+
+
+div#right-panel > div#right-toolbar {
+	position: absolute;
+	right: 100%;
+	/*bottom: 0px;*/
+	top: 60%;
+}
+
+div#right-panel > div#chat {
+	position: absolute;
+	height: 100%;
+	width: 100%;
+	top: 0px;
+	left: 0px;
+}
+
+div#right-panel > div#chat > div#chatbox-input {
+	position: absolute; 
+	bottom: 10px;
+	left: 5%; 
+	width: 90%;
 }
 
 div#players-list-list > p {
 	color: white;
 }
+
+
 
 /* Tooltip */
 .btn-tooltip + .tooltip > .tooltip-inner {

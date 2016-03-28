@@ -288,8 +288,8 @@ var VBoard = VBoard || {};
 
 			remove: function (id) {
 				if(this.listMap.hasOwnProperty(id)) {
-					var prev = this.listMap[id].next;
-					var next = this.listMap[id].prev;
+					var prev = this.listMap[id].prev;
+					var next = this.listMap[id].next;
 
 					if(prev === null) {
 						this.head = next;
@@ -449,14 +449,14 @@ var VBoard = VBoard || {};
 				for(var i=0; i<id.length; i++) {
 					pieceData.push({
 						"piece" : id[i],
-						"static" : vb.board.pieceHash[id[i]].static ? 1 : 0
+						"static" : vb.board.getFromID(id[i]).static ? 1 : 0
 					});
 				}
 			} else {
 				var pieceData = [
 					{
 						"piece" : id,
-						"static" : vb.board.pieceHash[id].static ? 1 : 0
+						"static" : vb.board.getFromID(id[i]).static ? 1 : 0
 					}
 				];
 			}
@@ -528,7 +528,7 @@ var VBoard = VBoard || {};
 			if(deckID.constructor === Array) {
 				var pieceData = [];
 
-				for(var i=0; i<id.length; i++) {
+				for(var i=0; i<cardID.length; i++) {
 					pieceData.push({
 						"deck" : deckID[i],
 						"card" : cardID[i]
@@ -572,6 +572,30 @@ var VBoard = VBoard || {};
 				"data" : pieceData
 			};
 			this.send(data);
+		},
+
+		shuffleDeck: function (deckID) {
+			if(deckID.constructor === Array) {
+				var pieceData = [];
+
+				for(var i=0; i<deckID.length; i++) {
+					pieceData.push({
+						"piece" : deckID[i]
+					});
+				}
+			} else {
+				var pieceData = [
+					{
+						"piece" : deckID
+					}
+				];
+			}
+			var data = {
+				"type" : "shuffleDeck",
+				"data" : pieceData
+			};
+			this.send(data);
+
 		},
 
 		createPrivateZone: function (zoneData) {

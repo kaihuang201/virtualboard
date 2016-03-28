@@ -722,7 +722,7 @@ class Game:
 			"type" : "shuffleDeck",
 			"data" : response_data
 		}
-		this.message_all(response)
+		self.message_all(response)
 
 	def setBackground(self, client, backgroundData):
 		client.spam_amount += 3
