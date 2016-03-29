@@ -148,7 +148,7 @@ var VBoard = VBoard || {};
 			} else {
 				var beaconData = [
 					{
-						"pos" : [x[i], y[i]]
+						"pos" : [x, y]
 					}
 				];
 			}
@@ -702,12 +702,17 @@ var VBoard = VBoard || {};
 					} else {
 						vb.interface.alertModal(data["data"][0]["msg"],0);
 					}
-					
 					break;
 				case "chat":
 					vb.interface.chatIncomingMsg(data["data"][0]["msg"],true);
 					break;
 				case "beacon":
+					var beacons = data["data"];
+
+					for(index in beacons) {
+						var beaconData = beacons[index];
+						vb.board.beacon(beaconData);
+					}
 					break;
 				//use "pt" as a shorthand for pieceTransform
 				case "pt":

@@ -350,7 +350,7 @@ var VBoard = VBoard || {};
 					console.debug(evt);
 					console.log("click on: " + piece.id);
 
-					if(piece.static == false) {
+					if(piece.static == false && !evt.sourceEvent.altKey) {
 
 						//check that the shift key was pressed for the context menu
 						if(evt.sourceEvent.shiftKey) {
@@ -515,6 +515,15 @@ var VBoard = VBoard || {};
 			//for some bizzare reason, not using the intermediate ratio variable makes this not work
 			ratio = piece.mesh.scaling.y * t._baseWidth / t._baseHeight;
 			piece.mesh.scaling.x = ratio;
+		},
+
+		beacon: function (beaconData) {
+			var x = beaconData["pos"][0];
+			var y = beaconData["pos"][1];
+			var user_id = beaconData["user"];
+			var user = vb.users.userList[user_id];
+
+			//TODO
 		},
 
 		//special pieces

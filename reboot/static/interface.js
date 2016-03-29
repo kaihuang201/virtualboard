@@ -474,6 +474,8 @@ var VBoard = VBoard || {};
 		chatIncomingMsg: function (msg,needDecoding) {
 			if (!($("#chatbox-inbox").is(":visible"))) {
 				$("#chatbox-inbox").fadeIn("fast");
+
+				//TODO: moving the mouse back over the chatbox while it is fading out should have it fade back in again immediately
 				setTimeout(function () {$("#chatbox-inbox").fadeOut("slow");},8000);
 			}
 			if (needDecoding) {

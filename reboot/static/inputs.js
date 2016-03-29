@@ -65,15 +65,20 @@ var VBoard = VBoard || {};
 			});
 
 			window.addEventListener("mousedown", function (evt) {
-				this.mouseDown = true;
-				console.log("mouseDown: " + evt.handled);
-
 				var pos = vb.board.screenToGameSpace(new BABYLON.Vector2(vb.scene.pointerX, vb.scene.pointerY));
-				this.lastDragX = pos.x;
-				this.lastDragY = pos.y;
 
-				if(!evt.handled) {
-					vb.selection.clear();
+				if(evt.altKey) {
+					vb.sessionIO.sendBeacon(pos.x, pos.y);
+				} else {
+					this.mouseDown = true;
+					console.log("mouseDown: " + evt.handled);
+
+					this.lastDragX = pos.x;
+					this.lastDragY = pos.y;
+
+					if(!evt.handled) {
+						vb.selection.clear();
+					}
 				}
 			});
 		},
