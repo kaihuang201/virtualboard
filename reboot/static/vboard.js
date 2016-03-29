@@ -16,6 +16,8 @@ var VBoard = VBoard || {};
 	vb.moveTickDuration = 100; //maximum time to hold onto new positional data before sending it
 	vb.smoothTransitionDuration = 90; //how many milliseconds to smooth out motion received from the server
 
+	vb.doubleClickTime = 250;
+
 	vb.quickStart = function () {
 		vb.limboIO.hostGame("bill", [0, 0, 255], "chess deathmatch", "12345");
 		vb.quickStarted = true;

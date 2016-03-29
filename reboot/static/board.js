@@ -221,6 +221,12 @@ var VBoard = VBoard || {};
 		movePieces: function (dt) {
 			for(id in this.smoothedPieces) {
 				if(this.smoothedPieces.hasOwnProperty(id)) {
+					if(!this.pieceHash.hasOwnProperty(id)) {
+						//the piece was deleted, we don't need to keep track of it anymore
+						//TODO: this should be handled by the remove method instead of here
+						delete this.smoothedPieces[id];
+						continue;
+					}
 					var moveInfo = this.smoothedPieces[id];
 					var index = this.pieceHash[id];
 					var piece = this.pieces[index];
@@ -312,6 +318,7 @@ var VBoard = VBoard || {};
 			piece.predictTimeout = null;
 			piece.isCard = false;
 			piece.isDie = false;
+			piece.lastTrigger = 0;
 			this.setIcon(piece, pieceData["icon"]);
 
 			if(pieceData.hasOwnProperty("cardData")) {
@@ -356,11 +363,19 @@ var VBoard = VBoard || {};
 							}
 							//vb.menu.createContextMenu(piece);
 						} else {
+							var time = vb.simTime;
+
 							if(vb.selection.hasPiece(piece)) {
 								vb.selection.clearAndSetOnMouseUp = piece;
+
+								//TODO: the exact logic on when to trigger a double click still needs to be worked out
+								if(time - piece.lastTrigger < vb.doubleClickTime) {
+									vb.board.doubleClick(piece);
+								}
 							} else {
 								vb.selection.setPieces([piece]);
 							}
+							piece.lastTrigger = time;
 						}
 						evt.sourceEvent.handled = true;
 					}
@@ -548,6 +563,7 @@ var VBoard = VBoard || {};
 			this.setIcon(piece, icon);
 		},
 
+		//handles data from socket handler
 		flipCardPiece: function (pieceData) {
 			var id = pieceData["piece"];
 			var frontIcon = pieceData["icon"];
@@ -588,6 +604,18 @@ var VBoard = VBoard || {};
 			//TODO: figure out how to overlay text on actual background
 			piece.numCards = newCount;
 			//this.mesh.material.diffuseTexture.drawText(this.numCards, null, 50 * this.size, "bold 128px Arial", "rgba(255,255,255,1.0)", "black");
+		},
+
+		doubleClick: function(piece) {
+			//TODO: I think a double click + drag on a deck should pick up the deck
+			//		a single click + drag simply draws the top card off the deck
+			if(piece.isCard) {
+				vb.sessionIO.flipCard(piece.id);
+			}
+
+			if(piece.isDie) {
+				vb.sessionIO.rollDice(piece.id);
+			}
 		}
 	};
 })(VBoard);
