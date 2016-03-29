@@ -92,7 +92,10 @@ var VBoard = VBoard || {};
 
 				var data = {
 					"icon" : icon,
-					"max_roll" : selectedMax,
+					"diceData" : {
+						"max" : selectedMax,
+						"faces" : []
+					},
 					"s" : 2
 				};
 				vb.sessionIO.addPiece(data);
@@ -126,23 +129,25 @@ var VBoard = VBoard || {};
 			$("#context-shuffle-deck").off("click");
 
 			//only show flip option if piece is a card
-			if (piece instanceof vb.Card) {
+			if (piece.isCard) {
 				$("#context-flip").show();
+
+				if(piece.numCards > 1) {
+					$("#context-shuffle-deck").show();
+					$("#context-draw-card").show();
+				} else {
+					$("#context-shuffle-deck").hide();
+					$("#context-draw-card").hide();
+				}
 			}
 			else {
 				$("#context-flip").hide();
-			}
-
-			if(piece instanceof vb.Deck) {
-				$("#context-shuffle-deck").show();
-				$("#context-draw-card").show();
-			} else {
-				$("#context-shuffle-deck").hide();
 				$("#context-draw-card").hide();
+				$("#context-shuffle-deck").hide();
 			}
 
 			//only show roll option if piece is a die
-			if (piece instanceof vb.Die) {
+			if (piece.isDie) {
 				$("#context-roll").show();
 			}
 			else {

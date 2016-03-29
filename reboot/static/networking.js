@@ -469,14 +469,6 @@ var VBoard = VBoard || {};
 
 		//interacting with special pieces
 
-		createDeck: function (deckData) {
-            var data = {
-                "type" : "createDeck",
-                "data" : deckData
-            };
-            this.send(data);
-        },
-
 		rollDice: function (id) {
 			if(id.constructor === Array) {
 				var pieceData = [];
@@ -551,19 +543,22 @@ var VBoard = VBoard || {};
 
 		drawCard: function (deckID) {
 			console.log("draw card" + deckID)
+			var cameraRotation = Math.atan2(vb.camera.upVector.y, vb.camera.upVector.x);
 
 			if(deckID.constructor === Array) {
 				var pieceData = [];
 
 				for(var i=0; i<deckID.length; i++) {
 					pieceData.push({
-						"piece" : deckID[i]
+						"piece" : deckID[i],
+						"cameraRotation" : cameraRotation
 					});
 				}
 			} else {
 				var pieceData = [
 					{
-						"piece" : deckID
+						"piece" : deckID,
+						"cameraRotation" : cameraRotation
 					}
 				];
 			}
@@ -805,7 +800,7 @@ var VBoard = VBoard || {};
 
 					for (var i = 0; i < dice.length; i++) {
 						var die = dice[i];
-						vb.board.rollDie(die);
+						vb.board.rollDiePiece(die);
 					}
 					break;
 				case "flipCard":
@@ -813,7 +808,7 @@ var VBoard = VBoard || {};
 
 					for (var i = 0; i < cards.length; i++) {
 						var card = cards[i];
-						vb.board.flipCard(card);
+						vb.board.flipCardPiece(card);
 					}
 					break;
 				case "changeDeckCount":

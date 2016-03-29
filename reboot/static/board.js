@@ -287,20 +287,92 @@ var VBoard = VBoard || {};
 
 		//takes JSON formatted data from socket handler
 		generateNewPiece: function (pieceData) {
-			var piece;
-			if (pieceData.hasOwnProperty("faceup")){
-                piece = new vb.Card(pieceData);
-            }
-            else if (pieceData.hasOwnProperty("max_roll")) {
-                piece = new vb.Die(pieceData);
-            }
-            else if (pieceData.hasOwnProperty("count")) {
-                piece = new vb.Deck(pieceData);
-            }
-            else {
-                piece = new vb.Piece(pieceData);
-            }
+			var piece = {};
+
+			piece.size = pieceData["s"];
+			var c = pieceData["color"];
+			piece.color = new BABYLON.Color3(c[0]/255, c[1]/255, c[2]/255);
+
+			var plane = BABYLON.Mesh.CreatePlane("plane", piece.size, vb.scene);
+			var material = new BABYLON.StandardMaterial("std", vb.scene);
+			plane.position = new BABYLON.Vector3(pieceData["pos"][0], pieceData["pos"][1], 0);
+			plane.rotation.z = pieceData["r"];
+			plane.piece = piece;
+			plane.material = material;
+
+			//position - last server confirmed position		
+			//targetPosition - the same as position except for when the local user is moving the piece		
+			//					specifically, targetPosition is where the piece will end up after transition smoothing		
+			//mesh.position - where the piece is being rendered
+			piece.id = pieceData["piece"];
+			piece.position = new BABYLON.Vector2(pieceData["pos"][0], pieceData["pos"][1]);
+			piece.mesh = plane;
+			piece.static = pieceData["static"] == 1;
+			piece.highlightTimeout = null;
+			piece.predictTimeout = null;
+			piece.isCard = false;
+			piece.isDie = false;
+			this.setIcon(piece, pieceData["icon"]);
+
+			if(pieceData.hasOwnProperty("cardData")) {
+				piece.isCard = true;
+
+				if(pieceData["cardData"].hasOwnProperty("count")) {
+					vb.board.setCardCount(piece, pieceData["cardData"]["count"]);
+				} else {
+					vb.board.setCardCount(piece, 1);
+				}
+			}
+
+			if(pieceData.hasOwnProperty("diceData")) {
+				piece.isDie = true;
+				piece.max = pieceData["diceData"]["max"];
+				piece.faces = pieceData["diceData"]["faces"];
+			}
+
+			plane.actionManager = new BABYLON.ActionManager(vb.scene);
+
+			//TODO: instead of attaching a code action to each piece
+			//		we should just have a scene.pick trigger in a global event listener
+			//		We also should be able to right click anywhere to bring up a menu
+			//		that lets us add a piece at that location.
+
+			//TODO: do not register if static, make a register/unregister block in transformPiece
+			plane.actionManager.registerAction(
+				new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnLeftPickTrigger, function (evt) {
+					console.debug(evt);
+					console.log("click on: " + piece.id);
+
+					if(piece.static == false) {
+
+						//check that the shift key was pressed for the context menu
+						if(evt.sourceEvent.shiftKey) {
+							if(vb.selection.hasPiece(piece)) {
+								console.log("shift+remove");
+								vb.selection.removePiece(piece);
+							} else {
+								console.log("shift+add");
+								vb.selection.addPiece(piece);
+							}
+							//vb.menu.createContextMenu(piece);
+						} else {
+							if(vb.selection.hasPiece(piece)) {
+								vb.selection.clearAndSetOnMouseUp = piece;
+							} else {
+								vb.selection.setPieces([piece]);
+							}
+						}
+						evt.sourceEvent.handled = true;
+					}
+				})
+			);
+
 			this.add(piece);
+
+			if(pieceData.hasOwnProperty("user")) {
+				var user = vb.users.userList[pieceData["user"]];
+				this.highlightPiece(piece, user.color, vb.addHighlightDuration);
+			}
 			return piece;
 		},
 
@@ -444,35 +516,55 @@ var VBoard = VBoard || {};
 			this.setIcon(deck, deckData["icon"]);
 		},
 
-		//TODO: the only reason to have a roll function separate from pieceTransform is to have an animation
-		rollDie: function(pieceData) {
+		//TODO: the naming doesn't make a ton of sense here, needs some updating
+		//I did it this way to reflect how remove/removePiece was done
+		rollDiePiece: function (pieceData) {
 			var id = pieceData["piece"];
 			var value = pieceData["result"];
-			var user = vb.users.userList[pieceData["user"]];
-			var index = vb.board.pieceHash[id];
-			var piece = vb.board.pieces[index];
 
-			if(!(piece instanceof vb.Die)) {
+			var user = vb.users.userList[pieceData["user"]];
+			var index = this.pieceHash[id];
+			var piece = this.pieces[index];
+			this.highlightPiece(piece, user.color, vb.addHighlightDuration);
+			this.rollDice(piece, value);
+		},
+
+		//TODO: the only reason to have a roll function separate from pieceTransform is to have an animation
+		rollDice: function(piece, value) {
+			if(!piece.isDie) {
 				console.log("Warning: rollDice called on non-dice piece");
 			}
-			vb.board.highlightPiece(piece, user.color, vb.addHighlightDuration);
-			piece.roll(value);
+			var icon = "";
+
+			if(value < piece.faces.length) {
+				icon = piece.faces[value];
+			} else {
+				if(piece.max < 7) {
+					icon = "/static/img/die_face/small_die_face_" + (value+1) + ".png"
+				} else {
+					icon = "/static/img/die_face/big_die_face_" + (value+1) + ".png"
+				}
+			}
+			this.setIcon(piece, icon);
+		},
+
+		flipCardPiece: function (pieceData) {
+			var id = pieceData["piece"];
+			var frontIcon = pieceData["icon"];
+			var user = vb.users.userList[pieceData["user"]];
+			var index = this.pieceHash[id];
+			var piece = this.pieces[index];
+			this.highlightPiece(piece, user.color, vb.addHighlightDuration);
+			this.flipCard(piece, frontIcon);
 		},
 
 		//TODO: the only reason to have a flip function separate from pieceTransform(icon) is to do some kind of flipping animation
-		flipCard: function (pieceData) {
-			//TODO: animation
-			var id = pieceData["piece"];
-			var frontIcon = pieceData["front_icon"];
-			var user = vb.users.userList[pieceData["user"]];
-			var index = vb.board.pieceHash[id];
-			var piece = vb.board.pieces[index];
-
-			if(!(piece instanceof vb.Card)) {
+		flipCard: function (piece, frontIcon) {
+			if(!piece.isCard) {
 				console.log("Warning: flipCard called on non-card piece");
 			}
-			vb.board.highlightPiece(piece, user.color, vb.addHighlightDuration);
-			piece.flip(frontIcon);
+			//TODO: animation
+			this.setIcon(piece, frontIcon);
 		},
 
 		changeDeckCount: function (deckData) {
