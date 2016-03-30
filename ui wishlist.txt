@@ -1,41 +1,43 @@
-UI WISHLIST
+UI WISHLIST  
+
+(Legends: x - completed, v - completed in a similar way, o - pending/commented)
+
 process of joining a lobby
- - Add a name field to joining/hosting if they do not select one
- - any modal redirects should not make the user re-click the button they were trying to access
- - prompt for color with username instead of with lobby
- - hide password field for servers that do not have one
+ v - Add a name field to joining/hosting if they do not select one
+ x - any modal redirects should not make the user re-click the button they were trying to access
+ x - prompt for color with username instead of with lobby
+ o - hide password field for servers that do not have one
 
 Pre-game
 ==========
-add refresh button to top of page
-add like a "developed by x, y, z, using etc" at the bottom of the lobby page to make it look less empty
-text inputs on modals should grab keyboard focus
-anything clickable should change the mouse cursor into a clicking hand cursor, especially lobby entries and colors
-hitting the escape key should close a modal
-Oh yeah that's right, we need an actual home page separate from the lobby list as our index page with information
-resume should only appear if the old lobby exists
+   - add refresh button to top of page
+   - add like a "developed by x, y, z, using etc" at the bottom of the lobby page to make it look less empty
+   - text inputs on modals should grab keyboard focus
+   - anything clickable should change the mouse cursor into a clicking hand cursor, especially lobby entries and colors
+   - hitting the escape key should close a modal
+   - Oh yeah that's right, we need an actual home page separate from the lobby list as our index page with information
+ o - resume should only appear if the old lobby exists (comment: we need a polling function that tests if a lobby with given id exists)
 
 In-Game/General
 ==========
-when getting multiple errors from the server, they should all stack in some kind of scrollable display
- - this includes errors received while an old error is still up
-we need typing in the chat to not register key events in the game
-sending a chat message maybe should cause the text box to lose focus, but maybe not idk
-chat box view needs to go top to bottom and not be a fixed size
-hit enter to bring chat box into focus
-static objects should not change the mouse pointer to appear clickable
-page reload on dead socket should be able to be cancelled
-things need to not trigger on mouse move while a piece is being dragged
-right click context menus, since we need shift+click for selecting multiple items probably
-some sort of drag threshold for when the user may be trying to shift+click or draw
-Indicator for decks vs single cards
-context menus should not go off edge of screen
-right now it seems the camera is limited in movement but pieces are not
+   - when getting multiple errors from the server, they should all stack in some kind of scrollable display - this includes errors received while an old error is still up
+ o - we need typing in the chat to not register key events in the game
+ o - sending a chat message maybe should cause the text box to lose focus, but maybe not idk (comment: I will go for the way it is now)
+   - chat box view needs to go top to bottom and not be a fixed size
+   - hit enter to bring chat box into focus
+   - static objects should not change the mouse pointer to appear clickable
+   - page reload on dead socket should be able to be cancelled
+   - things need to not trigger on mouse move while a piece is being dragged
+   - right click context menus, since we need shift+click for selecting multiple items probably
+   - some sort of drag threshold for when the user may be trying to shift+click or draw
+   - Indicator for decks vs single cards
+   - context menus should not go off edge of screen
+   - right now it seems the camera is limited in movement but pieces are not
 
 Feature Ideas
 ==========
-Readable and editable notepads/counters
-actaully implementing scribbles for real this time
-piece momentum when thrown, shake dice to roll
-hitting tab or something to bring up the current player list
-saving/loading
+   - Readable and editable notepads/counters
+   - actaully implementing scribbles for real this time
+   - piece momentum when thrown, shake dice to roll
+ x - hitting tab or something to bring up the current player list
+   - saving/loading
