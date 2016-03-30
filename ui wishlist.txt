@@ -12,9 +12,9 @@ Pre-game
 ==========
    - add refresh button to top of page
    - add like a "developed by x, y, z, using etc" at the bottom of the lobby page to make it look less empty
-   - text inputs on modals should grab keyboard focus
+ x - text inputs on modals should grab keyboard focus
    - anything clickable should change the mouse cursor into a clicking hand cursor, especially lobby entries and colors
-   - hitting the escape key should close a modal
+ x - hitting the escape key should close a modal
    - Oh yeah that's right, we need an actual home page separate from the lobby list as our index page with information
  o - resume should only appear if the old lobby exists (comment: we need a polling function that tests if a lobby with given id exists)
 

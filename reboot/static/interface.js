@@ -217,19 +217,15 @@ var VBoard = VBoard || {};
 				$('#template-modal #submit-btn-modal-template').unbind();
 				$('#template-modal #submit-btn-modal-template').on("click",function () {
 					var password = $('#lobby-password').val();
+					vb.interface.showLoading();
+					vb.limboIO.joinGame(VBoard.interface.userName,VBoard.interface.colorSelected,lobbyNo,requirePwd?password:'');
 
-					//black should be a valid color, this needs changing   <--- let's first fix the color selections to the five preset colors
-					// if (VBoard.interface.colorSelected[1] != 0 && VBoard.interface.colorSelected[2] != 0 && VBoard.interface.colorSelected[3] != 0) {
-						vb.interface.showLoading();
-						vb.limboIO.joinGame(VBoard.interface.userName,VBoard.interface.colorSelected,lobbyNo,password);
-
-					// } else {
-					// 	vb.interface.setTemplateModalAlert('Please select a color');
-					// }
 				});
+				// set focus for modal
+				vb.interface.setInputFocusAndEnterKeyCallback("#lobby-password","#submit-btn-modal-template",!requirePwd);
 			} else {
-				this.userNamePrompt();
-				this.setTemplateModalAlert('Please choose a nickname first');
+				this.userNamePrompt(vb.interface.joinLobbyRequest);
+				this.setTemplateModalAlert('Please choose a nickname/color first');
 			}
 		},
 
@@ -245,17 +241,13 @@ var VBoard = VBoard || {};
 					var gameName = VBoard.interface.userName + "'s Game";
 					var password = $('#lobby-password').val();
 
-					// if (gameName != '' && VBoard.interface.colorSelected[1] != 0 && VBoard.interface.colorSelected[2] != 0 && VBoard.interface.colorSelected[3] != 0) {
-						// console.log(VBoard.interface.colorSelected + ' <-- test');
-						vb.interface.showLoading();
-						vb.limboIO.hostGame(VBoard.interface.userName,VBoard.interface.colorSelected,gameName,password);	
-						// console.log(VBoard.interface.userName+ VBoard.interface.colorSelected + gameName + password);
+					vb.interface.showLoading();
+					vb.limboIO.hostGame(VBoard.interface.userName,VBoard.interface.colorSelected,gameName,password);	
 
-					// } else {
-					// 	vb.interface.setTemplateModalAlert('Please enter a select a color');
-					// }
-					// $('#template-modal').modal('hide');
 				});
+
+				// set focus and enter key
+				vb.interface.setInputFocusAndEnterKeyCallback("#lobby-password","#submit-btn-modal-template",false);
 			} else {
 				this.userNamePrompt(vb.interface.createLobbyRequest);
 				this.setTemplateModalAlert('Please choose a nickname/color first');
@@ -294,13 +286,13 @@ var VBoard = VBoard || {};
 				for (var j = listOfGames.length - 1; j >= 0; j--) {
 					var lobbyID = listOfGames[j]["id"];
 					var lobbyName = listOfGames[j]["name"];
-					var singleLobby = '<a id="lobby-' + listOfGames[j]["id"].toString() + '" class="list-group-item"><span class="badge badge-default pull-right">' + listOfGames[j]["players"] + ' ' + ((listOfGames[j]["players"]==1)?'player':'players')+ ' online</span><h2>' + listOfGames[j]["name"] + '</h2></a>'
+					var singleLobby = '<a id="lobby-' + listOfGames[j]["id"].toString() + '" class="list-group-item"><span class="badge badge-default pull-right">' + listOfGames[j]["players"] + ' ' + ((listOfGames[j]["players"]==1)?'player':'players')+ ' online</span><h2>' + listOfGames[j]["name"] + (!listOfGames[j]["password"]?' <i class="fa fa-lock"></i>':'') + '</h2></a>'
 					$("#lobby-list").append(singleLobby);
 					var currentLobby = $("#lobby-" + listOfGames[j]["id"].toString());
 					currentLobby.unbind();
 
 					// this line fixes the infamous loop closure thing
-					func[j] = (function(a,b,c){currentLobby.on("click",function() {vb.interface.joinLobbyRequest(a,b,c);});})(lobbyID,lobbyName,listOfGames[j]['password']);
+					func[j] = (function(a,b,c){currentLobby.on("click",function() {vb.interface.joinLobbyRequest(a,b,c);});})(lobbyID,lobbyName,!listOfGames[j]['password']);
 
 					// currentLobby.on("click",function() {vb.interface.joinLobbyRequest(lobbyID,lobbyName);});
 				}
@@ -560,18 +552,29 @@ var VBoard = VBoard || {};
 		arrayRGB2StrRGB: function (array) {
 			return 'rgb(' + array.toString() + ')';
 		},
-		setInputFocusAndEnterKeyCallback: function (textbox,enterKey,skipFocus) {
-			if (!skipFocus) {
+		setInputFocusAndEnterKeyCallback: function (textbox,button,focusOnButton) {
+			console.log("focus set");
+			if (!focusOnButton) {
 				setTimeout(function () {
 					$(textbox).focus();
 				}, 500);
-			}
-			$(textbox).keypress(function (event) {
+				$(textbox).keypress(function (event) {
 				//detect enter keypress while textbox is selected
 				if(event.keyCode == '13') {
 					$(enterKey).click();
-				}
+				} 
 			});
+			} else {
+				setTimeout(function () {
+					$(button).focus();
+					$(button).click(function(){
+						if(event.keyCode == '27') {
+							$('#template-modal').modal('hide');
+							vb.interface.clearTemplateModal();
+						}
+					})
+				}, 500);
+			}
 		},
 		abbrLongStr: function (originalStr, toLength) {
 			return originalStr.substring(0,Math.min(toLength,originalStr.length)) + ((originalStr.length > toLength)?"...":"");
