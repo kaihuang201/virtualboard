@@ -84,7 +84,7 @@ var VBoard = VBoard || {};
 						vb.interface.showLoading();
 						vb.limboIO.joinGame(VBoard.interface.userName,colorFromCookie,lobbyNoFromCookie,$('#lobby-password').val());
 					});
-					
+				vb.interface.setInputFocusAndEnterKeyCallback('','#submit-btn-modal-template',true);	
 
 				});
 			} else {
@@ -120,14 +120,15 @@ var VBoard = VBoard || {};
 			$("#player-list-toggler").click(function () {
 				if(!($("#players-list").is(':visible')) && vb.interface.rightPanelIsShown()) {
 					$("#chat-box-toggler").click();
-					$("#right-panel").promise().done(function () {$("#players-list").show();vb.interface.toggleRightPanel("show");});
+					$("#right-panel-container").promise().done(function () {vb.interface.clearRightPanel();$("#players-list").show();vb.interface.toggleRightPanel("show");});
 				} else if (!($("#players-list").is(':visible')) && (!vb.interface.rightPanelIsShown())) {
+					vb.interface.clearRightPanel();
 					$("#players-list").show();
 					vb.interface.toggleRightPanel("show");
 				} else if ($("#players-list").is(':visible') && (!vb.interface.rightPanelIsShown())) {
 					vb.interface.toggleRightPanel("show");
 				} else {
-					vb.interface.toggleRightPanel("hide",function(){$("#players-list").hide();})
+					vb.interface.toggleRightPanel("hide")
 				}
 				// send a refresh request
 				// vb.sessionIO.getClientList();
@@ -136,14 +137,15 @@ var VBoard = VBoard || {};
 			$("#chat-box-toggler").click(function () {
 				if(!($("#chat").is(':visible')) && vb.interface.rightPanelIsShown()) {
 					$("#player-list-toggler").click();
-					$("#right-panel").promise().done(function () {$("#chat").show();vb.interface.toggleRightPanel("show");});					
+					$("#right-panel-container").promise().done(function () {vb.interface.clearRightPanel();$("#chat").show();vb.interface.toggleRightPanel("show");});					
 				} else if (!($("#chat").is(':visible')) && (!vb.interface.rightPanelIsShown())) {
+					vb.interface.clearRightPanel();
 					$("#chat").show();
 					vb.interface.toggleRightPanel("show");
 				} else if ($("#chat").is(':visible') && (!vb.interface.rightPanelIsShown())) {
 					vb.interface.toggleRightPanel("show");
 				} else {
-					vb.interface.toggleRightPanel("hide",function(){$("#chat").hide();})
+					vb.interface.toggleRightPanel("hide")
 				}
 
 			});
@@ -153,7 +155,11 @@ var VBoard = VBoard || {};
 			// enable tooltip @ bootstrap
 			$('[data-toggle="tooltip"]').tooltip(); 
 
+			// right panel
+			$('#right-panel-container').on("mouseleave",function() {setTimeout(function(){vb.interface.toggleRightPanel("hide");},1500);});
+			// $('#right-panel-container').on("mouseenter",function() {setTimeout(function(){vb.interface.toggleRightPanel("show");},1500);});
 			$("#refresh-player-list").on("click",function () {vb.sessionIO.getClientList();});
+
 		},
 
 		colorPickerInit: function () {
@@ -172,9 +178,7 @@ var VBoard = VBoard || {};
 				},
 				colors: [ '#00ffcc','#FF4351', '#7D79F2', '#1B9AF7', '#A5DE37', '#FEAE1B' , '#ff9999'],
 				iterationCallback: function(target,elem,color,iterationNumber) {
-		      			// if( iterationNumber < 4 /* colors array is undefined here :( */ ) {
-		      				target.append('&nbsp;&nbsp;');
-		      			// }
+      				target.append('&nbsp;&nbsp;');
 		      		elem.css("border","1px solid #dddddd")
 		      			.css("padding", "7px")
 		      			.css("border-radius", "10px");
@@ -401,7 +405,7 @@ var VBoard = VBoard || {};
 		//the first character appears as an error for me, can we just stick to ascii please
 		setTemplateModalAlert: function (alertText) {
 			this.hideLoading();
-			$("#model-template-alert").html('<div class="alert alert-danger" role="alert">\
+			$("#model-template-alert").prepend('<div class="alert alert-danger" role="alert">\
 									<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span> '+ alertText + '\
 								</div>');
 		},
@@ -429,12 +433,16 @@ var VBoard = VBoard || {};
 				vb.interface.setTemplateModalAlert(alertText);
 			} else {
 				var count = 10;
-				vb.interface.setTemplateModalAlert(alertText + ' (Reload in <span id="count-down">'+ count + '</span> seconds)');
+				vb.interface.setTemplateModalAlert(alertText + ' <span id="count-down-msg">(Reload in <span id="count-down">'+ count + '</span> seconds) - <button type="button" class="btn btn-default btn-sm" id="cancel-countdown">Cancel</button></span>');
 
-				setInterval(function(){
+				countDownInterval = setInterval(function(){
 				      $("#count-down").html((--count).toString());
 				      if(count == 0) location.reload();
 				   }, 1000);
+				$("#cancel-countdown").click(function(){
+					clearInterval(countDownInterval);
+					$("#count-down-msg").html('');
+				});
 			}
 		},
 
@@ -455,17 +463,12 @@ var VBoard = VBoard || {};
 			$("#chatbox").on("mouseenter",function () {
 				if (!($("#chatbox-inbox").is(":visible"))) $("#chatbox-inbox").fadeIn("fast");
 			});
-			// $("#chatbox-inbox").on("mouseenter",function () {
-			// 	if (!($("#chatbox-inbox").is(":visible"))) $("#chatbox-inbox").fadeIn("fast");
-			// });
 			$("#chatbox").on("mouseleave",function () {
 				$("#chatbox-inbox").fadeOut("slow");
 			});
-			// $("#chatbox-inbox").on("mouseleave",function () {
-			// 	$("#chatbox-inbox").fadeOut("slow");
-			// });
 
-			vb.interface.setInputFocusAndEnterKeyCallback("#chatbox-msg","#send-chat",true);
+
+			// vb.interface.setInputFocusAndEnterKeyCallback("#chatbox-msg","#send-chat",true);
 		},
 
 		chatIncomingMsg: function (msg,needDecoding) {
@@ -493,18 +496,16 @@ var VBoard = VBoard || {};
 		// right-panel handlers:
 		// handler for refresh friend list
 		toggleRightPanel: function(option,additionalCallBackFunction) {
-				if ($("#right-panel").css("right") != "0px") { // when hidden, show the panel
+				if ($("#right-panel-container").css("right") != "0px") { // when hidden, show the panel
 					if (option != "hide") {
-						console.log("show the panel");
-						$("#right-panel").promise().done($("#right-panel").animate({"right":('+=' + $("#right-panel").css("width"))},350,additionalCallBackFunction));
+						// vb.interface.clearRightPanel();
+						$("#right-panel-container").promise().done($("#right-panel-container").animate({"right":('+=' + $("#right-panel").css("width"))},350,additionalCallBackFunction));
 					}
 				} else { // when shown, hide the panel
 					if (option != "show") {
-						console.log("hide the panel");
-						$("#right-panel").promise().done($("#right-panel").animate({"right":('-=' + $("#right-panel").css("width"))},350,additionalCallBackFunction));
+						$("#right-panel-container").promise().done($("#right-panel-container").animate({"right":('-=' + $("#right-panel").css("width"))},350,additionalCallBackFunction));
 					}
 				}
-				// if(additionalCallBackFunction) additionalCallBackFunction();
 		},
 		showPlayerList: function (data) {
 			console.log(JSON.stringify(data));
@@ -518,7 +519,11 @@ var VBoard = VBoard || {};
 		},
 		// helper function
 		rightPanelIsShown: function () {
-			return ($("#right-panel").css("right") == "0px");
+			return ($("#right-panel-container").css("right") == "0px");
+		},
+		clearRightPanel: function () {
+			$(".right-panel-content").hide();
+			// $("#chat").hide();
 		},
 		setUserName: function (username,optionalColor) {
 			VBoard.interface.userName = username;

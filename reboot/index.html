@@ -102,35 +102,34 @@
 				</div>
 			</div>
 
-			
-			<div id="right-panel">
-				<div class="btn-group-vertical" id="right-toolbar">
-					<button type="button" class="btn btn-default" id="player-list-toggler"><i class="fa fa-users"></i></button>
-					<button type="button" class="btn btn-default" id="chat-box-toggler"><i class="fa fa-comments"></i></button>
-				</div>
-
-				<div id="players-list" style="display: none;">
-					<h4 style="color: white;">Players:</h4>
-					<button class="btn btn-default pull-right" id="refresh-player-list"><span class="glyphicon glyphicon-refresh" aria-hidden="true"></span></button>
-					<div id="players-list-list">
+			<div id="right-panel-container">
+				<div id="right-panel">
+					<div class="btn-group-vertical" id="right-toolbar">
+						<button type="button" class="btn btn-default" id="player-list-toggler"><i class="fa fa-users"></i></button>
+						<button type="button" class="btn btn-default" id="chat-box-toggler"><i class="fa fa-comments"></i></button>
 					</div>
-					
-				</div>
 
-				<div id="chat" style="display: none;">
-					<div id="chatbox-inbox">					
+					<div id="players-list" class="right-panel-content" style="display: none;">
+						<h4 style="color: white;">Players:</h4>
+						<button class="btn btn-default pull-right" id="refresh-player-list"><span class="glyphicon glyphicon-refresh" aria-hidden="true"></span></button>
+						<div id="players-list-list">
+						</div>
+						
 					</div>
-					<div id="chatbox-input">
-						<div class="input-group">
-							<input type="text" class="form-control" placeholder="Chat Here..." aria-describedby="basic-addon2" id="chatbox-msg">
-							<span class="input-group-btn">
-								<button class="btn btn-default" type="button" id="send-chat"><i class="fa fa-commenting-o"></i></button>
-							</span>
+
+					<div id="chat" class="right-panel-content" style="display: none;">
+						<div id="chatbox-inbox">					
+						</div>
+						<div id="chatbox-input">
+							<div class="input-group">
+								<input type="text" class="form-control" placeholder="Chat Here..." aria-describedby="basic-addon2" id="chatbox-msg">
+								<span class="input-group-btn">
+									<button class="btn btn-default" type="button" id="send-chat"><i class="fa fa-commenting-o"></i></button>
+								</span>
+							</div>
 						</div>
 					</div>
 				</div>
-
-
 			</div>
 
 			
@@ -186,7 +185,7 @@
 					</div>
 					<div class="modal-body">
 						<!-- <div class="container-fluid"> -->
-							<div class="row" id="model-template-alert">
+							<div class="row" id="model-template-alert" style="overflow: scroll; max-height: 70px;">
 								
 							</div>
 							<div class="row">

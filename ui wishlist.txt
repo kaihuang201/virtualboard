@@ -1,6 +1,6 @@
 UI WISHLIST  
 
-(Legends: x - completed, v - completed in a similar way, o - pending/commented)
+(Legends: x - completed, v - completed in an alternative way, o - pending/commented)
 
 process of joining a lobby
  v - Add a name field to joining/hosting if they do not select one
@@ -20,13 +20,13 @@ Pre-game
 
 In-Game/General
 ==========
-   - when getting multiple errors from the server, they should all stack in some kind of scrollable display - this includes errors received while an old error is still up
+ x - when getting multiple errors from the server, they should all stack in some kind of scrollable display - this includes errors received while an old error is still up
  o - we need typing in the chat to not register key events in the game
  o - sending a chat message maybe should cause the text box to lose focus, but maybe not idk (comment: I will go for the way it is now)
    - chat box view needs to go top to bottom and not be a fixed size
    - hit enter to bring chat box into focus
    - static objects should not change the mouse pointer to appear clickable
-   - page reload on dead socket should be able to be cancelled
+ x - page reload on dead socket should be able to be cancelled
    - things need to not trigger on mouse move while a piece is being dragged
    - right click context menus, since we need shift+click for selecting multiple items probably
    - some sort of drag threshold for when the user may be trying to shift+click or draw
