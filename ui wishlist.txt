@@ -6,7 +6,7 @@ process of joining a lobby
  v - Add a name field to joining/hosting if they do not select one
  x - any modal redirects should not make the user re-click the button they were trying to access
  x - prompt for color with username instead of with lobby
- o - hide password field for servers that do not have one
+ x - hide password field for servers that do not have one
 
 Pre-game
 ==========

@@ -210,9 +210,9 @@ var VBoard = VBoard || {};
 		},
 
 		
-		joinLobbyRequest: function (lobbyNo, lobbyName) {
+		joinLobbyRequest: function (lobbyNo, lobbyName, requirePwd) {
 			if (VBoard.interface.userName != "") {
-				vb.interface.switchToJoinLobbyModal(lobbyName);
+				vb.interface.switchToJoinLobbyModal(lobbyName, requirePwd);
 				$('#template-modal').modal('show');
 				$('#template-modal #submit-btn-modal-template').unbind();
 				$('#template-modal #submit-btn-modal-template').on("click",function () {
@@ -300,7 +300,7 @@ var VBoard = VBoard || {};
 					currentLobby.unbind();
 
 					// this line fixes the infamous loop closure thing
-					func[j] = (function(a,b){currentLobby.on("click",function() {vb.interface.joinLobbyRequest(a,b);});})(lobbyID,lobbyName);
+					func[j] = (function(a,b,c){currentLobby.on("click",function() {vb.interface.joinLobbyRequest(a,b,c);});})(lobbyID,lobbyName,listOfGames[j]['password']);
 
 					// currentLobby.on("click",function() {vb.interface.joinLobbyRequest(lobbyID,lobbyName);});
 				}
@@ -348,17 +348,22 @@ var VBoard = VBoard || {};
 			// vb.interface.colorPickerInit();
 		},
 
-		switchToJoinLobbyModal: function (lobbyName) {
+		switchToJoinLobbyModal: function (lobbyName,requirePwd) {
 			vb.interface.clearTemplateModalAlert();
 			vb.interface.clearTemplateModal();
 			$('#modal-template-title').html('Join 『' + lobbyName + '』');
-			$('#modal-template-content').html('<div class="form-group">\
+
+			if(requirePwd) {
+				$('#modal-template-content').html('<div class="form-group">\
 									<label for="lobby-password" class="form-control-label">Game Password:</label>\
 									<input type="password" class="form-control" id="lobby-password">\
 								</div>');
-			$('#template-modal #submit-btn-modal-template').show().html('Join');
-			// $("#selected-color").css('color',this.colorLastSelectedStr);
-			// vb.interface.colorPickerInit();
+				$('#template-modal #submit-btn-modal-template').show().html('Join');
+			} else {
+				$('#modal-template-content').html('<h5>Joining '+ lobbyName +'...</h5>');
+				$('#template-modal #submit-btn-modal-template').show().html('Confirm & Join!');
+			}
+			
 		},
 
 		switchToResumeGameModal: function (lobbyName) {

@@ -40,7 +40,7 @@ class Game:
 			"id" : self.game_id,
 			"name" : self.name,
 			"players" : len(self.clients),
-			"password" : 0 if self.password else 1
+			"password" : 1 if self.password else 0
 		}
 		return data
 
