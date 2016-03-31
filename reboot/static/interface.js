@@ -96,16 +96,17 @@ var VBoard = VBoard || {};
 				VBoard.interface.createLobbyRequest();
 			});
 
-			$("#listGames").on("click", function () {
-				
-				$("#template-modal").modal();
-
-				var listOfLobbies = vb.interface.listLobbiesRequest();
-
-
+			$("#refresh-game-list").on("click", function() {
+				VBoard.limboIO.listGames();
 			});
 
-			// vb.interface.colorPickerInit();
+			// $("#listGames").on("click", function () {
+				
+			// 	$("#template-modal").modal();
+
+			// 	var listOfLobbies = vb.interface.listLobbiesRequest();
+			// });
+
 
 			$('#change-username').on('click',function () {
 				vb.interface.clearTemplateModalAlert();
@@ -128,6 +129,7 @@ var VBoard = VBoard || {};
 				} else if ($("#players-list").is(':visible') && (!vb.interface.rightPanelIsShown())) {
 					vb.interface.toggleRightPanel("show");
 				} else {
+					console.log("case4a hide");
 					vb.interface.toggleRightPanel("hide")
 				}
 				// send a refresh request
@@ -145,6 +147,7 @@ var VBoard = VBoard || {};
 				} else if ($("#chat").is(':visible') && (!vb.interface.rightPanelIsShown())) {
 					vb.interface.toggleRightPanel("show");
 				} else {
+					console.log("case4b hide");
 					vb.interface.toggleRightPanel("hide")
 				}
 
@@ -156,8 +159,8 @@ var VBoard = VBoard || {};
 			$('[data-toggle="tooltip"]').tooltip(); 
 
 			// right panel
-			$('#right-panel-container').on("mouseleave",function() {setTimeout(function(){vb.interface.toggleRightPanel("hide");},1500);});
-			// $('#right-panel-container').on("mouseenter",function() {setTimeout(function(){vb.interface.toggleRightPanel("show");},1500);});
+			$('#right-panel-container').on("mouseleave",function() {vb.interface.toggleRightPanel("hide");});
+			// $('#right-panel-container').on("mouseenter",function() {vb.interface.toggleRightPanel("show");});
 			$("#refresh-player-list").on("click",function () {vb.sessionIO.getClientList();});
 
 		},
@@ -173,15 +176,10 @@ var VBoard = VBoard || {};
 					// },1000);
 					VBoard.interface.colorSelected = vb.interface.strRGB2ArrayRGB(c);
 					VBoard.interface.colorLastSelectedStr = c;
-
-					// console.log(VBoard.interface.colorSelected + " <--- test");
 				},
 				colors: [ '#00ffcc','#FF4351', '#7D79F2', '#1B9AF7', '#A5DE37', '#FEAE1B' , '#ff9999'],
 				iterationCallback: function(target,elem,color,iterationNumber) {
       				target.append('&nbsp;&nbsp;');
-		      		elem.css("border","1px solid #dddddd")
-		      			.css("padding", "7px")
-		      			.css("border-radius", "10px");
 					elem.html("&nbsp;&nbsp;&nbsp;&nbsp;");
 				}
 			});
@@ -290,7 +288,7 @@ var VBoard = VBoard || {};
 				for (var j = listOfGames.length - 1; j >= 0; j--) {
 					var lobbyID = listOfGames[j]["id"];
 					var lobbyName = listOfGames[j]["name"];
-					var singleLobby = '<a id="lobby-' + listOfGames[j]["id"].toString() + '" class="list-group-item"><span class="badge badge-default pull-right">' + listOfGames[j]["players"] + ' ' + ((listOfGames[j]["players"]==1)?'player':'players')+ ' online</span><h2>' + listOfGames[j]["name"] + (!listOfGames[j]["password"]?' <i class="fa fa-lock"></i>':'') + '</h2></a>'
+					var singleLobby = '<a id="lobby-' + listOfGames[j]["id"].toString() + '" class="list-group-item"><span class="badge badge-default pull-right">' + listOfGames[j]["players"] + ' ' + ((listOfGames[j]["players"]==1)?'player':'players')+ ' online</span><h2><i class="fa fa-gamepad"></i>  ' + listOfGames[j]["name"] + (!listOfGames[j]["password"]?' <i class="fa fa-lock"></i>':'') + '</h2></a>'
 					$("#lobby-list").append(singleLobby);
 					var currentLobby = $("#lobby-" + listOfGames[j]["id"].toString());
 					currentLobby.unbind();
@@ -328,6 +326,13 @@ var VBoard = VBoard || {};
 
 			// enable chat
 			vb.interface.chatInit();
+
+			// bind enter key to focus chat
+			$(document).keypress(function(event){
+				if (event.keyCode == 13) {
+					$("#chatbox-msg").focus();
+				}
+			});
 		},
 
 		switchToCreateLobbyModal: function () {
@@ -468,7 +473,7 @@ var VBoard = VBoard || {};
 			});
 
 
-			// vb.interface.setInputFocusAndEnterKeyCallback("#chatbox-msg","#send-chat",true);
+			vb.interface.setInputFocusAndEnterKeyCallback("#chatbox-msg","#send-chat",false);
 		},
 
 		chatIncomingMsg: function (msg,needDecoding) {
@@ -496,16 +501,19 @@ var VBoard = VBoard || {};
 		// right-panel handlers:
 		// handler for refresh friend list
 		toggleRightPanel: function(option,additionalCallBackFunction) {
-				if ($("#right-panel-container").css("right") != "0px") { // when hidden, show the panel
-					if (option != "hide") {
-						// vb.interface.clearRightPanel();
-						$("#right-panel-container").promise().done($("#right-panel-container").animate({"right":('+=' + $("#right-panel").css("width"))},350,additionalCallBackFunction));
+				$("#right-panel-container").promise().done(function() {
+					if ($("#right-panel-container").css("right") != "0px") { // when hidden, show the panel
+						if (option != "hide") {
+							// vb.interface.clearRightPanel();
+							$("#right-panel-container").promise().done($("#right-panel-container").animate({"right":('+=' + $("#right-panel").css("width"))},350,additionalCallBackFunction));
+						}
+					} else { // when shown, hide the panel
+						if (option != "show") {
+							$("#right-panel-container").promise().done($("#right-panel-container").animate({"right":('-=' + $("#right-panel").css("width"))},350,additionalCallBackFunction));
+						}
 					}
-				} else { // when shown, hide the panel
-					if (option != "show") {
-						$("#right-panel-container").promise().done($("#right-panel-container").animate({"right":('-=' + $("#right-panel").css("width"))},350,additionalCallBackFunction));
-					}
-				}
+				});
+				
 		},
 		showPlayerList: function (data) {
 			console.log(JSON.stringify(data));
@@ -566,7 +574,7 @@ var VBoard = VBoard || {};
 				$(textbox).keypress(function (event) {
 				//detect enter keypress while textbox is selected
 				if(event.keyCode == '13') {
-					$(enterKey).click();
+					$(button).click();
 				} 
 			});
 			} else {

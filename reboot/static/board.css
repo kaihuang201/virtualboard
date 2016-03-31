@@ -51,6 +51,13 @@ html, body {
 	top: 10px;
 }
 
+.ColorBlotch {
+	border: 1px solid #dddddd;
+	padding: 7px;
+	border-radius: 10px;
+	cursor: pointer;
+}
+
 #main-page #user-profile > #change-username {
     border: 1px solid #dddddd;
     background-color: rgba(50,50,50,0.4);
@@ -67,13 +74,13 @@ html, body {
 	bottom: 10px;
 }
 
-#create-lobby, #resume-game, #player-list-toggler, #chat-box-toggler {
+.UI-main.lobby-list.btn {
 	color: #cccccc;
 	background-color: rgba(50,50,50,0.4);
 	border: 1px solid #dddddd;
 }
 
-#create-lobby:hover, #resume-game:hover,#player-list-toggler:hover, #chat-box-toggler:hover {
+.UI-main.lobby-list.btn:hover {
 	color: white;
 	background-color: transparent;
 	border: 1px solid #dddddd;
@@ -92,6 +99,7 @@ html, body {
 #lobby-list > a {
 	background: rgba(50,50,50,0.5);
 	color: #eeeeee;
+	cursor: pointer;
 }
 
 #lobby-list > a:hover {
@@ -208,7 +216,7 @@ div#chatbox > div#chatbox-input {
 div#right-panel-container {
 	position: absolute;
 	height: 100%;
-	width: 240px;
+	width: 300px;
 	top: 0px;
 	right: -200px; 
 	background: transparent;

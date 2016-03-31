@@ -10,10 +10,10 @@ process of joining a lobby
 
 Pre-game
 ==========
-   - add refresh button to top of page
+ x - add refresh button to top of page
    - add like a "developed by x, y, z, using etc" at the bottom of the lobby page to make it look less empty
  x - text inputs on modals should grab keyboard focus
-   - anything clickable should change the mouse cursor into a clicking hand cursor, especially lobby entries and colors
+ x - anything clickable should change the mouse cursor into a clicking hand cursor, especially lobby entries and colors
  x - hitting the escape key should close a modal
    - Oh yeah that's right, we need an actual home page separate from the lobby list as our index page with information
  o - resume should only appear if the old lobby exists (comment: we need a polling function that tests if a lobby with given id exists)
@@ -24,7 +24,7 @@ In-Game/General
  o - we need typing in the chat to not register key events in the game
  o - sending a chat message maybe should cause the text box to lose focus, but maybe not idk (comment: I will go for the way it is now)
    - chat box view needs to go top to bottom and not be a fixed size
-   - hit enter to bring chat box into focus
+ o - hit enter to bring chat box into focus
    - static objects should not change the mouse pointer to appear clickable
  x - page reload on dead socket should be able to be cancelled
    - things need to not trigger on mouse move while a piece is being dragged
