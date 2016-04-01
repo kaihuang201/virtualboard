@@ -152,6 +152,13 @@ class WebSocketGameHandler(tornado.websocket.WebSocketHandler):
 				print "todo"
 				#Todo: Needs to be implemented
 
+			#save and load related commands
+			elif data["type"] == "requestSave":
+				game.prepareToSave(self)
+			elif data["type"] == "requestLoad":
+				game.prepareToLoad(self)
+				#TODO
+
 			#host only commands
 			#do not need to determine if client is host in this function, that is handled by the Game class
 

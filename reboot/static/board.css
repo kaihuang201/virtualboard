@@ -51,6 +51,13 @@ html, body {
 	top: 10px;
 }
 
+.ColorBlotch {
+	border: 1px solid #dddddd;
+	padding: 7px;
+	border-radius: 10px;
+	cursor: pointer;
+}
+
 #main-page #user-profile > #change-username {
     border: 1px solid #dddddd;
     background-color: rgba(50,50,50,0.4);
@@ -67,13 +74,13 @@ html, body {
 	bottom: 10px;
 }
 
-#create-lobby, #resume-game {
+.UI-main.lobby-list.btn {
 	color: #cccccc;
 	background-color: rgba(50,50,50,0.4);
 	border: 1px solid #dddddd;
 }
 
-#create-lobby:hover, #resume-game:hover {
+.UI-main.lobby-list.btn:hover {
 	color: white;
 	background-color: transparent;
 	border: 1px solid #dddddd;
@@ -85,19 +92,53 @@ html, body {
 	width: 70%;
 	right: 10px;
 	top: 5%;
-	overflow: scroll;
+	overflow: hidden;
+	/*overflow-wrap: normal;*/
 	background: none;
 }
 
-#lobby-list > a {
-	background: rgba(50,50,50,0.5);
-	color: #eeeeee;
+#lobby-list > #inner {
+	height: 100%;
+	width: 103%;
+	overflow-y: auto;
+	padding-right: 3%;
 }
 
-#lobby-list > a:hover {
+#lobby-list > #inner > a {
+	background: rgba(50,50,50,0.5);
+	color: #eeeeee;
+	cursor: pointer;
+}
+
+#lobby-list > #inner > a:hover {
 	background: transparent;
 	color: #eeeeee;
 }
+
+#model-template-alert {
+	/*overflow-x: hidden; 
+	overflow-y: auto;*/
+	width: 100%;
+	overflow: hidden;
+	height: 0px;
+	transition: height 0.15s ease-out;
+	word-wrap: break-word;
+	margin: auto;
+}
+
+#model-template-alert > #inner {
+	height: 100%;
+	width: 106%;
+	left: 0px;
+	top: 0px;
+	overflow-y: auto;
+	overflow-x: hidden; 
+	padding-right: 1px;
+}
+
+
+
+/*in-game*/
 
 canvas#canvas
 {
@@ -190,7 +231,7 @@ div#chatbox > div#chatbox-inbox {
 	border-radius: 10px;
 	border: 0px solid #dddddd; 
 	height: 80%; 
-	overflow: scroll; 
+	overflow-y: auto; 
 	word-wrap: break-word;
 	background-color: rgba(255,255,255,0.8);
 	left: 1%; 
@@ -205,18 +246,28 @@ div#chatbox > div#chatbox-input {
 	width: 98%;
 }
 
-div#right-panel {
+div#right-panel-container {
+	position: absolute;
+	height: 100%;
+	width: 300px;
+	top: 0px;
+	right: -200px; 
+	/*transition: right 0.3s cubic-bezier(.14,.75,.51,.96);*/
+	background: transparent;
+}
+
+div#right-panel-container > div#right-panel {
 	position: absolute;
 	height: 100%;
 	width: 200px;
 	top: 0px;
-	right: -200px;
+	right: 0px;
 	background-color: #333333;
 	padding: 10px;
 }
 
 
-div#right-panel > div#right-toolbar {
+div#right-panel-container > div#right-panel > div#right-toolbar {
 	position: absolute;
 	right: 100%;
 	/*bottom: 0px;*/
@@ -242,7 +293,11 @@ div#players-list-list > p {
 	color: white;
 }
 
-
+form#saveform {
+	position: fixed;
+	bottom: 30px;
+	right: 15px;
+}
 
 /* Tooltip */
 .btn-tooltip + .tooltip > .tooltip-inner {

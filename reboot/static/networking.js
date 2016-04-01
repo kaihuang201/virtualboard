@@ -605,6 +605,20 @@ var VBoard = VBoard || {};
 			//TODO
 		},
 
+		requestSave: function () {
+			var data = {
+				"type" : "requestSave"
+			};
+			this.send(data);
+		},
+
+		requestLoad: function () {
+			var data = {
+				"type" : "requestLoad"
+			}
+			this.send(data);
+		},
+
 		//host only commands
 
 		//id is user id of new host
@@ -838,6 +852,23 @@ var VBoard = VBoard || {};
 					break;
 				case "drawScribble":
 					break;
+				case "savePrep":
+					var lobby = data["data"].lobbyId;
+					var key = data["data"].key;
+					window.location = "/save?lobbyId=" + lobby + "&key=" + key;
+	                break;
+	            case "loadPrep":
+					var file_field = $("#fileField")[0];
+					var formData = new FormData();
+			        formData.append("upload", file_field.files[0]);
+			        formData.append("lobbyId", data["data"].lobbyId);
+			        formData.append("key", data["data"].key);
+			        var xhr = new XMLHttpRequest();
+			        xhr.open('POST', 'load', true);
+			        xhr.onload = function () {
+			        };
+			        xhr.send(formData);
+	            	break;
 				default:
 					console.log("unhandled server message: " + data["type"]);
 			}
