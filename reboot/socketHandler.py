@@ -199,3 +199,8 @@ class IndexHandler(tornado.web.RequestHandler):
 	@tornado.web.asynchronous
 	def get(request):
 		request.render("index.html")
+
+class IconProxyHandler(tornado.web.RequestHandler):
+	@tornado.web.asynchronous
+	def get(request):
+		pass

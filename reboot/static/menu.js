@@ -84,6 +84,19 @@ var VBoard = VBoard || {};
 				$("#add-piece-modal").modal("toggle");
 			});
 
+			$("#submit-upload-piece").click(function () {
+				var imageUrl = $("#image-url").val();
+				console.log(imageUrl);
+
+				//TODO: check url validity
+
+				var data = {
+					"icon" : imageUrl,
+				};
+				vb.sessionIO.addPiece(data);
+				$("#add-piece-modal").modal("toggle");
+			});
+
 			$("#submit-add-die").click(function () {
 				var selectedMax = parseInt($("#add-die-max").val());
 				var user = null;
