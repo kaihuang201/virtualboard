@@ -282,14 +282,14 @@ var VBoard = VBoard || {};
 			// console.log("list all games");
 			// console.log(JSON.stringify(listOfGames));
 			if (listOfGames.length != 0) {
-				$("#lobby-list").empty();
+				$("#lobby-list > #inner").empty();
 				var func = new Array(listOfGames.length);
 
 				for (var j = listOfGames.length - 1; j >= 0; j--) {
 					var lobbyID = listOfGames[j]["id"];
 					var lobbyName = listOfGames[j]["name"];
 					var singleLobby = '<a id="lobby-' + listOfGames[j]["id"].toString() + '" class="list-group-item"><span class="badge badge-default pull-right">' + listOfGames[j]["players"] + ' ' + ((listOfGames[j]["players"]==1)?'player':'players')+ ' online</span><h2><i class="fa fa-gamepad"></i>  ' + listOfGames[j]["name"] + (!listOfGames[j]["password"]?' <i class="fa fa-lock"></i>':'') + '</h2></a>'
-					$("#lobby-list").append(singleLobby);
+					$("#lobby-list > #inner").append(singleLobby);
 					var currentLobby = $("#lobby-" + listOfGames[j]["id"].toString());
 					currentLobby.unbind();
 
@@ -299,8 +299,8 @@ var VBoard = VBoard || {};
 					// currentLobby.on("click",function() {vb.interface.joinLobbyRequest(lobbyID,lobbyName);});
 				}
 			} else {
-				$("#lobby-list").empty();
-				$("#lobby-list").append('<a id="retry-btn" class="list-group-item">No Games Found, but you can Create a Lobby!</a>');
+				$("#lobby-list > #inner").empty();
+				$("#lobby-list > #inner").append('<a id="retry-btn" class="list-group-item">No Games Found, but you can Create a Lobby!</a>');
 				$('#retry-btn').unbind();
 				$('#retry-btn').on('click',function() {vb.interface.listLobbiesRequest();})
 			}
@@ -410,26 +410,36 @@ var VBoard = VBoard || {};
 		//the first character appears as an error for me, can we just stick to ascii please
 		setTemplateModalAlert: function (alertText) {
 			this.hideLoading();
-			$("#model-template-alert").prepend('<div class="alert alert-danger" role="alert">\
+			// $("#model-template-alert > #inner").prepend('<div class="alert alert-danger" role="alert">\
+			// 						<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span> '+ alertText + '\
+			// 					</div>');
+
+			var tempHTML = '<div class="alert alert-danger" role="alert" id="new-alert" style="display: none;">\
 									<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span> '+ alertText + '\
-								</div>');
+								</div>';
+			$("#model-template-alert > #inner").prepend(tempHTML);
+			
+			$("#new-alert").slideToggle("fast");
+			$("#new-alert").promise().done(function () {
+				console.log("slideToggle");
+				var targetHeight = parseInt($("#new-alert").css("height").replace(/[^-\d\.]/g, ''),10);
+				console.log("get height: " + targetHeight.toString());
+				$("#model-template-alert").css("height",(targetHeight+10).toString()+"px");
+				console.log("after set height: " + $("#model-template-alert").css("height"));
+				$("#new-alert").attr("id","shown-alert");
+			});
+			
 		},
 
 		clearTemplateModalAlert: function () {
-			$("#model-template-alert").html('');
+			$("#model-template-alert > #inner").html('');
+			$("#model-template-alert").css("height","0px");
 		},
 
 		alertModal: function (alertText, automaticRefresh) {
 			this.hideLoading();
 
-			function sleep(milliseconds) {
-				var start = new Date().getTime();
-				for (var i = 0; i < 1e7; i++) {
-					if ((new Date().getTime() - start) > milliseconds){
-						break;
-					}
-				}
-			};
+
 			vb.interface.clearTemplateModal();
 			$('#submit-btn-modal-template').hide();
 			$('#modal-template-title').html("Opps!");
@@ -437,13 +447,13 @@ var VBoard = VBoard || {};
 			if (!automaticRefresh) {
 				vb.interface.setTemplateModalAlert(alertText);
 			} else {
-				var count = 10;
-				vb.interface.setTemplateModalAlert(alertText + ' <span id="count-down-msg">(Reload in <span id="count-down">'+ count + '</span> seconds) - <button type="button" class="btn btn-default btn-sm" id="cancel-countdown">Cancel</button></span>');
+				var count = 9;
+				vb.interface.setTemplateModalAlert(alertText + ' <span id="count-down-msg">(Reload in <span id="count-down">'+ count + '</span> seconds) - <a id="cancel-countdown" style="cursor: pointer;">Cancel</a></span>');
 
 				countDownInterval = setInterval(function(){
 				      $("#count-down").html((--count).toString());
 				      if(count == 0) location.reload();
-				   }, 1000);
+				   }, 900);
 				$("#cancel-countdown").click(function(){
 					clearInterval(countDownInterval);
 					$("#count-down-msg").html('');
@@ -505,11 +515,19 @@ var VBoard = VBoard || {};
 					if ($("#right-panel-container").css("right") != "0px") { // when hidden, show the panel
 						if (option != "hide") {
 							// vb.interface.clearRightPanel();
-							$("#right-panel-container").promise().done($("#right-panel-container").animate({"right":('+=' + $("#right-panel").css("width"))},350,additionalCallBackFunction));
+							$("#right-panel-container").promise().done($("#right-panel-container").velocity({"right":('+=' + $("#right-panel").css("width"))},350,[.14,.75,.51,.96],additionalCallBackFunction));
+							// $("#right-panel-container").promise().done(function () {
+							// 	$("#right-panel-container").css("right","0px"); 
+							// 	if(additionalCallBackFunction) additionalCallBackFunction();
+							// });
 						}
 					} else { // when shown, hide the panel
 						if (option != "show") {
-							$("#right-panel-container").promise().done($("#right-panel-container").animate({"right":('-=' + $("#right-panel").css("width"))},350,additionalCallBackFunction));
+							$("#right-panel-container").promise().done($("#right-panel-container").velocity({"right":('-=' + $("#right-panel").css("width"))},350,[.14,.75,.51,.96],additionalCallBackFunction));
+							// $("#right-panel-container").promise().done(function () {
+							// 	$("#right-panel-container").css("right",('-' + $("#right-panel").css("width")));
+							// 	if(additionalCallBackFunction) additionalCallBackFunction();
+							// });
 						}
 					}
 				});

@@ -9,13 +9,20 @@
 		<script src="//code.jquery.com/jquery-1.12.1.min.js"></script>
 		<script type="text/javascript">window.jQuery || document.write('<script src="/static/lib/jquery-1.12.1.min.js"><\/script>')</script>
 		<script src="/static/lib/bootstrap-3.3.6-dist/js/bootstrap.min.js" type="text/javascript"></script>
+		<!-- super-fast animation lib -->
+		<script src="/static/lib/velocity.min.js" type="text/javascript"></script>
+
 
 		<!-- Icon Font library -->
 		<!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css"> -->
 		<link rel="stylesheet" href="/static/lib/font-awesome-4.5.0/css/font-awesome.min.css">
+		<!-- color picker script -->
 		<script src="/static/lib/sgbeal-colorpicker.jquery.js" type="text/javascript"></script>
+		<!-- random name generator -->
 		<script src="/static/lib/vgng.js" type="text/javascript"></script>
 
+
+		<!-- Style Sheets -->
 		<link rel="stylesheet" href="/static/lib/bootstrap-3.3.6-dist/css/bootstrap.min.css">
 		<link rel="stylesheet" href="/static/board.css">
 
@@ -56,8 +63,10 @@
 
 					
 				</div>
-				<ul id="lobby-list" class="list-group">
-				</ul>
+				<div id="lobby-list">
+					<div id="inner" class="list-group">
+					</div>
+				</div>
 			</div>
 		</div>
 
@@ -183,12 +192,13 @@
 				<div class="modal-content">
 					<div class="modal-header">
 						<button type="button" class="close" data-dismiss="modal">&times;</button>
-						<h4 class="modal-title" id="modal-template-title">Create a Lobby</h4>
+						<h4 class="modal-title" id="modal-template-title">-MODAL TITLE-</h4>
 					</div>
 					<div class="modal-body">
 						<!-- <div class="container-fluid"> -->
-							<div class="row" id="model-template-alert" style="overflow: scroll; max-height: 70px;">
-								
+							<div class="row" id="model-template-alert">
+								<div id="inner">
+								</div>
 							</div>
 							<div class="row">
 								<div class="col-md-12" id="modal-template-content">
