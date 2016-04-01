@@ -555,9 +555,9 @@ var VBoard = VBoard || {};
 				icon = piece.faces[value];
 			} else {
 				if(piece.max < 7) {
-					icon = "/static/img/die_face/small_die_face_" + (value+1) + ".png"
+					icon = "/static/img/die_face/small_die_face_" + (value) + ".png"
 				} else {
-					icon = "/static/img/die_face/big_die_face_" + (value+1) + ".png"
+					icon = "/static/img/die_face/big_die_face_" + (value) + ".png"
 				}
 			}
 			this.setIcon(piece, icon);
