@@ -2,6 +2,9 @@ var VBoard = VBoard || {};
 (function (vb) {
 	vb.selection = {
 		pieces: [],
+		boxStart: null,
+		boxEnd: null,
+		newPieces: [],
 
 		//on the next mouse up event, clear selection and set it to just this piece
 		clearAndSetOnMouseUp: null,
@@ -37,6 +40,12 @@ var VBoard = VBoard || {};
 
 		//triggered by mouse up
 		clearAndSelect: function () {
+			if (this.boxStart != null) {
+				for (var i = 0; i < this.newPieces.length; i++) {
+					this.addPiece(this.newPieces[i]);
+				}
+			}
+
 			if(this.clearAndSetOnMouseUp === null) {
 				return;
 			}
@@ -144,6 +153,60 @@ var VBoard = VBoard || {};
 			}
 		},
 
+		dragBox: function(dx, dy) {
+			if (this.boxStart != null) {
+				for (var i = 0; i < this.newPieces.length; i++) {
+					vb.board.outlinePiece(this.newPieces[i], null, false);
+				}
+				this.newPieces = [];
+				this.boxEnd.x += dx;
+				this.boxEnd.y += dy;
+
+				for (var i = 0; i < vb.board.pieces.length; i++) {
+					var piece = vb.board.pieces[i];
+					var leftX = Math.min(this.boxStart.x, this.boxEnd.x);
+					var rightX = Math.max(this.boxStart.x, this.boxEnd.x);
+					var topY = Math.min(this.boxStart.y, this.boxEnd.y);
+					var bottomY = Math.max(this.boxStart.y, this.boxEnd.y);
+
+					var u = leftX - piece.position.x;
+					var v = topY - piece.position.y;
+
+					var upX = vb.camera.upVector.x;
+					var upY = vb.camera.upVector.y;
+
+					var dot = u * upX + v * upY;
+					if (dot > 0) {
+						continue;
+					}
+
+					dot = u * upY - v * upX;
+
+					if (dot > 0) {
+						continue;
+					}
+
+					var u = rightX - piece.position.x;
+					var v = bottomY - piece.position.y;
+
+					dot = u * upX + v * upY;
+
+					if (dot < 0) {
+						continue;
+					}
+
+					dot = u * upY - v * upX;
+
+					if (dot < 0) {
+						continue;
+					}
+
+					this.newPieces.push(piece);
+					vb.board.outlinePiece(piece, vb.users.getLocal().color, true);
+				}
+			}
+		},
+
 		drag: function (dx, dy) {
 			if(this.pieces.length == 0) {
 				return;
@@ -199,6 +262,12 @@ var VBoard = VBoard || {};
 				//this fixes a race condition where 2 users move the same piece at the same time
 			}
 			vb.sessionIO.movePiece(ids, xs, ys);
+		},
+
+		startDragBox: function(pos) {
+			vb.selection.boxStart = {"x": pos.x, "y": pos.y};
+			vb.selection.boxEnd = {"x": pos.x, "y": pos.y};
+			this.newPieces = [];
 		}
 	};
 })(VBoard);

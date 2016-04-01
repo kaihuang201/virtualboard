@@ -7,6 +7,7 @@ var VBoard = VBoard || {};
 		mouseDown: false,
 		lastDragX: 0,
 		lastDragY: 0,
+		isDraggingBox: false,
 
 		initialize: function () {
 			window.addEventListener("resize", function () {
@@ -39,7 +40,8 @@ var VBoard = VBoard || {};
 			});
 
 			window.addEventListener("mouseup", function (evt) {
-				this.mouseDown = false;
+				vb.inputs.mouseDown = false;
+				vb.inputs.isDraggingBox = false;
 
 				vb.selection.clearAndSelect();
 
@@ -55,25 +57,30 @@ var VBoard = VBoard || {};
 
 			window.addEventListener("mousemove", function (evt) {
 				//TODO: needs rework
-				if(this.mouseDown && vb.selection.pieces.length > 0) {
+				if(vb.inputs.mouseDown) {
 					vb.selection.clearAndSetOnMouseUp = null;
 					var mousePos = vb.board.screenToGameSpace(new BABYLON.Vector2(vb.scene.pointerX, vb.scene.pointerY));
-					vb.inputs.onDrag(mousePos.x - this.lastDragX, mousePos.y - this.lastDragY);
-					this.lastDragX = mousePos.x;
-					this.lastDragY = mousePos.y;
+					vb.inputs.onDrag(mousePos.x - vb.inputs.lastDragX, mousePos.y - vb.inputs.lastDragY);
+					vb.inputs.lastDragX = mousePos.x;
+					vb.inputs.lastDragY = mousePos.y;
 				}
 			});
 
 			window.addEventListener("mousedown", function (evt) {
-				this.mouseDown = true;
+				vb.inputs.mouseDown = true;
 				console.log("mouseDown: " + evt.handled);
 
 				var pos = vb.board.screenToGameSpace(new BABYLON.Vector2(vb.scene.pointerX, vb.scene.pointerY));
-				this.lastDragX = pos.x;
-				this.lastDragY = pos.y;
+				vb.inputs.lastDragX = pos.x;
+				vb.inputs.lastDragY = pos.y;
 
 				if(!evt.handled) {
-					vb.selection.clear();
+					if (!evt.shiftKey) {
+						vb.selection.clear();
+					}
+
+					vb.selection.startDragBox(pos);
+					vb.inputs.isDraggingBox = true;
 				}
 			});
 		},
@@ -127,7 +134,12 @@ var VBoard = VBoard || {};
 
 		//we should use the data from the mouse event rather than scene.pointer
 		onDrag: function (dx, dy) {
-			vb.selection.drag(dx, dy);
+			if (this.isDraggingBox) {
+				vb.selection.dragBox(dx, dy)
+			}
+			else if(vb.selection.pieces.length > 0) {
+				vb.selection.drag(dx, dy);
+			}
 		},
 
 		getPieceUnderMouse: function (ignoreSelection, ignoreStatic) {
