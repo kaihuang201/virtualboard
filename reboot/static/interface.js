@@ -170,10 +170,7 @@ var VBoard = VBoard || {};
 			// http://wanderinghorse.net/computing/javascript/jquery/colorpicker/demo-colorpicker.html
 			$('#color-picker').empty().addColorPicker({
 				clickCallback: function(c) {
-					$("#selected-color").css('color',c);
-					// $("#selected-color").animate({
-					// 	color: "#fff"
-					// },1000);
+					$("#selected-color").velocity({ color: vb.interface.strRGB2HexRGB(c) },{duration: 200});
 					VBoard.interface.colorSelected = vb.interface.strRGB2ArrayRGB(c);
 					VBoard.interface.colorLastSelectedStr = c;
 				},
@@ -421,11 +418,8 @@ var VBoard = VBoard || {};
 			
 			$("#new-alert").slideToggle("fast");
 			$("#new-alert").promise().done(function () {
-				console.log("slideToggle");
 				var targetHeight = parseInt($("#new-alert").css("height").replace(/[^-\d\.]/g, ''),10);
-				console.log("get height: " + targetHeight.toString());
 				$("#model-template-alert").css("height",(targetHeight+10).toString()+"px");
-				console.log("after set height: " + $("#model-template-alert").css("height"));
 				$("#new-alert").attr("id","shown-alert");
 			});
 			
@@ -444,6 +438,8 @@ var VBoard = VBoard || {};
 			$('#submit-btn-modal-template').hide();
 			$('#modal-template-title').html("Opps!");
 			$('#template-modal').modal('show');
+			// manually set the height of the alert
+			$("#model-template-alert").velocity({"height":"100px"});
 			if (!automaticRefresh) {
 				vb.interface.setTemplateModalAlert(alertText);
 			} else {
@@ -575,6 +571,23 @@ var VBoard = VBoard || {};
 		},
 		checkLobbyExist: function () {
 
+		},
+
+		// color functions 
+		strRGB2HexRGB: function (str) {
+			// adapted from 
+			// http://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
+			function componentToHex(c) {
+			    var hex = c.toString(16);
+			    return hex.length == 1 ? "0" + hex : hex;
+			}
+
+			function rgbToHex(r, g, b) {
+			    return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+			}
+
+			var temp = vb.interface.strRGB2ArrayRGB(str);
+			return rgbToHex(temp[0],temp[1],temp[2]);
 		},
 		strRGB2ArrayRGB: function (str) {
 			var retRGB = str.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
