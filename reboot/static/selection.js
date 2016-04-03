@@ -79,6 +79,7 @@ var VBoard = VBoard || {};
 			vb.board.outlinePiece(piece, vb.users.getLocal().color, true);
 		},
 
+		//removes piece from selection (does not delete)
 		removePiece: function (piece) {
 			if(!this.pieceMap.hasOwnProperty(piece.id)) {
 				return;
@@ -108,6 +109,7 @@ var VBoard = VBoard || {};
 			}
 		},
 
+		//sends remove command to server
 		remove: function () {
 			var ids = [];
 
@@ -156,49 +158,52 @@ var VBoard = VBoard || {};
 			}
 		},
 
-		dragBox: function(dx, dy) {
+		dragBox: function (dx, dy) {
 			if (this.boxStart != null) {
-				this.resetBoxSelection();
 				this.boxEnd.x += dx;
 				this.boxEnd.y += dy;
+				this.computeBoxSelection();
+			}
+		},
 
-				function rotateToCameraSpace(pos) {
-					var up = vb.camera.upVector;
-					var x = pos.x * up.y - pos.y * up.x;
-					var y = pos.x * up.x + pos.y * up.y;
-					return {"x" : x, "y" : y};
+		computeBoxSelection: function () {
+			if (this.boxStart === null) {
+				return;
+			}
+			this.resetBoxSelection();
+
+			function rotateToCameraSpace(pos) {
+				var up = vb.camera.upVector;
+				var x = pos.x * up.y - pos.y * up.x;
+				var y = pos.x * up.x + pos.y * up.y;
+				return {"x" : x, "y" : y};
+			}
+
+			for (var i = 0; i < vb.board.pieces.length; i++) {
+				var piece = vb.board.pieces[i];
+
+				if(piece.static || this.hasPiece(piece.id)) {
+					continue;
 				}
 
-				for (var i = 0; i < vb.board.pieces.length; i++) {
-					var piece = vb.board.pieces[i];
+				var corner1 = rotateToCameraSpace(this.boxStart);
+				var corner2 = rotateToCameraSpace(this.boxEnd);
+				var piecePos = rotateToCameraSpace(piece.position);
 
-					if(piece.static || this.hasPiece(piece.id)) {
-						continue;
-					}
+				var leftX = Math.min(corner1.x, corner2.x);
+				var rightX = Math.max(corner1.x, corner2.x);
+				var topY = Math.max(corner1.y, corner2.y);
+				var bottomY = Math.min(corner1.y, corner2.y);
 
-					var corner1 = rotateToCameraSpace(this.boxStart);
-					var corner2 = rotateToCameraSpace(this.boxEnd);
-					var piecePos = rotateToCameraSpace(piece.position);
-
-					//console.log("corner1: " + JSON.stringify(corner1));
-					//console.log("corner2: " + JSON.stringify(corner2));
-					//console.log("piecepos: " + JSON.stringify(piecePos));
-
-					var leftX = Math.min(corner1.x, corner2.x);
-					var rightX = Math.max(corner1.x, corner2.x);
-					var topY = Math.max(corner1.y, corner2.y);
-					var bottomY = Math.min(corner1.y, corner2.y);
-
-					if( leftX > piecePos.x ||
-						rightX < piecePos.x ||
-						topY < piecePos.y ||
-						bottomY > piecePos.y) {
-						continue;
-					}
-
-					this.newPieces.push(piece);
-					vb.board.outlinePiece(piece, vb.users.getLocal().color, true);
+				if( leftX > piecePos.x ||
+					rightX < piecePos.x ||
+					topY < piecePos.y ||
+					bottomY > piecePos.y) {
+					continue;
 				}
+
+				this.newPieces.push(piece);
+				vb.board.outlinePiece(piece, vb.users.getLocal().color, true);
 			}
 		},
 
