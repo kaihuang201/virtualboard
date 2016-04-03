@@ -80,7 +80,15 @@ var VBoard = VBoard || {};
 				var imageUrl = $("#image-url").val();
 				console.log(imageUrl);
 
-				//TODO: check url validity
+				//TODO: check url validity is incomplete
+				var img = new Image();
+				img.onerror = img.onabort = function() {
+					console.log("error while loading image from " + imageUrl);
+				};
+				img.onload = function() {
+					console.log("image loaded successfully from " + imageUrl);
+				};
+				img.src = imageUrl;
 
 				var data = {
 					"icon" : imageUrl,
