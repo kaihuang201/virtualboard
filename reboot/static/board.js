@@ -304,7 +304,7 @@ var VBoard = VBoard || {};
 			plane.position = new BABYLON.Vector3(pieceData["pos"][0], pieceData["pos"][1], 0);
 			plane.rotation.z = pieceData["r"];
 			plane.piece = piece;
-			plane.material = material;
+			plane.material = material
 
 			//position - last server confirmed position		
 			//targetPosition - the same as position except for when the local user is moving the piece		

@@ -2,6 +2,9 @@ var VBoard = VBoard || {};
 (function (vb) {
 	vb.selection = {
 		pieces: [],
+		boxStart: null,
+		boxEnd: null,
+		newPieces: [],
 
 		//on the next mouse up event, clear selection and set it to just this piece
 		clearAndSetOnMouseUp: null,
@@ -37,6 +40,13 @@ var VBoard = VBoard || {};
 
 		//triggered by mouse up
 		clearAndSelect: function () {
+			if (this.boxStart != null) {
+				for (var i = 0; i < this.newPieces.length; i++) {
+					this.addPiece(this.newPieces[i]);
+				}
+				this.newPieces = [];
+			}
+
 			if(this.clearAndSetOnMouseUp === null) {
 				return;
 			}
@@ -86,6 +96,8 @@ var VBoard = VBoard || {};
 
 		//makes it so no pieces are currently selected
 		clear: function () {
+			this.resetBoxSelection();
+
 			if(this.pieces.length > 0) {
 				for(var i=0; i<this.pieces.length; i++) {
 					var piece = this.pieces[i];
@@ -144,6 +156,59 @@ var VBoard = VBoard || {};
 			}
 		},
 
+		dragBox: function(dx, dy) {
+			if (this.boxStart != null) {
+				this.resetBoxSelection();
+				this.boxEnd.x += dx;
+				this.boxEnd.y += dy;
+
+				function rotateToCameraSpace(pos) {
+					var up = vb.camera.upVector;
+					var x = pos.x * up.y - pos.y * up.x;
+					var y = pos.x * up.x + pos.y * up.y;
+					return {"x" : x, "y" : y};
+				}
+
+				for (var i = 0; i < vb.board.pieces.length; i++) {
+					var piece = vb.board.pieces[i];
+
+					if(piece.static || this.hasPiece(piece.id)) {
+						continue;
+					}
+
+					var corner1 = rotateToCameraSpace(this.boxStart);
+					var corner2 = rotateToCameraSpace(this.boxEnd);
+					var piecePos = rotateToCameraSpace(piece.position);
+
+					//console.log("corner1: " + JSON.stringify(corner1));
+					//console.log("corner2: " + JSON.stringify(corner2));
+					//console.log("piecepos: " + JSON.stringify(piecePos));
+
+					var leftX = Math.min(corner1.x, corner2.x);
+					var rightX = Math.max(corner1.x, corner2.x);
+					var topY = Math.max(corner1.y, corner2.y);
+					var bottomY = Math.min(corner1.y, corner2.y);
+
+					if( leftX > piecePos.x ||
+						rightX < piecePos.x ||
+						topY < piecePos.y ||
+						bottomY > piecePos.y) {
+						continue;
+					}
+
+					this.newPieces.push(piece);
+					vb.board.outlinePiece(piece, vb.users.getLocal().color, true);
+				}
+			}
+		},
+
+		resetBoxSelection: function () {
+			for (var i = 0; i < this.newPieces.length; i++) {
+				vb.board.outlinePiece(this.newPieces[i], null, false);
+			}
+			this.newPieces = [];
+		},
+
 		drag: function (dx, dy) {
 			if(this.pieces.length == 0) {
 				return;
@@ -199,6 +264,12 @@ var VBoard = VBoard || {};
 				//this fixes a race condition where 2 users move the same piece at the same time
 			}
 			vb.sessionIO.movePiece(ids, xs, ys);
+		},
+
+		startDragBox: function(pos) {
+			vb.selection.boxStart = {"x": pos.x, "y": pos.y};
+			vb.selection.boxEnd = {"x": pos.x, "y": pos.y};
+			this.newPieces = [];
 		}
 	};
 })(VBoard);
