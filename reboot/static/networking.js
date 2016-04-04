@@ -249,7 +249,7 @@ var VBoard = VBoard || {};
 
 		setBackground: function (icon) {
 			var data = {
-				"type" : "changeBackground",
+				"type" : "setBackground",
 				"data" : {
 					"icon" : icon
 				}

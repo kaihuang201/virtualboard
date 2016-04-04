@@ -1,0 +1,59 @@
+{
+    "Bacon" : {
+        "icon" : "/static/img/backgrounds/Bacon.jpg"
+    },
+    "BlueMarble" : {
+        "icon" : "/static/img/backgrounds/BlueMarble.jpg"
+    },
+    "CarbonFiber" : {
+        "icon" : "/static/img/backgrounds/CarbonFiber.png"
+    },
+    "Carpet" : {
+        "icon" : "/static/img/backgrounds/Carpet.jpg"
+    },
+    "CircuitBoard" : {
+        "icon" : "/static/img/backgrounds/CircuitBoard.jpg"
+    },
+    "Cobblestone" : {
+        "icon" : "/static/img/backgrounds/Cobblestone.jpg"
+    },
+    "FeltCardTable" : {
+        "icon" : "/static/img/backgrounds/FeltCardTable.jpg"
+    },
+    "Floral" : {
+        "icon" : "/static/img/backgrounds/Floral.jpg"
+    },
+    "Marble" : {
+        "icon" : "/static/img/backgrounds/Marble.jpg"
+    },
+    "Noodles" : {
+        "icon" : "/static/img/backgrounds/Noodles.jpg"
+    },
+    "Ornate" : {
+        "icon" : "/static/img/backgrounds/Ornate.jpeg"
+    },
+    "Scratched" : {
+        "icon" : "/static/img/backgrounds/Scratched.jpg"
+    },
+    "Stone" : {
+        "icon" : "/static/img/backgrounds/Stone.jpg"
+    },
+    "TreeStump" : {
+        "icon" : "/static/img/backgrounds/TreeStump.jpg"
+    },
+    "Waves" : {
+        "icon" : "/static/img/backgrounds/Waves.jpg"
+    },
+    "WoodBoards" : {
+        "icon" : "/static/img/backgrounds/WoodBoards.jpg"
+    },
+    "WoodFinish" : {
+        "icon" : "/static/img/backgrounds/WoodFinish.jpg"
+    },
+    "WovenMat" : {
+        "icon" : "/static/img/backgrounds/WovenMat.jpg"
+    },
+    "WovenMatRough" : {
+        "icon" : "/static/img/backgrounds/WovenMatRough.jpg"
+    }
+}

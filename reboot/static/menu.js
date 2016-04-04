@@ -14,6 +14,12 @@ var VBoard = VBoard || {};
 					vb.board.dieNameMap[key] = value;
 				});
 			});
+			$.getJSON("/static/json/backgroundmap.json", function (data) {
+				$.each(data, function(key, value) {
+					vb.board.backgroundNameMap[key] = value;
+				});
+				vb.menu.loadBackgroundOptions();
+			});
 
 			$("#viewMenuHover").mouseover(function () {
 				$("#menu").animate({
@@ -39,6 +45,10 @@ var VBoard = VBoard || {};
 
 			$("#addChessBoard").on("click", function () {
 				vb.content.loadChessGame();
+			});
+
+			$("#changeBackground").on("click", function () {
+				$("#change-background-modal").modal();
 			});
 
 			$("#saveGame").on("click", function () {
@@ -123,6 +133,17 @@ var VBoard = VBoard || {};
 				$("#add-die-modal").modal("toggle");
 			});
 
+			$("#submit-change-background").click(function() {
+				//TODO: implement session IO change background function
+				var selectedBackground = $("#change-background-list").val();
+				console.log(selectedBackground);
+				var mapEntry = vb.board.backgroundNameMap[selectedBackground];
+				console.log(mapEntry);
+				var data = mapEntry.icon;
+				vb.sessionIO.setBackground(data);
+				$("#change-background-modal").modal("toggle");
+			});
+
 			$("#submit-load-game").click(function () {
 				//vb.sessionIO.requestLoad();
 				var f = document.getElementById('fileUpload').files[0];
@@ -142,6 +163,12 @@ var VBoard = VBoard || {};
 		loadPieceOptions: function () {
 			for (var key in vb.board.pieceNameMap) {
 				$("#add-piece-list").append( new Option(key, key) );
+			}
+		},
+
+		loadBackgroundOptions: function () {
+			for (var key in vb.board.backgroundNameMap) {
+				$("#change-background-list").append( new Option(key, key) );
 			}
 		},
 
