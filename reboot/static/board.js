@@ -572,10 +572,11 @@ var VBoard = VBoard || {};
 			if(value < piece.faces.length) {
 				icon = piece.faces[value];
 			} else {
+				//A six sided die will return 0-5 inclusive
 				if(piece.max < 7) {
-					icon = "/static/img/die_face/small_die_face_" + (value) + ".png"
+					icon = "/static/img/die_face/small_die_face_" + (value+1) + ".png"
 				} else {
-					icon = "/static/img/die_face/big_die_face_" + (value) + ".png"
+					icon = "/static/img/die_face/big_die_face_" + (value+1) + ".png"
 				}
 			}
 			this.setIcon(piece, icon);

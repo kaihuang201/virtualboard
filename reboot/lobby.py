@@ -691,7 +691,7 @@ class Game:
 				}
 		}
 		client.write_message(json.dumps(response))
-
+'''
 	def prepareToLoad(self, client):
 		if client.user_id == self.host.user_id:
 			self.load_key = random.randint(0, KEY_MAX)
@@ -740,5 +740,5 @@ class Game:
 			"data" : response_data
 		}
 		self.message_all(response)
-
+'''
 
