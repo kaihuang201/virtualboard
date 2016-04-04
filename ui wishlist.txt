@@ -33,6 +33,7 @@ In-Game/General
    - Indicator for decks vs single cards
    - context menus should not go off edge of screen
    - right now it seems the camera is limited in movement but pieces are not
+   - sub menu for custom content
 
 Feature Ideas
 ==========

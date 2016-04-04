@@ -67,6 +67,13 @@ var VBoard = VBoard || {};
 
 		//removes a piece from the board
 		remove: function (piece) {
+			vb.selection.removePiece(piece);
+
+			//if the deleted piece is currently being selected by a drag box
+			//  the easiest solution is to clear the drag box selection before removing
+			//  then recompute the selected pieces
+			vb.selection.resetBoxSelection();
+
 			//we should call bringToFront instead of doing this probably
 			var index = this.ourIndexOf(piece);
 
@@ -77,7 +84,6 @@ var VBoard = VBoard || {};
 				p.mesh.position.z = this.getZIndex(i);
 			}
 
-			//TODO: disable highlight on piece if it exists
 			clearTimeout(piece.highlightTimeout);
 			clearTimeout(piece.predictTimeout);
 			vb.sessionIO.moveBuffer.remove(piece.id);
@@ -89,6 +95,9 @@ var VBoard = VBoard || {};
 			this.pieces.pop();
 			delete this.pieceHash[piece.id];
 			piece.mesh.dispose();
+
+			//reselect deselected pieces
+			vb.selection.computeBoxSelection();
 		},
 
 		//moves a piece to the back of the board (highest z index)
@@ -127,7 +136,7 @@ var VBoard = VBoard || {};
 		//should not be used
 		//toggleStatic: function (piece) {
 		//	piece.static = !piece.static;
-		//},
+		// },
 
 		//called by web socket handler upon receiving an update
 		transformPiece: function (pieceData) {
@@ -153,7 +162,7 @@ var VBoard = VBoard || {};
 				piece.position.y = pieceData["pos"][1];
 
 				if(!user.isLocal) {
-					//TODO: remove piece from selectedPieces if it exists
+					vb.selection.removePiece(piece);
 				}
 
 				if(piece.predictTimeout === null) {
@@ -563,6 +572,7 @@ var VBoard = VBoard || {};
 			if(value < piece.faces.length) {
 				icon = piece.faces[value];
 			} else {
+				//A six sided die will return 0-5 inclusive
 				if(piece.max < 7) {
 					icon = "/static/img/die_face/small_die_face_" + (value+1) + ".png"
 				} else {

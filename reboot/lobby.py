@@ -4,6 +4,7 @@ import tornado.ioloop
 import json
 import time
 import datetime
+import random
 
 from board_state import *
 from movebuffer import *
@@ -14,6 +15,7 @@ games = {}
 next_game_id = 0
 
 MOVE_TICK_DURATION = 0.05 #50 ms
+KEY_MAX = 1000000000000000
 
 #maximum allowed "spammable" actions per timeout
 SPAM_FILTER_TIMEOUT = 1
@@ -31,6 +33,7 @@ class Game:
 		self.board_state = BoardState()
 		self.movebuffer = MoveBuffer()
 		self.spam_timeout = None
+		self.save_key = 0
 
 		#this is just to get the loop going
 		tornado.ioloop.IOLoop.instance().add_callback(self.check_spam)
@@ -677,9 +680,65 @@ class Game:
 		}
 		self.message_all(response)
 
-	def dump_json(self):
-		return self.board_state.dump_json()
+	def prepareToSave(self, client):
+		self.save_key = random.randint(0, KEY_MAX)
 
-	def load_json(self, json_string):
-		self.board_state.load_json(json_string)
+		response = {
+			"type" : "savePrep",
+			"data" : {
+					"lobbyId" : self.game_id,
+					"key" : self.save_key
+				}
+		}
+		client.write_message(json.dumps(response))
+'''
+	def prepareToLoad(self, client):
+		if client.user_id == self.host.user_id:
+			self.load_key = random.randint(0, KEY_MAX)
+			response = {
+				"type" : "loadPrep",
+				"data" : {
+					"lobbyId" : self.game_id,
+					"key" : self.load_key
+				}
+			}
+			client.write_message(json.dumps(response))
+		else:
+			response = {
+				"type" : "error",
+				"data" : [
+					{
+						"msg": "Only host can load a game"
+					}
+				]
+			}
+			client.write_message(json.dumps(response))
+
+	def load(self, json_str):
+		for client in self.clients:
+			self.movebuffer.flush(client)
+		self.board_state.load_from_json(json.loads(json_str))
+
+		clearResponse = {
+			"type" : "clearBoard"
+		}
+
+		self.message_all(clearResponse)
+
+		response_data = []
+
+		for piece in self.board_state.pieces:
+			data_entry = piece.get_json_obj()
+			data_entry["user"] = self.host.user_id
+			response_data.append(data_entry)
+
+		if len(response_data) == 0:
+			return
+
+		response = {
+			"type" : "pieceAdd",
+			"data" : response_data
+		}
+		self.message_all(response)
+'''
 

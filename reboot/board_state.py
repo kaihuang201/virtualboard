@@ -6,7 +6,7 @@ from deck import *
 class Piece:
 	def __init__(self, pieceData, id):
 		#TODO: check for reasonable values
-
+		print pieceData
 		self.pos = pieceData["pos"]
 		self.icon = pieceData["icon"]
 		self.piece_id = id
@@ -312,4 +312,12 @@ class BoardState:
 			"privateZones" : [], #TODO
 			"pieces" : pieces_json
 		}
-
+'''
+	def load_from_json(self, json_obj):
+		self.background = json_obj["background"]
+		self.pieces = []
+		self.piecemap = {}
+		self.next_piece_id = 0
+		for piece_json in json_obj["pieces"]:
+			self.generate_new_piece(piece_json)
+'''

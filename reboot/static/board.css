@@ -293,7 +293,11 @@ div#players-list-list > p {
 	color: white;
 }
 
-
+form#saveform {
+	position: fixed;
+	bottom: 30px;
+	right: 15px;
+}
 
 /* Tooltip */
 .btn-tooltip + .tooltip > .tooltip-inner {

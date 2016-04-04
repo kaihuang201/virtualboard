@@ -41,6 +41,14 @@ var VBoard = VBoard || {};
 				vb.content.loadChessGame();
 			});
 
+			$("#saveGame").on("click", function () {
+				vb.sessionIO.requestSave();
+			});
+
+			$("#loadGame").on("click", function () {
+				$("#load-game-modal").modal();
+			})
+
 			$("#quitGame").on("click", function () {
 				VBoard.sessionIO.disconnect("clicked on Quit Button")
 				$("canvas").hide("fast");
@@ -113,6 +121,20 @@ var VBoard = VBoard || {};
 				};
 				vb.sessionIO.addPiece(data);
 				$("#add-die-modal").modal("toggle");
+			});
+
+			$("#submit-load-game").click(function () {
+				//vb.sessionIO.requestLoad();
+				var f = document.getElementById('fileUpload').files[0];
+				var r = new FileReader();
+				r.onload = function (e) {
+					var contents = e.target.result;
+					var boardData = JSON.parse(contents);
+
+					vb.sessionIO.loadBoardState(boardData);
+				};
+				r.readAsText(f);
+				$("#load-game-modal").modal("toggle");
 			});
 
 		},
