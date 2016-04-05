@@ -183,7 +183,7 @@
 	"data" : {
 		"gameIDExists" : 0,
 		"name" : "FarmVille",
-		"password" : "32asfPwd"
+		"password" : 1
 	}
 }
 
