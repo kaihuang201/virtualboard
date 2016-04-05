@@ -11,6 +11,7 @@ var VBoard = VBoard || {};
 		lastDragX: 0,
 		lastDragY: 0,
 		isDraggingBox: false,
+		chatBoxActivated: false,
 
 		handlers: {
 			up: function (elapsed, dist) {
@@ -190,14 +191,16 @@ var VBoard = VBoard || {};
 
 		//dispatches key press events
 		onKeyDown: function (key) {
-			this.keysPressed[key] = true;
+			if (!VBoard.inputs.chatBoxActivated){
+				this.keysPressed[key] = true;
 
-			if(this.keyMap.hasOwnProperty(key)) {
-				keyData = this.keyMap[key];
+				if(this.keyMap.hasOwnProperty(key)) {
+					keyData = this.keyMap[key];
 
-				if(keyData.hasOwnProperty("press")) {
-					keyData.press();
-				}
+					if(keyData.hasOwnProperty("press")) {
+						keyData.press();
+					}
+				}	
 			}
 		},
 

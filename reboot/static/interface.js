@@ -342,6 +342,8 @@ var VBoard = VBoard || {};
 			// enable chat
 			vb.interface.chatInit();
 
+			$("#chatbox-msg").focus(function(){VBoard.inputs.chatBoxActivated = true});
+			$("#chatbox-msg").blur(function(){VBoard.inputs.chatBoxActivated = false});
 			// bind enter key to focus chat
 			$(document).keypress(function(event){
 				if (event.keyCode == 13) {
