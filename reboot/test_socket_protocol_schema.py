@@ -10,6 +10,7 @@ schema = {
 		{"$ref": "#/definitions/initJoin" },
 		{"$ref": "#/definitions/initHost" },
 		{"$ref": "#/definitions/listGames" },
+		{"$ref": "#/definitions/gameIDExists" },
 		{"$ref": "#/definitions/ping" },
 		{"$ref": "#/definitions/chat" },
 		{"$ref": "#/definitions/beacon" },
@@ -93,6 +94,16 @@ schema = {
 				"type": { "enum": [ "listGames" ] }
 			},
 			"required": [ "type" ]
+		},
+		"gameIDExists": {
+			"type": "object",
+			"properties": {
+				"type": { "enum": [ "gameIDExists" ] },
+				"data": { 
+					"gameID": {"type", "integer"}
+				}
+			},
+			"required": [ "type","data" ]
 		},
 		"ping": {
 			"type": "object",
@@ -577,6 +588,11 @@ class TestSocketProtocolSchema(unittest.TestCase):
 
 	def test_listGames(self):
 		data = json.loads('{"type" : "listGames"}')
+		global schema
+		self.assertTrue(Draft4Validator(schema).is_valid(data))
+
+	def test_gameIDExists(self):
+		data = json.loads('{"type" : "gameIDExists", "data" : {"gameID" : 3}}')
 		global schema
 		self.assertTrue(Draft4Validator(schema).is_valid(data))
 

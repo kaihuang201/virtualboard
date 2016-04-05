@@ -16,6 +16,16 @@ var VBoard = VBoard || {};
 			this.send(data);
 		},
 
+		gameIDExists: function (lobbyID) {
+			var data = {
+				"type" : "gameIDExists",
+				data : {
+					"gameID" : lobbyID
+				}
+			};
+			this.send(data);
+		},
+
 		joinGame: function (userName, userColor, gameID, password) {
 			var data = {
 				"type" : "initJoin",
@@ -93,6 +103,10 @@ var VBoard = VBoard || {};
 					break;
 				case "listGames":
 					vb.interface.showListGames(data["data"]);
+					break;
+				case "gameIDExists":
+					// console.log("gameIDExists response: " + JSON.stringify(data["data"]["gameIDExists"]));
+					vb.interface.resumeButtonInit(data["data"]["gameIDExists"],data["data"]["password"],data["data"]["name"]);
 					break;
 				default:
 					console.log("unhandled server message");

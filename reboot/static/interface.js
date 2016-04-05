@@ -64,6 +64,8 @@ var VBoard = VBoard || {};
 		userName: "",
 		autoGameListIntervalID: 0,
 
+		
+
 		// interface initializer
 		init: function () {
 			if (vb.cookie.hasActiveCookie()) {
@@ -74,19 +76,13 @@ var VBoard = VBoard || {};
 				vb.interface.setUserName(usrnameFromCookie,colorFromCookie);
 				VBoard.interface.colorSelected = colorFromCookie;
 				VBoard.interface.colorLastSelectedStr = vb.interface.arrayRGB2StrRGB(colorFromCookie);
-				// show and assign the "resume game" button 
-				$('#resume-game').show();
-				$('#resume-game').unbind();
-				$('#resume-game').on('click',function () {
-					vb.interface.switchToResumeGameModal("last game session");
-					$('#template-modal').modal("show");
-					$('#template-modal #submit-btn-modal-template').unbind().on('click',function () {
-						vb.interface.showLoading();
-						vb.limboIO.joinGame(VBoard.interface.userName,colorFromCookie,lobbyNoFromCookie,$('#lobby-password').val());
-					});
-				vb.interface.setInputFocusAndEnterKeyCallback('','#submit-btn-modal-template',true);	
+				
+				// send a game id poll to init Resume button
+				// vb.limboIO.gameIDExists(lobbyNoFromCookie);
+				setTimeout(function() {vb.limboIO.gameIDExists(lobbyNoFromCookie);},500);
 
-				});
+				
+
 			} else {
 				vb.interface.userNamePrompt();
 			}
@@ -165,6 +161,28 @@ var VBoard = VBoard || {};
 
 		},
 
+
+		resumeButtonInit: function (gameIDExists,requirePwd,gameName) {
+			if (gameIDExists) {
+				var usrnameFromCookie = vb.cookie.getUsername();
+				var colorFromCookie = vb.cookie.getUserColor();
+				var lobbyNoFromCookie = vb.cookie.getLobbyNo();
+				// show and assign the "resume game" button 
+				$('#resume-game').show("fast");
+				$('#resume-game').unbind();
+				$('#resume-game').on('click',function () {
+					vb.interface.switchToResumeGameModal(gameName, requirePwd);
+					$('#template-modal').modal("show");
+					$('#template-modal #submit-btn-modal-template').unbind().on('click',function () {
+						vb.interface.showLoading();
+						vb.limboIO.joinGame(VBoard.interface.userName,colorFromCookie,lobbyNoFromCookie,(requirePwd?$('#lobby-password').val():""));
+					});
+				vb.interface.setInputFocusAndEnterKeyCallback('','#submit-btn-modal-template',!requirePwd);	
+
+				});
+				
+			}
+		},
 		colorPickerInit: function () {
 			// adapted from
 			// http://wanderinghorse.net/computing/javascript/jquery/colorpicker/demo-colorpicker.html
@@ -364,16 +382,20 @@ var VBoard = VBoard || {};
 			
 		},
 
-		switchToResumeGameModal: function (lobbyName) {
+		switchToResumeGameModal: function (lobbyName,requirePwd) {
 			vb.interface.clearTemplateModalAlert();
 			vb.interface.clearTemplateModal();
 			$('#modal-template-title').html('Resume 『' + lobbyName + '』');
 
-			$('#modal-template-content').html('<div class="form-group">\
+			if(requirePwd) {
+				$('#modal-template-content').html('<div class="form-group">\
 									<label for="lobby-password" class="form-control-label">Re-enter Game Password:</label>\
 									<input type="password" class="form-control" id="lobby-password">\
-								</div>');
-
+								</div>');	
+			} else {
+				$('#modal-template-content').html('<h5>Joining '+ lobbyName +'...</h5>');
+			}
+			
 			$('#template-modal #submit-btn-modal-template').show().html('Re-Join');
 		},
 
@@ -542,6 +564,7 @@ var VBoard = VBoard || {};
 			}
 		},
 		// helper function
+
 		rightPanelIsShown: function () {
 			return ($("#right-panel-container").css("right") == "0px");
 		},
@@ -570,9 +593,6 @@ var VBoard = VBoard || {};
 
 			var randomNum = Math.floor((Math.random() * nameList.length));
 			return nameList[randomNum];
-		},
-		checkLobbyExist: function () {
-
 		},
 
 		// color functions 
