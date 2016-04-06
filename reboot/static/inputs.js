@@ -148,7 +148,7 @@ var VBoard = VBoard || {};
 			if(!vb.selection.isEmpty()) {
 				var piece = this.getPieceUnderMouse(true);
 
-				if(piece !== null && piece.isCard) {
+				if(piece && piece.isCard) {
 					vb.selection.addToDeck(piece);
 				}
 				//vb.selection.clear();
@@ -272,16 +272,21 @@ var VBoard = VBoard || {};
 			//console.debug("get piece under mouse: " + ignoreSelection);
 
 			var pick = vb.scene.pick(vb.scene.pointerX, vb.scene.pointerY, function (mesh) {
-				if(ignoreSelection) {
-					if(vb.selection.hasPiece(mesh.piece)) {
-						return false;
-					}
-				}
+				if(mesh.piece) {
+					var piece = mesh.piece;
 
-				if(ignoreStatic) {
-					return !mesh.piece.static;
+					if(ignoreSelection) {
+						if(vb.selection.hasPiece(piece)) {
+							return false;
+						}
+					}
+
+					if(ignoreStatic) {
+						return !piece.static;
+					}
+					return true;
 				}
-				return true;
+				return false;
 			});
 
 			if(pick.hit) {
@@ -293,7 +298,7 @@ var VBoard = VBoard || {};
 		onRightClick: function () {
 			var piece = this.getPieceUnderMouse();
 
-			if(piece !== null) {
+			if(piece) {
 				vb.menu.createContextMenu(piece);
 				return false;
 			}

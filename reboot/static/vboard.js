@@ -101,6 +101,7 @@ var VBoard = VBoard || {};
 
 			vb.board.background = BABYLON.Mesh.CreatePlane("background", 50, scene);
 			vb.board.background.position = new BABYLON.Vector3(0, 0, 100);
+			vb.board.background.isPickable = false;
 
 			return scene;
 		})();
