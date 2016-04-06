@@ -164,13 +164,14 @@ var VBoard = VBoard || {};
 
 				for (var i = 0; i < vb.board.pieces.length; i++) {
 					var piece = vb.board.pieces[i];
+
 					var leftX = Math.min(this.boxStart.x, this.boxEnd.x);
 					var rightX = Math.max(this.boxStart.x, this.boxEnd.x);
 					var topY = Math.min(this.boxStart.y, this.boxEnd.y);
 					var bottomY = Math.max(this.boxStart.y, this.boxEnd.y);
 
-					var u = leftX - piece.position.x;
-					var v = topY - piece.position.y;
+					var u = piece.position.x - leftX;
+					var v = piece.position.y - topY;
 
 					var upX = vb.camera.upVector.x;
 					var upY = vb.camera.upVector.y;

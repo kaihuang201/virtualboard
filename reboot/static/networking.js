@@ -621,6 +621,25 @@ var VBoard = VBoard || {};
 
 		//host only commands
 
+		addPrivateZone: function(x, y, width, height, color) {
+			if(vb.users.getLocal().isHost) {
+				var data = {
+					"type" : "addPrivateZone",
+					"data" : {
+						"pos" : {
+							"x" : x,
+							"y" : y
+						},
+						"width" : width,
+						"height" : height,
+						"rotation" : Math.atan2(vb.camera.upVector.y, vb.camera.upVector.x) - Math.PI/2,
+						"color" : color
+					}
+				};
+				this.send(data);
+			}
+		},
+
 		//id is user id of new host
 		changeHost: function (id, message) {
 			if(vb.users.getLocal().isHost) {
@@ -798,6 +817,9 @@ var VBoard = VBoard || {};
 					for(var index in users) {
 						vb.users.changeUserColor(users[index]["user"], users[index]["color"]);
 					}
+					break;
+				case "addPrivateZone":
+					vb.board.addPrivateZone(data["data"])
 					break;
 				case "changeHost":
 					vb.users.changeHost(data["data"]["user"]);

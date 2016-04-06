@@ -162,6 +162,8 @@ class WebSocketGameHandler(tornado.websocket.WebSocketHandler):
 			#host only commands
 			#do not need to determine if client is host in this function, that is handled by the Game class
 
+			elif data["type"] == "addPrivateZone":
+				game.add_private_zone(self, data["data"])
 			elif data["type"] == "changeHost":
 				target = data["data"]["user"]
 				message = data["data"]["msg"]

@@ -2,6 +2,7 @@ import random
 import math
 
 from deck import *
+from private_zone import *
 
 class Piece:
 	def __init__(self, pieceData, id):
@@ -81,6 +82,9 @@ class BoardState:
 		self.piecemap = {}
 
 		self.next_piece_id = 0
+
+		self.private_zones = {}
+		self.next_zone_id = 0
 		self.background = ""
 
 	#returns the newly generated piece
@@ -113,37 +117,47 @@ class BoardState:
 		else:
 			return False
 
+	#returns the id of new zone
+	def add_private_zone(self, x, y, width, height, rotation, color):
+		new_zone = PrivateZone(x, y, width, height, rotation, color)
+		self.private_zones[self.next_zone_id] = new_zone
+		self.next_zone_id += 1
+		return new_zone.id
+
 	#returns false if the piece is not found, true otherwise
-	#if we had the client's color, we could also do private zone filtering here block cheating, but oh well
-	def transform_piece(self, pieceData):
+	def transform_piece(self, client, pieceData):
 		piece_id = pieceData["piece"]
 
 		if piece_id in self.piecemap:
 			index = self.piecemap[piece_id]
 			piece = self.pieces[index]
 
-			if "pos" in pieceData:
-				piece.pos = pieceData["pos"]
+			if piece.color == [255, 255, 255] or piece.color == client.color:
+				if "pos" in pieceData:
+					piece.pos = pieceData["pos"]
+					for zone in self.private_zones.iteritems():
+						if zone.contains(piece.pos.x, piece.pos.y):
+							piece.color = zone.color
 
-				#only for positional changes do we bring the piece to the front
-				#note that this also invalidates the index variable we have
-				if not self.bring_to_front(piece.piece_id):
-					raise Exception("error bringing transformed piece to front")
+					#only for positional changes do we bring the piece to the front
+					#note that this also invalidates the index variable we have
+					if not self.bring_to_front(piece.piece_id):
+						raise Exception("error bringing transformed piece to front")
 
-			if "r" in pieceData:
-				piece.rotation = pieceData["r"]
+				if "r" in pieceData:
+					piece.rotation = pieceData["r"]
 
-			if "s" in pieceData:
-				piece.size = pieceData["s"]
+				if "s" in pieceData:
+					piece.size = pieceData["s"]
 
-			if "static" in pieceData:
-				piece.static = pieceData["s"] == 1
+				if "static" in pieceData:
+					piece.static = pieceData["static"] == 1
 
-			if "color" in pieceData:
-				piece.color = pieceData["color"]
+				if "color" in pieceData:
+					piece.color = pieceData["color"]
 
-			if "icon" in pieceData:
-				piece.icon = pieceData["icon"]
+				if "icon" in pieceData:
+					piece.icon = pieceData["icon"]
 			return True
 		else:
 			return False
