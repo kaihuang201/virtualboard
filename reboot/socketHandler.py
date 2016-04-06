@@ -84,6 +84,22 @@ class WebSocketGameHandler(tornado.websocket.WebSocketHandler):
 					"data" : game_list
 				}
 				self.write_message(json.dumps(response))
+			elif data["type"] == "gameIDExists":
+				# check if a specific id exists
+				targetID = data["data"]["gameID"]
+				gameExists = 1 if targetID in games else 0
+				pwd = (1 if games[targetID].password else 0) if gameExists else 0
+
+				response = {
+					"type" : "gameIDExists",
+					"data" : {
+							"gameIDExists" : gameExists,
+							"name" : games[targetID].name if gameExists else "",
+							"password" : pwd
+					}
+				}
+				self.write_message(json.dumps(response))
+
 			else:
 				response = {
 					"type" : "error",

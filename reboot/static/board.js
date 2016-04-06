@@ -15,6 +15,7 @@ var VBoard = VBoard || {};
 		pieceNameMap: {},
 		cardNameMap: {},
 		dieNameMap: {},
+		backgroundNameMap: {},
 
 		//key - a texture url that has been reqested
 		//value - a set of piece objects waiting on this texture
@@ -25,7 +26,7 @@ var VBoard = VBoard || {};
 		textureMap: {},
 		unknownTexture: null,
 
-		background: "",
+		background: null,
 
 		//methods
 
@@ -455,6 +456,10 @@ var VBoard = VBoard || {};
 
 		setBackground: function (icon) {
 			//TODO: set background
+			var backgroundMaterial = new BABYLON.StandardMaterial("backgroundMat", vb.scene);
+			backgroundMaterial.diffuseTexture = new BABYLON.Texture(icon, vb.scene);
+			vb.board.background.material = backgroundMaterial;
+			vb.board.background.name = icon;
 		},
 
 		loadBoardData: function (boardData) {

@@ -79,6 +79,7 @@
 				<button id="addDeck" class="btn btn-success btn-menu" type="button">Add Deck of Cards</button>
 				<button id="addChessBoard" class="btn btn-success btn-menu" type="button">Add ChessBoard</button>
 				<button id="penTool" class="btn btn-success btn-menu" type="button">Pen Tool</button>
+				<button id="changeBackground" class="btn btn-success btn-menu" type="button">Change Background</button>
 				<button id="saveGame" class="btn btn-success btn-menu" type="button">Save Game</button>
 				<button id="loadGame" class="btn btn-success btn-menu" type="button">Load Game</button>
 				<button id="quitGame" class="btn btn-success btn-menu" type="button">Exit Game</button>
@@ -211,6 +212,25 @@
 					</div>
 					<div class="modal-footer"></div>
 				</div>
+			</div>
+		</div>
+
+		<div class="modal fade" id="change-background-modal" role="dialog">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal">&times;</button>
+						<h4 class="modal-title">Change Background</h4>
+					</div>
+					<div class="modal-body">
+
+						<select id="change-background-list"></select>
+
+				  		<button type="submit" value="Change Background" id="submit-change-background">Change</button>
+				  		<button class="close-modal" type="button" data-dismiss="modal">Cancel</button>
+					</div>
+					<div class="modal-footer"></div>
+			  	</div>
 			</div>
 		</div>
 

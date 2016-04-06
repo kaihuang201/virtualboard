@@ -99,6 +99,9 @@ var VBoard = VBoard || {};
 			vb.light.groundColor = new BABYLON.Color3(1, 1, 1);
 			vb.light.specular = new BABYLON.Color3(0, 0, 0);
 
+			vb.board.background = BABYLON.Mesh.CreatePlane("background", 50, scene);
+			vb.board.background.position = new BABYLON.Vector3(0, 0, 100);
+
 			return scene;
 		})();
 		vb.engine.runRenderLoop(vb.renderLoop);
