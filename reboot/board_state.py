@@ -326,7 +326,7 @@ class BoardState:
 			"privateZones" : [], #TODO
 			"pieces" : pieces_json
 		}
-
+'''
 	def load_from_json(self, json_obj):
 		self.background = json_obj["background"]
 		self.pieces = []
@@ -334,3 +334,4 @@ class BoardState:
 		self.next_piece_id = 0
 		for piece_json in json_obj["pieces"]:
 			self.generate_new_piece(piece_json)
+'''

@@ -38,6 +38,13 @@
 }
 
 {
+	"type" : "gameIDExists",
+	"data" : {
+		"gameID" : 6,
+	}
+}
+
+{
 	"type" : "ping",
 
 	//data can be literally anything
@@ -169,6 +176,15 @@
 			"password" : 1
 		}
 	]
+}
+
+{
+	"type" : "gameIDExists",
+	"data" : {
+		"gameIDExists" : 0,
+		"name" : "FarmVille",
+		"password" : 1
+	}
 }
 
 {

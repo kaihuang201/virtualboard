@@ -16,6 +16,16 @@ var VBoard = VBoard || {};
 			this.send(data);
 		},
 
+		gameIDExists: function (lobbyID) {
+			var data = {
+				"type" : "gameIDExists",
+				data : {
+					"gameID" : lobbyID
+				}
+			};
+			this.send(data);
+		},
+
 		joinGame: function (userName, userColor, gameID, password) {
 			var data = {
 				"type" : "initJoin",
@@ -94,6 +104,10 @@ var VBoard = VBoard || {};
 				case "listGames":
 					vb.interface.showListGames(data["data"]);
 					break;
+				case "gameIDExists":
+					// console.log("gameIDExists response: " + JSON.stringify(data["data"]["gameIDExists"]));
+					vb.interface.resumeButtonInit(data["data"]["gameIDExists"],data["data"]["password"],data["data"]["name"]);
+					break;
 				default:
 					console.log("unhandled server message");
 			}
@@ -148,7 +162,7 @@ var VBoard = VBoard || {};
 			} else {
 				var beaconData = [
 					{
-						"pos" : [x[i], y[i]]
+						"pos" : [x, y]
 					}
 				];
 			}
@@ -249,7 +263,7 @@ var VBoard = VBoard || {};
 
 		setBackground: function (icon) {
 			var data = {
-				"type" : "changeBackground",
+				"type" : "setBackground",
 				"data" : {
 					"icon" : icon
 				}
@@ -612,12 +626,12 @@ var VBoard = VBoard || {};
 			this.send(data);
 		},
 
-		requestLoad: function () {
-			var data = {
-				"type" : "requestLoad"
-			}
-			this.send(data);
-		},
+		//requestLoad: function () {
+		//	var data = {
+		//		"type" : "requestLoad"
+		//	}
+		//	this.send(data);
+		//},
 
 		//host only commands
 
@@ -735,12 +749,17 @@ var VBoard = VBoard || {};
 					} else {
 						vb.interface.alertModal(data["data"][0]["msg"],0);
 					}
-					
 					break;
 				case "chat":
 					vb.interface.chatIncomingMsg(data["data"][0]["msg"],true);
 					break;
 				case "beacon":
+					var beacons = data["data"];
+
+					for(index in beacons) {
+						var beaconData = beacons[index];
+						vb.board.beacon(beaconData);
+					}
 					break;
 				//use "pt" as a shorthand for pieceTransform
 				case "pt":
@@ -874,18 +893,18 @@ var VBoard = VBoard || {};
 					var key = data["data"].key;
 					window.location = "/save?lobbyId=" + lobby + "&key=" + key;
 	                break;
-	            case "loadPrep":
-					var file_field = $("#fileField")[0];
-					var formData = new FormData();
-			        formData.append("upload", file_field.files[0]);
-			        formData.append("lobbyId", data["data"].lobbyId);
-			        formData.append("key", data["data"].key);
-			        var xhr = new XMLHttpRequest();
-			        xhr.open('POST', 'load', true);
-			        xhr.onload = function () {
-			        };
-			        xhr.send(formData);
-	            	break;
+//	            case "loadPrep":
+//					var file_field = $("#fileField")[0];
+//					var formData = new FormData();
+//			        formData.append("upload", file_field.files[0]);
+//			        formData.append("lobbyId", data["data"].lobbyId);
+//			        formData.append("key", data["data"].key);
+//			        var xhr = new XMLHttpRequest();
+//			        xhr.open('POST', 'load', true);
+//			        xhr.onload = function () {
+//			        };
+//			        xhr.send(formData);
+//	            	break;
 				default:
 					console.log("unhandled server message: " + data["type"]);
 			}

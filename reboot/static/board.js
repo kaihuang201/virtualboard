@@ -15,6 +15,7 @@ var VBoard = VBoard || {};
 		pieceNameMap: {},
 		cardNameMap: {},
 		dieNameMap: {},
+		backgroundNameMap: {},
 
 		//key - a texture url that has been reqested
 		//value - a set of piece objects waiting on this texture
@@ -25,7 +26,7 @@ var VBoard = VBoard || {};
 		textureMap: {},
 		unknownTexture: null,
 
-		background: "",
+		background: null,
 
 		//methods
 
@@ -71,6 +72,13 @@ var VBoard = VBoard || {};
 
 		//removes a piece from the board
 		remove: function (piece) {
+			vb.selection.removePiece(piece);
+
+			//if the deleted piece is currently being selected by a drag box
+			//  the easiest solution is to clear the drag box selection before removing
+			//  then recompute the selected pieces
+			vb.selection.resetBoxSelection();
+
 			//we should call bringToFront instead of doing this probably
 			var index = this.ourIndexOf(piece);
 
@@ -81,7 +89,6 @@ var VBoard = VBoard || {};
 				p.mesh.position.z = this.getZIndex(i);
 			}
 
-			//TODO: disable highlight on piece if it exists
 			clearTimeout(piece.highlightTimeout);
 			clearTimeout(piece.predictTimeout);
 			vb.sessionIO.moveBuffer.remove(piece.id);
@@ -93,6 +100,9 @@ var VBoard = VBoard || {};
 			this.pieces.pop();
 			delete this.pieceHash[piece.id];
 			piece.mesh.dispose();
+
+			//reselect deselected pieces
+			vb.selection.computeBoxSelection();
 		},
 
 		//moves a piece to the back of the board (highest z index)
@@ -131,7 +141,7 @@ var VBoard = VBoard || {};
 		//should not be used
 		//toggleStatic: function (piece) {
 		//	piece.static = !piece.static;
-		//},
+		// },
 
 		//called by web socket handler upon receiving an update
 		transformPiece: function (pieceData) {
@@ -157,7 +167,7 @@ var VBoard = VBoard || {};
 				piece.position.y = pieceData["pos"][1];
 
 				if(!user.isLocal) {
-					//TODO: remove piece from selectedPieces if it exists
+					vb.selection.removePiece(piece);
 				}
 
 				if(piece.predictTimeout === null) {
@@ -308,7 +318,7 @@ var VBoard = VBoard || {};
 			plane.position = new BABYLON.Vector3(pieceData["pos"][0], pieceData["pos"][1], 0);
 			plane.rotation.z = pieceData["r"];
 			plane.piece = piece;
-			plane.material = material
+			plane.material = material;
 
 			//position - last server confirmed position		
 			//targetPosition - the same as position except for when the local user is moving the piece		
@@ -354,7 +364,7 @@ var VBoard = VBoard || {};
 					console.debug(evt);
 					console.log("click on: " + piece.id);
 
-					if(piece.static == false) {
+					if(piece.static == false && !evt.sourceEvent.altKey) {
 
 						//check that the shift key was pressed for the context menu
 						if(evt.sourceEvent.shiftKey) {
@@ -450,6 +460,10 @@ var VBoard = VBoard || {};
 
 		setBackground: function (icon) {
 			//TODO: set background
+			var backgroundMaterial = new BABYLON.StandardMaterial("backgroundMat", vb.scene);
+			backgroundMaterial.diffuseTexture = new BABYLON.Texture(icon, vb.scene);
+			vb.board.background.material = backgroundMaterial;
+			vb.board.background.name = icon;
 		},
 
 		loadBoardData: function (boardData) {
@@ -521,6 +535,15 @@ var VBoard = VBoard || {};
 			piece.mesh.scaling.x = ratio;
 		},
 
+		beacon: function (beaconData) {
+			var x = beaconData["pos"][0];
+			var y = beaconData["pos"][1];
+			var user_id = beaconData["user"];
+			var user = vb.users.userList[user_id];
+
+			//TODO
+		},
+
 		//special pieces
 
 		shuffleDeck: function (deckData) {
@@ -558,10 +581,11 @@ var VBoard = VBoard || {};
 			if(value < piece.faces.length) {
 				icon = piece.faces[value];
 			} else {
+				//A six sided die will return 0-5 inclusive
 				if(piece.max < 7) {
-					icon = "/static/img/die_face/small_die_face_" + (value) + ".png"
+					icon = "/static/img/die_face/small_die_face_" + (value+1) + ".png"
 				} else {
-					icon = "/static/img/die_face/big_die_face_" + (value) + ".png"
+					icon = "/static/img/die_face/big_die_face_" + (value+1) + ".png"
 				}
 			}
 			this.setIcon(piece, icon);

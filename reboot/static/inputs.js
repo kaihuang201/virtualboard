@@ -2,12 +2,99 @@ var VBoard = VBoard || {};
 (function (vb) {
 
 	vb.inputs = {
+		inertia: 2000,
+
 		//to do: separate system from polling buttons (wasd, etc) versus event buttons (backspace, space, etc)
-		keysPressed: [],
+		keysPressed: {},
+		keyMap : {},
 		mouseDown: false,
 		lastDragX: 0,
 		lastDragY: 0,
 		isDraggingBox: false,
+		chatBoxActivated: false,
+
+		handlers: {
+			up: function (elapsed, dist) {
+				vb.camera.position.y += dist * vb.camera.upVector.y;
+				vb.camera.position.x += dist * vb.camera.upVector.x;
+				vb.inputs.onMouseMove();
+			},
+
+			down: function (elapsed, dist) {
+				vb.camera.position.y -= dist * vb.camera.upVector.y;
+				vb.camera.position.x -= dist * vb.camera.upVector.x;
+				vb.inputs.onMouseMove();
+			},
+
+			right: function (elapsed, dist) {
+				vb.camera.position.y -= dist * vb.camera.upVector.x;
+				vb.camera.position.x += dist * vb.camera.upVector.y;
+				vb.inputs.onMouseMove();
+			},
+
+			left: function (elapsed, dist) {
+				vb.camera.position.y += dist * vb.camera.upVector.x;
+				vb.camera.position.x -= dist * vb.camera.upVector.y;
+				vb.inputs.onMouseMove();
+			},
+
+			rotateCCW: function (elapsed, dist) {
+				var u = vb.camera.upVector;
+				var upX = u.x*Math.cos(-elapsed/vb.inputs.inertia) - u.y * Math.sin(-elapsed/vb.inputs.inertia);
+				var upY = u.x*Math.sin(-elapsed/vb.inputs.inertia) + u.y * Math.cos(-elapsed/vb.inputs.inertia);
+				vb.camera.upVector = new BABYLON.Vector3(upX, upY, 0);
+				vb.inputs.onMouseMove();
+			},
+
+			rotateCW: function (elapsed, dist) {
+				var u = vb.camera.upVector;
+				var upX = u.x*Math.cos(elapsed/vb.inputs.inertia) - u.y * Math.sin(elapsed/vb.inputs.inertia);
+				var upY = u.x*Math.sin(elapsed/vb.inputs.inertia) + u.y * Math.cos(elapsed/vb.inputs.inertia);
+				vb.camera.upVector = new BABYLON.Vector3(upX, upY, 0);
+				vb.inputs.onMouseMove();
+			},
+
+			flipPiece: function () {
+				if(vb.selection.isEmpty()) {
+					var piece = vb.inputs.getPieceUnderMouse(false, true);
+
+					if(piece !== null && piece.isCard) {
+						vb.sessionIO.flipCard(piece.id);
+					}
+				} else {
+					vb.selection.flip();
+				}
+			},
+
+			removePiece: function () {
+				if(vb.selection.isEmpty()) {
+					var piece = vb.inputs.getPieceUnderMouse(false, true);
+
+					if(piece !== null) {
+						vb.sessionIO.removePiece(piece.id);
+					}
+				} else {
+					vb.selection.remove();
+				}
+			},
+
+			//need to make sure this plays nicely with box selection too
+			cancel: function () {
+				vb.selection.clear();
+			},
+
+			resetCamera: function () {
+				//resets the camera to default
+				//or at least it would in theory if backspace didn't also go back a page
+				vb.camera.position.x = 0;
+				vb.camera.position.y = 0;
+				vb.camera.upVector.x = 0;
+				vb.camera.upVector.y = 1;
+				vb.size = 10; //may need to be updated in the future
+				vb.setCameraPerspective();
+				vb.inputs.onMouseMove();
+			}
+		},
 
 		initialize: function () {
 			window.addEventListener("resize", function () {
@@ -22,6 +109,7 @@ var VBoard = VBoard || {};
 			});
 
 			//hide context menu when clicking on the canvas
+			//ideally this would work through our inputs system rather than jquery but whatever
 			$("#canvas").click(function(){
 				$("#context-menu").css("visibility", "hidden");
 			});
@@ -39,70 +127,99 @@ var VBoard = VBoard || {};
 				vb.inputs.onScroll(Math.max(-1, Math.min(1, (-evt.detail))));
 			});
 
-			window.addEventListener("mouseup", function (evt) {
-				vb.inputs.mouseDown = false;
-				vb.inputs.isDraggingBox = false;
-
-				vb.selection.clearAndSelect();
-
-				if(!vb.selection.isEmpty()) {
-					var piece = vb.inputs.getPieceUnderMouse(true);
-
-					if(piece !== null && piece.isCard) {
-						vb.selection.addToDeck(piece);
-					}
-					//vb.selection.clear();
-				}
+			window.addEventListener("mouseup", function (event) {
+				vb.inputs.onMouseUp(event);
 			});
-
-			window.addEventListener("mousemove", function (evt) {
-				//TODO: needs rework
-				if(vb.inputs.mouseDown) {
-					vb.selection.clearAndSetOnMouseUp = null;
-					var mousePos = vb.board.screenToGameSpace(new BABYLON.Vector2(vb.scene.pointerX, vb.scene.pointerY));
-					vb.inputs.onDrag(mousePos.x - vb.inputs.lastDragX, mousePos.y - vb.inputs.lastDragY);
-					vb.inputs.lastDragX = mousePos.x;
-					vb.inputs.lastDragY = mousePos.y;
-				}
+			window.addEventListener("mousemove", function (event) {
+				vb.inputs.onMouseMove(event);
 			});
+			window.addEventListener("mousedown", function (event) {
+				vb.inputs.onMouseDown(event);
+			});
+		},
 
-			window.addEventListener("mousedown", function (evt) {
-				vb.inputs.mouseDown = true;
-				console.log("mouseDown: " + evt.handled);
+		//mouse handlers
+		onMouseUp: function (event) {
+			this.mouseDown = false;
+			this.isDraggingBox = false;
 
-				var pos = vb.board.screenToGameSpace(new BABYLON.Vector2(vb.scene.pointerX, vb.scene.pointerY));
-				vb.inputs.lastDragX = pos.x;
-				vb.inputs.lastDragY = pos.y;
+			vb.selection.clearAndSelect();
 
-				if(!evt.handled) {
-					if (!evt.shiftKey) {
+			if(!vb.selection.isEmpty()) {
+				var piece = this.getPieceUnderMouse(true);
+
+				if(piece !== null && piece.isCard) {
+					vb.selection.addToDeck(piece);
+				}
+				//vb.selection.clear();
+			}
+		},
+
+		onMouseDown: function (event) {
+			var pos = vb.board.screenToGameSpace(new BABYLON.Vector2(vb.scene.pointerX, vb.scene.pointerY));
+
+			if(event.altKey) {
+				vb.sessionIO.sendBeacon(pos.x, pos.y);
+			} else {
+				this.mouseDown = true;
+				console.log("mouseDown: " + event.handled);
+
+				this.lastDragX = pos.x;
+				this.lastDragY = pos.y;
+
+				if(!event.handled) {
+					if (!event.shiftKey) {
 						vb.selection.clear();
 					}
 
 					vb.selection.startDragBox(pos);
-					vb.inputs.isDraggingBox = true;
+					this.isDraggingBox = true;
 				}
-			});
-		},
-
-		onKeyDown: function (key) {
-			//console.log("NEW KEY: " + key);
-			if(this.keysPressed.indexOf(key) == -1) {
-				//console.log("sanity check: " + key);
-				this.keysPressed.push(key);
 			}
 		},
 
+		onMouseMove: function (event) {
+			//TODO: needs rework
+			if(vb.inputs.mouseDown) {
+				vb.selection.clearAndSetOnMouseUp = null;
+				var mousePos = vb.board.screenToGameSpace(new BABYLON.Vector2(vb.scene.pointerX, vb.scene.pointerY));
+				this.onDrag(mousePos.x - vb.inputs.lastDragX, mousePos.y - vb.inputs.lastDragY);
+				this.lastDragX = mousePos.x;
+				this.lastDragY = mousePos.y;
+			}
+		},
+
+		//dispatches key press events
+		onKeyDown: function (key) {
+			if (!VBoard.inputs.chatBoxActivated){
+				this.keysPressed[key] = true;
+
+				if(this.keyMap.hasOwnProperty(key)) {
+					keyData = this.keyMap[key];
+
+					if(keyData.hasOwnProperty("press")) {
+						keyData.press();
+					}
+				}	
+			}
+		},
+
+		//dispatches key release events
 		onKeyUp: function (key) {
-			var index = this.keysPressed.indexOf(key);
-			this.keysPressed.splice(index, 1);
+			if(this.keysPressed.hasOwnProperty(key)) {
+				delete this.keysPressed[key];
+			}
+
+			if(this.keyMap.hasOwnProperty(key)) {
+				keyData = this.keyMap[key];
+
+				if(keyData.hasOwnProperty("release")) {
+					keyData.release();
+				}
+			}
 		},
 
 		onScroll: function (delta) {
-			//console.log(delta);
-			//note: there is definitely some way for this to get messed up after the board has been manipulated to some extent
-			//it seems to have something to do with opening/closing the developer console
-
 			var mousePos = vb.board.screenToGameSpace({
 				x: vb.scene.pointerX,
 				y: vb.scene.pointerY
@@ -112,6 +229,7 @@ var VBoard = VBoard || {};
 
 		adjustZoom: function (focusPos, delta) {
 			//TODO: remove magic numbers
+			//we should probably also call the mouse move handler here
 			var oldCameraPos = vb.camera.position;
 			var dx = focusPos.x - oldCameraPos.x;
 			var dy = focusPos.y - oldCameraPos.y;
@@ -182,83 +300,70 @@ var VBoard = VBoard || {};
 			return true;
 		},
 
+		//dispatches polling events
 		processInputs: function (elapsed) {
-			//console.log("ELAPSED: " + elapsed);
-			var inertia = 2000;
-			var up = vb.camera.upVector;
-			var dist = (elapsed / inertia) * vb.size
+			var dist = (elapsed / this.inertia) * vb.size;
 
-			for(var index = 0; index < this.keysPressed.length; index++) {
-				//to do: move these to their own functions
-				switch(this.keysPressed[index]) {
-					case 87: //w
-					case 38: //up
-						vb.camera.position.y += dist * up.y;
-						vb.camera.position.x += dist * up.x;
-						break;
-					case 83: //s
-					case 40: //down
-						vb.camera.position.y -= dist * up.y;
-						vb.camera.position.x -= dist * up.x;
-						break;
-					case 68: //d
-					case 39: //right
-						vb.camera.position.y -= dist * up.x;
-						vb.camera.position.x += dist * up.y;
-						break;
-					case 65: //a
-					case 37: //left
-						vb.camera.position.y += dist * up.x;
-						vb.camera.position.x -= dist * up.y;
-						break;
-					case 81: //q
-						var upX = up.x*Math.cos(-elapsed/inertia) - up.y * Math.sin(-elapsed/inertia);
-						var upY = up.x*Math.sin(-elapsed/inertia) + up.y * Math.cos(-elapsed/inertia);
-						vb.camera.upVector = new BABYLON.Vector3(upX, upY, 0);
-						break;
-					case 69: //e
-						var upX = up.x*Math.cos(elapsed/inertia) - up.y * Math.sin(elapsed/inertia);
-						var upY = up.x*Math.sin(elapsed/inertia) + up.y * Math.cos(elapsed/inertia);
-						vb.camera.upVector = new BABYLON.Vector3(upX, upY, 0);
-						break;
-					case 70: //f
-						if(vb.selection.isEmpty()) {
-							var piece = this.getPieceUnderMouse(false, true);
+			for(key in this.keysPressed) {
+				if(this.keysPressed.hasOwnProperty(key)) {
+					if(this.keyMap.hasOwnProperty(key)) {
+						keyData = this.keyMap[key];
 
-							if(piece !== null && piece.isCard) {
-								vb.sessionIO.flipCard(piece.id);
-							}
-						} else {
-							vb.selection.flip();
+						if(keyData.hasOwnProperty("poll")) {
+							keyData.poll(elapsed, dist);
 						}
-						break;
-					case 46: //delete
-						if(vb.selection.isEmpty()) {
-							var piece = this.getPieceUnderMouse(false, true);
-
-							if(piece !== null) {
-								vb.sessionIO.removePiece(piece.id);
-							}
-						} else {
-							vb.selection.remove();
-						}
-						break;
-					case 27: //escape
-						vb.selection.clear();
-						break;
-					case 8: //backspace
-					case 32: //spacebar
-						//resets the camera to default
-						//or at least it would in theory if backspace didn't also go back a page
-						vb.camera.position.x = 0;
-						vb.camera.position.y = 0;
-						vb.camera.upVector.x = 0;
-						vb.camera.upVector.y = 1;
-						vb.size = 10; //may need to be updated in the future
-						vb.setCameraPerspective();
-						break;
+					}
 				}
 			}
 		},
+	};
+
+	//this needs to be done after, since we can't actually refer to vb.inputs otherwise
+	vb.inputs.keyMap = {
+		87 : {
+			"poll" : vb.inputs.handlers.up
+		},
+		38 : {
+			"poll" : vb.inputs.handlers.up
+		},
+		83 : {
+			"poll" : vb.inputs.handlers.down
+		},
+		40 : {
+			"poll" : vb.inputs.handlers.down
+		},
+		68 : {
+			"poll" : vb.inputs.handlers.right
+		},
+		39 : {
+			"poll" : vb.inputs.handlers.right
+		},
+		65 : {
+			"poll" : vb.inputs.handlers.left
+		},
+		37 : {
+			"poll" : vb.inputs.handlers.left
+		},
+		81 : {
+			"poll" : vb.inputs.handlers.rotateCCW
+		},
+		69 : {
+			"poll" : vb.inputs.handlers.rotateCW
+		},
+		70 : {
+			"press" : vb.inputs.handlers.flipPiece
+		},
+		46 : {
+			"release" : vb.inputs.handlers.removePiece
+		},
+		27 : {
+			"release" : vb.inputs.handlers.cancel
+		},
+		8 : {
+			"press" : vb.inputs.handlers.resetCamera
+		},
+		32 : {
+			"press" : vb.inputs.handlers.resetCamera
+		}
 	};
 })(VBoard);

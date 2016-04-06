@@ -44,6 +44,7 @@ var VBoard = VBoard || {};
 				for (var i = 0; i < this.newPieces.length; i++) {
 					this.addPiece(this.newPieces[i]);
 				}
+				this.newPieces = [];
 			}
 
 			if(this.clearAndSetOnMouseUp === null) {
@@ -78,6 +79,7 @@ var VBoard = VBoard || {};
 			vb.board.outlinePiece(piece, vb.users.getLocal().color, true);
 		},
 
+		//removes piece from selection (does not delete)
 		removePiece: function (piece) {
 			if(!this.pieceMap.hasOwnProperty(piece.id)) {
 				return;
@@ -95,6 +97,8 @@ var VBoard = VBoard || {};
 
 		//makes it so no pieces are currently selected
 		clear: function () {
+			this.resetBoxSelection();
+
 			if(this.pieces.length > 0) {
 				for(var i=0; i<this.pieces.length; i++) {
 					var piece = this.pieces[i];
@@ -105,6 +109,7 @@ var VBoard = VBoard || {};
 			}
 		},
 
+		//sends remove command to server
 		remove: function () {
 			var ids = [];
 
@@ -153,59 +158,60 @@ var VBoard = VBoard || {};
 			}
 		},
 
-		dragBox: function(dx, dy) {
+		dragBox: function (dx, dy) {
 			if (this.boxStart != null) {
-				for (var i = 0; i < this.newPieces.length; i++) {
-					vb.board.outlinePiece(this.newPieces[i], null, false);
-				}
-				this.newPieces = [];
 				this.boxEnd.x += dx;
 				this.boxEnd.y += dy;
-
-				for (var i = 0; i < vb.board.pieces.length; i++) {
-					var piece = vb.board.pieces[i];
-
-					var leftX = Math.min(this.boxStart.x, this.boxEnd.x);
-					var rightX = Math.max(this.boxStart.x, this.boxEnd.x);
-					var topY = Math.min(this.boxStart.y, this.boxEnd.y);
-					var bottomY = Math.max(this.boxStart.y, this.boxEnd.y);
-
-					var u = piece.position.x - leftX;
-					var v = piece.position.y - topY;
-
-					var upX = vb.camera.upVector.x;
-					var upY = vb.camera.upVector.y;
-
-					var dot = u * upX + v * upY;
-					if (dot > 0) {
-						continue;
-					}
-
-					dot = u * upY - v * upX;
-
-					if (dot > 0) {
-						continue;
-					}
-
-					var u = rightX - piece.position.x;
-					var v = bottomY - piece.position.y;
-
-					dot = u * upX + v * upY;
-
-					if (dot < 0) {
-						continue;
-					}
-
-					dot = u * upY - v * upX;
-
-					if (dot < 0) {
-						continue;
-					}
-
-					this.newPieces.push(piece);
-					vb.board.outlinePiece(piece, vb.users.getLocal().color, true);
-				}
+				this.computeBoxSelection();
 			}
+		},
+
+		computeBoxSelection: function () {
+			if (this.boxStart === null) {
+				return;
+			}
+			this.resetBoxSelection();
+
+			function rotateToCameraSpace(pos) {
+				var up = vb.camera.upVector;
+				var x = pos.x * up.y - pos.y * up.x;
+				var y = pos.x * up.x + pos.y * up.y;
+				return {"x" : x, "y" : y};
+			}
+
+			for (var i = 0; i < vb.board.pieces.length; i++) {
+				var piece = vb.board.pieces[i];
+
+				if(piece.static || this.hasPiece(piece.id)) {
+					continue;
+				}
+
+				var corner1 = rotateToCameraSpace(this.boxStart);
+				var corner2 = rotateToCameraSpace(this.boxEnd);
+				var piecePos = rotateToCameraSpace(piece.position);
+
+				var leftX = Math.min(corner1.x, corner2.x);
+				var rightX = Math.max(corner1.x, corner2.x);
+				var topY = Math.max(corner1.y, corner2.y);
+				var bottomY = Math.min(corner1.y, corner2.y);
+
+				if( leftX > piecePos.x ||
+					rightX < piecePos.x ||
+					topY < piecePos.y ||
+					bottomY > piecePos.y) {
+					continue;
+				}
+
+				this.newPieces.push(piece);
+				vb.board.outlinePiece(piece, vb.users.getLocal().color, true);
+			}
+		},
+
+		resetBoxSelection: function () {
+			for (var i = 0; i < this.newPieces.length; i++) {
+				vb.board.outlinePiece(this.newPieces[i], null, false);
+			}
+			this.newPieces = [];
 		},
 
 		drag: function (dx, dy) {

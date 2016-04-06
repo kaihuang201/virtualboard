@@ -4,7 +4,7 @@ var VBoard = VBoard || {};
 	vb.content = {
 		loadChessGame: function () {
 			var chessData = {
-				"background" : "",
+				"background" : vb.board.background.name,
 				"privateZones" : [],
 				"pieces" : [
 					{
@@ -57,7 +57,7 @@ var VBoard = VBoard || {};
 
 		loadCheckersGame: function () {
 			var checkersData = {
-				"background" : "",
+				"background" : vb.board.background.name,
 				"privateZones" : [],
 				"pieces" : [
 					{
