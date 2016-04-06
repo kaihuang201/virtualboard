@@ -27,6 +27,7 @@ var VBoard = VBoard || {};
 		unknownTexture: null,
 
 		background: null,
+		selectionBox: null,
 
 		//methods
 
@@ -107,11 +108,12 @@ var VBoard = VBoard || {};
 
 		verifySceneIndex: function (index, piece) {
 			var meshes = vb.scene.meshes;
+			index += vb.staticMeshCount;
 
 			if(index < meshes.length) {
 				var mesh = meshes[index];
 
-				if(mesh.piece && mesh.piece.id == piece.id) {
+				if(mesh && mesh.piece && mesh.piece.id == piece.id) {
 					return index;
 				}
 			}
@@ -119,7 +121,7 @@ var VBoard = VBoard || {};
 			for(var i=0; i<meshes.length; i++) {
 				var mesh = meshes[i];
 
-				if(mesh.piece && mesh.piece.id == piece.id) {
+				if(mesh && mesh.piece && mesh.piece.id == piece.id) {
 					return i;
 				}
 			}
@@ -129,7 +131,7 @@ var VBoard = VBoard || {};
 		//moves a piece to the back of the board (highest z index)
 		pushToBack: function (piece) {
 			var index = this.ourIndexOf(piece);
-			var sceneIndex = this.verifySceneIndex(index + 1, piece);
+			var sceneIndex = this.verifySceneIndex(index, piece);
 			var mesh = vb.scene.meshes[sceneIndex];
 
 			for(var i = index; i > 0; i--) {
@@ -153,7 +155,7 @@ var VBoard = VBoard || {};
 		//moves a piece to the front of the board (lowest z index)
 		bringToFront: function (piece) {
 			var index = this.ourIndexOf(piece);
-			var sceneIndex = this.verifySceneIndex(index + 1, piece);
+			var sceneIndex = this.verifySceneIndex(index, piece);
 			var mesh = vb.scene.meshes[sceneIndex];
 
 			for(var i = index; i < this.pieces.length-1; i++) {
@@ -345,6 +347,28 @@ var VBoard = VBoard || {};
 			}
 		},
 
+		drawSelectionBox: function (corner1, corner2) {
+			var up = vb.camera.upVector;
+			var centerX = (corner1.x + corner2.x)/2;
+			var centerY = (corner1.y + corner2.y)/2;
+			var screenCorner1 = this.rotateToCameraSpace(corner1);
+			var screenCorner2 = this.rotateToCameraSpace(corner2);
+			var width = Math.abs(screenCorner1.x - screenCorner2.x);
+			var height = Math.abs(screenCorner1.y - screenCorner2.y);
+
+			//TODO: FINISH
+			this.selectionBox.rotation.z = -Math.atan2(up.x, up.y);
+			this.selectionBox.position.x = centerX;
+			this.selectionBox.position.y = centerY;
+			this.selectionBox.scaling.x = width;
+			this.selectionBox.scaling.y = height;
+			this.selectionBox.showBoundingBox = true;
+		},
+
+		hideSelectionBox: function () {
+			this.selectionBox.showBoundingBox = false;
+		},
+
 		//takes JSON formatted data from socket handler
 		generateNewPiece: function (pieceData) {
 			var piece = {};
@@ -353,7 +377,9 @@ var VBoard = VBoard || {};
 			var c = pieceData["color"];
 			piece.color = new BABYLON.Color3(c[0]/255, c[1]/255, c[2]/255);
 
-			var plane = BABYLON.Mesh.CreatePlane("plane", piece.size, vb.scene);
+			var plane = BABYLON.Mesh.CreatePlane("plane", 1.0, vb.scene);
+			plane.scaling.y = piece.size;
+			plane.scaling.x = piece.size;
 			var subMaterial = new BABYLON.StandardMaterial("std", vb.scene);
 			var infoMaterial = new BABYLON.StandardMaterial("std", vb.scene);
 			var infoTexture = new BABYLON.DynamicTexture("info", 512, vb.scene, true);
@@ -513,6 +539,13 @@ var VBoard = VBoard || {};
 
 			//console.log("   output pos: " + totalX + " " + totalY);
 			return new BABYLON.Vector2(totalX, totalY);
+		},
+
+		rotateToCameraSpace: function (pos) {
+			var up = vb.camera.upVector;
+			var x = pos.x * up.y - pos.y * up.x;
+			var y = pos.x * up.x + pos.y * up.y;
+			return {"x" : x, "y" : y};
 		},
 
 		setBackground: function (icon) {

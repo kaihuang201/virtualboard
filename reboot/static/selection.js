@@ -46,6 +46,7 @@ var VBoard = VBoard || {};
 				}
 				this.newPieces = [];
 			}
+			vb.board.hideSelectionBox();
 
 			if(this.clearAndSetOnMouseUp === null) {
 				return;
@@ -163,6 +164,7 @@ var VBoard = VBoard || {};
 				this.boxEnd.x += dx;
 				this.boxEnd.y += dy;
 				this.computeBoxSelection();
+				vb.board.drawSelectionBox(this.boxStart, this.boxEnd);
 			}
 		},
 
@@ -172,12 +174,8 @@ var VBoard = VBoard || {};
 			}
 			this.resetBoxSelection();
 
-			function rotateToCameraSpace(pos) {
-				var up = vb.camera.upVector;
-				var x = pos.x * up.y - pos.y * up.x;
-				var y = pos.x * up.x + pos.y * up.y;
-				return {"x" : x, "y" : y};
-			}
+			var corner1 = vb.board.rotateToCameraSpace(this.boxStart);
+			var corner2 = vb.board.rotateToCameraSpace(this.boxEnd);
 
 			for (var i = 0; i < vb.board.pieces.length; i++) {
 				var piece = vb.board.pieces[i];
@@ -185,10 +183,7 @@ var VBoard = VBoard || {};
 				if(piece.static || this.hasPiece(piece.id)) {
 					continue;
 				}
-
-				var corner1 = rotateToCameraSpace(this.boxStart);
-				var corner2 = rotateToCameraSpace(this.boxEnd);
-				var piecePos = rotateToCameraSpace(piece.position);
+				var piecePos = vb.board.rotateToCameraSpace(piece.position);
 
 				var leftX = Math.min(corner1.x, corner2.x);
 				var rightX = Math.max(corner1.x, corner2.x);
