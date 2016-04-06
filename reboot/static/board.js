@@ -39,6 +39,10 @@ var VBoard = VBoard || {};
 			piece.mesh.position.z = z;
 		},
 
+		addPrivateZone: function (zoneData) {
+			//TODO
+		},
+
 		ourIndexOf: function (piece) {
 			if(this.pieceHash.hasOwnProperty(piece.id)) {
 				return this.pieceHash[piece.id];

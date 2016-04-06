@@ -187,6 +187,18 @@ class Game:
 	# host only commands
 	#==========
 
+	def add_private_zone(self, client, zoneData):
+		if self.host.user_id == client.user_id:
+			zoneData["id"] = self.board_state.add_private_zone(zoneData["pos"]["x"], zoneData["pos"]["y"], \
+				zoneData["width"], zoneData["height"], zoneData["rotation"], zoneData["color"])
+			response = {
+				"type" : "addPrivateZone",
+				"data" : zoneData
+			}
+			self.message_all(response)
+		else:
+			self.send_error(client, "Only the host can use that command")
+
 	def changeHost(self, client, target, message):
 		if self.host.user_id == client.user_id:
 			new_host = self.get_client_from_id(target)
@@ -326,7 +338,7 @@ class Game:
 		move_only = True
 
 		for pieceData in pieces:
-			if self.board_state.transform_piece(pieceData):
+			if self.board_state.transform_piece(client, pieceData):
 				piece = self.board_state.get_piece(pieceData["piece"])
 				data_entry = {
 					"u" : client.user_id,
