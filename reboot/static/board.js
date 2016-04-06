@@ -154,7 +154,7 @@ var VBoard = VBoard || {};
 			if(pieceData.hasOwnProperty("color")) {
 				var c = pieceData["color"];
 				piece.color = new BABYLON.Color3(c[0]/255, c[1]/255, c[2]/255);
-				piece.mesh.material.diffuseColor = piece.color;
+				piece.mesh.material.mainMaterial.diffuseColor = piece.color;
 			}
 
 			if(pieceData.hasOwnProperty("pos")) {
@@ -264,9 +264,9 @@ var VBoard = VBoard || {};
 		highlightPiece: function (piece, color, duration) {
 			clearTimeout(piece.highlightTimeout);
 
-			if(piece.outlined) {
-				piece.mesh.renderOutline = false;
-			}
+			//if(piece.outlined) {
+			//	piece.mesh.renderOutline = false;
+			//}
 
 			//var babylonColor = new BABYLON.Color3(color[0]/255, color[1]/255, color[2]/255);
 
@@ -276,9 +276,9 @@ var VBoard = VBoard || {};
 				piece.mesh.renderOverlay = false;
 				piece.highlightTimeout = null;
 
-				if(piece.outlined) {
-					piece.mesh.renderOutline = true;
-				}
+				//if(piece.outlined) {
+				//	piece.mesh.renderOutline = true;
+				//}
 			}, duration);
 		},
 
@@ -289,16 +289,17 @@ var VBoard = VBoard || {};
 				on = true;
 			}
 			piece.outlined = on;
+			piece.mesh.showBoundingBox = on;
 
-			if(on) {
-				piece.mesh.outlineColor = color;
-
-				if(!piece.mesh.renderOverlay) {
-					piece.mesh.renderOutline = true;
-				}
-			} else {
-				piece.mesh.renderOutline = false;
-			}
+			//if(on) {
+			//	piece.mesh.outlineColor = color;
+            //
+			//	if(!piece.mesh.renderOverlay) {
+			//		piece.mesh.renderOutline = true;
+			//	}
+			//} else {
+			//	piece.mesh.renderOutline = false;
+			//}
 		},
 
 		//takes JSON formatted data from socket handler
@@ -310,11 +311,27 @@ var VBoard = VBoard || {};
 			piece.color = new BABYLON.Color3(c[0]/255, c[1]/255, c[2]/255);
 
 			var plane = BABYLON.Mesh.CreatePlane("plane", piece.size, vb.scene);
-			var material = new BABYLON.StandardMaterial("std", vb.scene);
+			var subMaterial = new BABYLON.StandardMaterial("std", vb.scene);
+			var infoMaterial = new BABYLON.StandardMaterial("std", vb.scene);
+			var infoTexture = new BABYLON.DynamicTexture("info", 512, vb.scene, true);
+			infoTexture.hasAlpha = true;
+			infoMaterial.diffuseTexture = infoTexture;
+			infoMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+			infoMaterial.emissiveColor = new BABYLON.Color3(1, 1, 1);
+			var material = new BABYLON.MultiMaterial("multi", vb.scene);
+			material.subMaterials.push(subMaterial);
+			material.subMaterials.push(infoMaterial);
+			material.mainMaterial = subMaterial;
+			material.infoTexture = infoTexture;
+
 			plane.position = new BABYLON.Vector3(pieceData["pos"][0], pieceData["pos"][1], 0);
 			plane.rotation.z = pieceData["r"];
 			plane.piece = piece;
 			plane.material = material;
+
+			plane.subMeshes = [];
+			plane.subMeshes.push(new BABYLON.SubMesh(0, 0, 4, 0, 6, plane));
+			plane.subMeshes.push(new BABYLON.SubMesh(1, 0, 4, 0, 6, plane));
 
 			//position - last server confirmed position		
 			//targetPosition - the same as position except for when the local user is moving the piece		
@@ -330,6 +347,7 @@ var VBoard = VBoard || {};
 			piece.isDie = false;
 			piece.lastTrigger = 0;
 			this.setIcon(piece, pieceData["icon"]);
+			this.setInfo(piece, "");
 
 			if(pieceData.hasOwnProperty("cardData")) {
 				piece.isCard = true;
@@ -486,7 +504,7 @@ var VBoard = VBoard || {};
 			piece.icon = icon;
 
 			if(this.textureMap.hasOwnProperty(icon)) {
-				piece.mesh.material.diffuseTexture = this.textureMap[icon];
+				piece.mesh.material.mainMaterial.diffuseTexture = this.textureMap[icon];
 				vb.board.adjustPieceWidth(piece);
 			} else {
 				if(!this.pendingTextures.hasOwnProperty(icon)) {
@@ -502,7 +520,7 @@ var VBoard = VBoard || {};
 							if(vb.board.pendingTextures[icon].hasOwnProperty(pieceID)) {
 								var index = vb.board.pieceHash[pieceID];
 								var p = vb.board.pieces[index];
-								p.mesh.material.diffuseTexture = texture;
+								p.mesh.material.mainMaterial.diffuseTexture = texture;
 								vb.board.adjustPieceWidth(p);
 							}
 						}
@@ -520,12 +538,12 @@ var VBoard = VBoard || {};
 					this.unknownTexture = new BABYLON.Texture("/static/img/unknown.png", vb.scene);
 					this.unknownTexture.hasAlpha = true;
 				}
-				piece.mesh.material.diffuseTexture = this.unknownTexture;
+				piece.mesh.material.mainMaterial.diffuseTexture = this.unknownTexture;
 			}
 		},
 
 		adjustPieceWidth: function (piece) {
-			var t = piece.mesh.material.diffuseTexture._texture;
+			var t = piece.mesh.material.mainMaterial.diffuseTexture._texture;
 			//for some bizzare reason, not using the intermediate ratio variable makes this not work
 			ratio = piece.mesh.scaling.y * t._baseWidth / t._baseHeight;
 			piece.mesh.scaling.x = ratio;
@@ -627,7 +645,48 @@ var VBoard = VBoard || {};
 			//TODO: remove text when only one is remaining
 			//TODO: figure out how to overlay text on actual background
 			piece.numCards = newCount;
+
+			if(newCount > 1) {
+				this.setInfo(piece, newCount.toString());
+			} else {
+				this.setInfo(piece, "");
+			}
 			//this.mesh.material.diffuseTexture.drawText(this.numCards, null, 50 * this.size, "bold 128px Arial", "rgba(255,255,255,1.0)", "black");
+		},
+
+		//TODO: BARELY WORKS, NEEDS OVERHAUL
+		setInfo: function (piece, info) {
+			//http://www.html5gamedevs.com/topic/8958-dynamic-texure-drawtext-attributes-get-text-to-wrap/?do=findComment&comment=62014
+			function wrapText(context, text, x, y, maxWidth, lineHeight) {
+				var words = text.split(' ');
+				var line = '';
+				for(var n = 0; n < words.length; n++) {
+					var testLine = line + words[n] + ' ';
+					var metrics = context.measureText(testLine);
+					var testWidth = metrics.width;
+					if (testWidth > maxWidth && n > 0) {
+						context.fillText(line, x, y);
+						line = words[n] + ' ';
+						y += lineHeight;
+					} else {
+						line = testLine;
+					}
+				}
+				context.fillText(line, x, y);
+			}
+			var tex = piece.mesh.material.infoTexture;
+			var context = tex.getContext();
+			context.clearRect(0, 0, 512, 512);
+			context.font = "140px verdana";
+			context.save();
+			context.textAlign = "start";
+			context.shadowColor = "white";
+			context.shadowOffsetY = 5;
+			context.shadowOffsetX = 5;
+			wrapText(context, info, 256, 128, 512, 512);
+			context.restore();
+			tex.update();
+			//tex.drawText(info, 0, 300, "140px verdana", "black", "transparent");
 		},
 
 		doubleClick: function(piece) {

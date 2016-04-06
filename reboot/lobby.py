@@ -358,7 +358,7 @@ class Game:
 
 				response_data.append(data_entry)
 			else:
-				self.send_error(client, "invalid piece id " + str(id))
+				self.send_error(client, "invalid piece id " + str(pieceData["piece"]))
 
 		if len(response_data) == 0:
 			return
