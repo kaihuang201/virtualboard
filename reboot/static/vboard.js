@@ -126,6 +126,7 @@ var VBoard = VBoard || {};
 		vb.frame++;
 		vb.inputs.processInputs(dt);
 		vb.board.movePieces(dt);
+		vb.engine.setDepthWrite(false);
 		vb.scene.render();
 	};
 })(VBoard);

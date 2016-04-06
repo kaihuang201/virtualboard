@@ -101,36 +101,75 @@ var VBoard = VBoard || {};
 			vb.selection.computeBoxSelection();
 		},
 
+		verifySceneIndex: function (index, piece) {
+			var meshes = vb.scene.meshes;
+
+			if(index < meshes.length) {
+				var mesh = meshes[index];
+
+				if(mesh.piece && mesh.piece.id == piece.id) {
+					return index;
+				}
+			}
+
+			for(var i=0; i<meshes.length; i++) {
+				var mesh = meshes[i];
+
+				if(mesh.piece && mesh.piece.id == piece.id) {
+					return i;
+				}
+			}
+			return -1;
+		},
+
 		//moves a piece to the back of the board (highest z index)
 		pushToBack: function (piece) {
 			var index = this.ourIndexOf(piece);
+			var sceneIndex = this.verifySceneIndex(index + 1, piece);
+			var mesh = vb.scene.meshes[sceneIndex];
 
 			for(var i = index; i > 0; i--) {
 				var p = this.pieces[i-1];
 				this.pieceHash[p.id] = i;
 				this.pieces[i] = p;
 				p.mesh.position.z = this.getZIndex(i);
+
+				//also update babylon mesh ordering
+				var m = vb.scene.meshes[sceneIndex - 1];
+				vb.scene.meshes[sceneIndex] = m;
+				sceneIndex--;
 			}
 			this.pieceHash[piece.id] = 0;
 			this.pieces[0] = piece;
 			piece.mesh.position.z = this.getZIndex(0);
+
+			vb.scene.meshes[sceneIndex] = mesh;
 		},
 
 		//moves a piece to the front of the board (lowest z index)
 		bringToFront: function (piece) {
 			var index = this.ourIndexOf(piece);
+			var sceneIndex = this.verifySceneIndex(index + 1, piece);
+			var mesh = vb.scene.meshes[sceneIndex];
 
 			for(var i = index; i < this.pieces.length-1; i++) {
 				var p = this.pieces[i+1];
 				this.pieceHash[p.id] = i;
 				this.pieces[i] = p;
 				p.mesh.position.z = this.getZIndex(i);
+
+				//also update babylon mesh ordering
+				var m = vb.scene.meshes[sceneIndex + 1];
+				vb.scene.meshes[sceneIndex] = m;
+				sceneIndex++;
 			}
 
 			var end = this.pieces.length-1;
 			this.pieceHash[piece.id] = end;
 			this.pieces[end] = piece;
 			piece.mesh.position.z = this.getZIndex(end);
+
+			vb.scene.meshes[sceneIndex] = mesh;
 		},
 
 		//toggles whether a piece should be static or not
@@ -264,9 +303,9 @@ var VBoard = VBoard || {};
 		highlightPiece: function (piece, color, duration) {
 			clearTimeout(piece.highlightTimeout);
 
-			//if(piece.outlined) {
-			//	piece.mesh.renderOutline = false;
-			//}
+			if(piece.outlined) {
+				piece.mesh.renderOutline = false;
+			}
 
 			//var babylonColor = new BABYLON.Color3(color[0]/255, color[1]/255, color[2]/255);
 
@@ -276,9 +315,9 @@ var VBoard = VBoard || {};
 				piece.mesh.renderOverlay = false;
 				piece.highlightTimeout = null;
 
-				//if(piece.outlined) {
-				//	piece.mesh.renderOutline = true;
-				//}
+				if(piece.outlined) {
+					piece.mesh.renderOutline = true;
+				}
 			}, duration);
 		},
 
@@ -289,17 +328,17 @@ var VBoard = VBoard || {};
 				on = true;
 			}
 			piece.outlined = on;
-			piece.mesh.showBoundingBox = on;
+			//piece.mesh.showBoundingBox = on;
 
-			//if(on) {
-			//	piece.mesh.outlineColor = color;
-            //
-			//	if(!piece.mesh.renderOverlay) {
-			//		piece.mesh.renderOutline = true;
-			//	}
-			//} else {
-			//	piece.mesh.renderOutline = false;
-			//}
+			if(on) {
+				piece.mesh.outlineColor = color;
+
+				if(!piece.mesh.renderOverlay) {
+					piece.mesh.renderOutline = true;
+				}
+			} else {
+				piece.mesh.renderOutline = false;
+			}
 		},
 
 		//takes JSON formatted data from socket handler
