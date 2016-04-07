@@ -117,7 +117,7 @@ class Game:
 		self.movebuffer.add_client(new_client.user_id)
 
 		abridged_users = self.get_abridged_clients(new_client)
-		board_data = self.board_state.get_json_obj()
+		board_data = self.board_state.get_json_obj(color=new_client.color)
 		mainResponse = {
 			"type" : "initSuccess",
 			"data" : {
@@ -171,6 +171,11 @@ class Game:
 	def message_all(self, response):
 		for user_id, client in self.clients.iteritems():
 			client.write_message(json.dumps(response))
+
+	def message_color(self, color, response, compliment=False):
+		for client in self.clients.itervalues():
+			if (client.color == color) ^ compliment:
+				client.write_message(json.dumps(response))
 
 	def send_error(self, client, message):
 		error_message = {
@@ -335,50 +340,86 @@ class Game:
 	def pieceTransform(self, client, pieces):
 		client.spam_amount += 0.1 + 0.1*len(pieces)
 		response_data = []
+		colored_response = dict()
+		remove_response = dict()
+		add_response = dict()
+		response_empty = True
 		move_only = True
 
 		for pieceData in pieces:
-			if self.board_state.transform_piece(client, pieceData):
-				piece = self.board_state.get_piece(pieceData["piece"])
-				data_entry = {
-					"u" : client.user_id,
-					"p" : piece.piece_id
-				}
+			piece = self.board_state.get_piece(pieceData["piece"])
+			if piece.color == [255, 255, 255] or piece.color == client.color:
+				was_in_private_zone = piece.in_private_zone
+				old_color = piece.color
+				if self.board_state.transform_piece(client, pieceData):
+					piece = self.board_state.get_piece(pieceData["piece"])
 
-				if "pos" in pieceData:
-					data_entry["pos"] = piece.pos
+					data_entry = {
+						"u" : client.user_id,
+						"p" : piece.piece_id
+					}
 
-				if "r" in pieceData:
-					data_entry["r"] = piece.rotation
-					move_only = False
+					if "pos" in pieceData:
+						data_entry["pos"] = piece.pos
 
-				if "s" in pieceData:
-					data_entry["s"] = piece.size
-					move_only = False
+					if "r" in pieceData:
+						data_entry["r"] = piece.rotation
+						move_only = False
 
-				if "static" in pieceData:
-					data_entry["static"] = 1 if piece.static else 0
-					move_only = False
+					if "s" in pieceData:
+						data_entry["s"] = piece.size
+						move_only = False
 
-				if "color" in pieceData:
-					data_entry["color"] = piece.color
-					move_only = False
+					if "static" in pieceData:
+						data_entry["static"] = 1 if piece.static else 0
+						move_only = False
 
-				if "icon" in pieceData:
-					data_entry["icon"] = piece.icon
-					move_only = False
+					if "color" in pieceData:
+						data_entry["color"] = piece.color
+						move_only = False
 
-				response_data.append(data_entry)
-			else:
-				self.send_error(client, "invalid piece id " + str(pieceData["piece"]))
+					if "icon" in pieceData:
+						data_entry["icon"] = piece.icon
+						move_only = False
 
-		if len(response_data) == 0:
+					# If the piece is in a private zone we need to tell all clients other
+					# than the zone's owner that it is removed
+					if piece.in_private_zone:
+						if not remove_response.has_key(str(piece.color)):
+							remove_response[str(piece.color)] = []
+
+						if not colored_response.has_key(str(piece.color)):
+							colored_response[str(piece.color)] = []
+
+						remove_response[str(piece.color)].append({
+							"user" : client.user_id,
+							"piece" : piece.piece_id
+						})
+						colored_response[str(piece.color)].append(data_entry)
+						response_empty = False
+					else:
+						if was_in_private_zone:
+							if not add_response.has_key(str(old_color)):
+								add_response[str(old_color)] = []
+
+							add_data_entry = piece.get_json_obj()
+							add_data_entry["user"] = client.user_id
+							add_response[str(old_color)].append(add_data_entry)
+
+						response_data.append(data_entry)
+						response_empty = False
+				else:
+					self.send_error(client, "invalid piece id " + str(id))
+
+		if response_empty:
 			return
 
 		if move_only:
 			#buffer magic
 			for pieceData in pieces:
-				self.movebuffer.add(pieceData["piece"], pieceData["pos"], client.user_id)
+				piece = self.board_state.get_piece(pieceData["piece"])
+				if piece.color == [255, 255, 255] or piece.color == client.color:
+					self.movebuffer.add(pieceData["piece"], pieceData["pos"], client.user_id)
 
 			if self.movebuffer.flush_timeout is None:
 				self.movebuffer.flush_timeout = tornado.ioloop.IOLoop.instance().add_callback(self.end_move_timeout)
@@ -389,6 +430,27 @@ class Game:
 				"data" : response_data
 			}
 			self.message_all(response)
+
+			for color, colored_response_data in colored_response.iteritems():
+				response = {
+					"type" : "pt",
+					"data" : colored_response_data
+				}
+				self.message_color(eval(color), response)
+
+		for color, remove_response_data in remove_response.iteritems():
+			response = {
+				"type" : "pieceRemove",
+				"data" : remove_response_data
+			}
+			self.message_color(eval(color), response, True)
+
+		for color, add_response_data in add_response.iteritems():
+			response = {
+				"type" : "pieceAdd",
+				"data" : add_response_data
+			}
+			self.message_color(eval(color), response, True)
 
 	#this function must run on the main thread
 	def end_move_timeout(self):
@@ -466,7 +528,7 @@ class Game:
 		response_data = []
 		for pieceData in pieces:
 			piece_id = pieceData["piece"]
-			result = self.board_state.roll_dice(piece_id)
+			result = self.board_state.roll_dice(client, piece_id)
 			if result is not None:
 				response_data.append({
 					"user" : client.user_id,
@@ -499,7 +561,7 @@ class Game:
 				rotation = piece["cameraRotation"]
 			else:
 				rotation = None
-			response = self.board_state.draw_card(piece_id, rotation)
+			response = self.board_state.draw_card(client, piece_id, rotation)
 
 			if response is not None:
 				data = response["new_piece"].get_json_obj()
@@ -558,7 +620,7 @@ class Game:
 		response_data = []
 		for pieceData in pieces:
 			piece_id = pieceData["piece"]
-			result = self.board_state.flip_card(piece_id)
+			result = self.board_state.flip_card(client, piece_id)
 
 			if result is None:
 				self.send_error(client, "invalid deck: " + str(piece_id))
@@ -589,7 +651,7 @@ class Game:
 			deck_id = entry["deck"]
 			card_id = entry["card"]
 
-			result = self.board_state.add_card_to_deck(card_id, deck_id)
+			result = self.board_state.add_card_to_deck(client, card_id, deck_id)
 
 			if result is not None:
 				deck_results[deck_id] = result
@@ -644,7 +706,7 @@ class Game:
 		response_data = []
 		for piece in pieces:
 			piece_id = piece["piece"]
-			new_icon = self.board_state.shuffle_deck(piece_id)
+			new_icon = self.board_state.shuffle_deck(client, piece_id)
 
 			if new_icon is not None:
 				response_data.append({

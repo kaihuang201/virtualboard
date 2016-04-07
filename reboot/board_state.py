@@ -15,6 +15,8 @@ class Piece:
 		self.static = pieceData["static"] == 1
 		self.rotation = pieceData["r"]
 		self.size = pieceData["s"]
+		self.in_private_zone = False
+		self.always_private = False
 
 		self.isCard = False
 		self.isDie = False
@@ -94,6 +96,12 @@ class BoardState:
 		self.piecemap[self.next_piece_id] = len(self.pieces)
 		self.pieces.append(piece)
 		self.next_piece_id += 1
+
+		for zone in self.private_zones.itervalues():
+			if zone.contains(piece.pos[0], piece.pos[1]):
+				piece.in_private_zone = True
+				piece.color = zone.color
+
 		return piece
 
 	#returns the piece corresponding to piece_id, or None if it does not exist
@@ -122,7 +130,7 @@ class BoardState:
 		new_zone = PrivateZone(x, y, width, height, rotation, color)
 		self.private_zones[self.next_zone_id] = new_zone
 		self.next_zone_id += 1
-		return new_zone.id
+		return self.next_zone_id - 1
 
 	#returns false if the piece is not found, true otherwise
 	def transform_piece(self, client, pieceData):
@@ -132,32 +140,41 @@ class BoardState:
 			index = self.piecemap[piece_id]
 			piece = self.pieces[index]
 
-			if piece.color == [255, 255, 255] or piece.color == client.color:
-				if "pos" in pieceData:
-					piece.pos = pieceData["pos"]
-					for zone in self.private_zones.iteritems():
-						if zone.contains(piece.pos.x, piece.pos.y):
-							piece.color = zone.color
+			if "pos" in pieceData:
+				piece.pos = pieceData["pos"]
+				piece.in_private_zone = False
 
-					#only for positional changes do we bring the piece to the front
-					#note that this also invalidates the index variable we have
-					if not self.bring_to_front(piece.piece_id):
-						raise Exception("error bringing transformed piece to front")
+				# Typically we will reset the piece's color to white until we determine if it is
+				# stil in a private zone, however if it is a permanently private piece, we do not
+				# reset the color 
+				if not piece.always_private:
+					piece.color = [255, 255, 255]
 
-				if "r" in pieceData:
-					piece.rotation = pieceData["r"]
+				for zone in self.private_zones.itervalues():
+					if zone.contains(piece.pos[0], piece.pos[1]):
+						piece.in_private_zone = True
+						piece.color = zone.color
 
-				if "s" in pieceData:
-					piece.size = pieceData["s"]
+				#only for positional changes do we bring the piece to the front
+				#note that this also invalidates the index variable we have
+				if not self.bring_to_front(piece.piece_id):
+					raise Exception("error bringing transformed piece to front")
 
-				if "static" in pieceData:
-					piece.static = pieceData["static"] == 1
+			if "r" in pieceData:
+				piece.rotation = pieceData["r"]
 
-				if "color" in pieceData:
-					piece.color = pieceData["color"]
+			if "s" in pieceData:
+				piece.size = pieceData["s"]
 
-				if "icon" in pieceData:
-					piece.icon = pieceData["icon"]
+			if "static" in pieceData:
+				piece.static = pieceData["static"] == 1
+
+			if "color" in pieceData and not piece.in_private_zone:
+				piece.color = pieceData["color"]
+
+			if "icon" in pieceData:
+				piece.icon = pieceData["icon"]
+
 			return True
 		else:
 			return False
@@ -202,12 +219,12 @@ class BoardState:
 	#special pieces
 
 	#returns value on success, None otherwise
-	def roll_dice(self, piece_id):
+	def roll_dice(self, client, piece_id):
 		if piece_id in self.piecemap:
 			index = self.piecemap[piece_id]
 			piece = self.pieces[index]
 
-			if piece.isDie:
+			if piece.isDie and (piece.color == [255, 255, 255] or piece.color == client.color):
 				value = random.randint(0, piece.max-1)
 
 				if value < len(piece.faces):
@@ -221,12 +238,12 @@ class BoardState:
 		return None
 
 	#returns the revealed icon on success, None otherwise
-	def flip_card(self, piece_id):
+	def flip_card(self, client, piece_id):
 		if piece_id in self.piecemap:
 			index = self.piecemap[piece_id]
 			piece = self.pieces[index]
 
-			if piece.isCard:
+			if piece.isCard and (piece.color == [255, 255, 255] or piece.color == client.color):
 				piece.cardData.flip()
 				piece.icon = piece.cardData.get_icon()
 				return piece.icon
@@ -234,12 +251,12 @@ class BoardState:
 
 	#returns an object {new_piece, count, icon} on success, None otherwise
 	#icon will be None if it does not change
-	def draw_card(self, piece_id, rotation):
+	def draw_card(self, client, piece_id, rotation):
 		if piece_id in self.piecemap:
 			index = self.piecemap[piece_id]
 			piece = self.pieces[index]
 
-			if piece.isCard:
+			if piece.isCard and (piece.color == [255, 255, 255] or piece.color == client.color):
 				data = piece.cardData.draw()
 
 				if data is not None:
@@ -282,12 +299,12 @@ class BoardState:
 		return None
 
 	#returns the revealed icon on success, None otherwise
-	def shuffle_deck(self, piece_id):
+	def shuffle_deck(self, client, piece_id):
 		if piece_id in self.piecemap:
 			index = self.piecemap[piece_id]
 			piece = self.pieces[index]
 
-			if piece.isCard:
+			if piece.isCard and (piece.color == [255, 255, 255] or piece.color == client.color):
 				piece.cardData.shuffle()
 				piece.icon = piece.cardData.get_icon()
 				return piece.icon
@@ -295,14 +312,16 @@ class BoardState:
 
 	#returns an object {icon, count} describing the deck on success, None otherwise
 	#note that the 'card' can actually be a deck of cards too
-	def add_card_to_deck(self, card_id, deck_id):
+	def add_card_to_deck(self, client, card_id, deck_id):
 		if card_id in self.piecemap and deck_id in self.piecemap:
 			card_index = self.piecemap[card_id]
 			deck_index = self.piecemap[deck_id]
 			card = self.pieces[card_index]
 			deck = self.pieces[deck_index]
 
-			if card.isCard and deck.isCard and card_id != deck_id:
+			if (card.isCard and deck.isCard and card_id != deck_id
+				and (card.color == [255, 255, 255] or card.color == client.color)
+				and (deck.color == [255, 255, 255] or deck.color == client.color)):
 				deck.cardData.absorb(card.cardData)
 				deck.icon = deck.cardData.get_icon()
 
@@ -315,15 +334,23 @@ class BoardState:
 		return None
 
 	#complete is set to true when the board state is being saved
-	def get_json_obj(self, complete=False):
+	def get_json_obj(self, complete=False, color=[255, 255, 255]):
 		pieces_json = []
 
 		for piece in self.pieces:
-			pieces_json.append(piece.get_json_obj(complete))
+			if color == [255, 255, 255] or color == piece.color or not piece.in_private_zone:
+				pieces_json.append(piece.get_json_obj(complete))
+
+		zones_json = []
+
+		for zone_id, zone in self.private_zones.iteritems():
+			zone_json = zone.get_json_obj()
+			zone_json["id"] = zone_id
+			zones_json.append(zone_json)
 
 		return {
 			"background" : self.background,
-			"privateZones" : [], #TODO
+			"privateZones" : zones_json,
 			"pieces" : pieces_json
 		}
 '''
