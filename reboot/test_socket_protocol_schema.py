@@ -397,7 +397,18 @@ schema = {
 			"type": "object",
 			"properties": {
 				"type": { "enum": [ "addCardPieceToDeck" ] },
-				"data": {"$schema":"http://json-schema.org/draft-04/schema#","id":"/","type":"array","items":{"id":"0","type":"object","properties":{"deck":{"id":"deck","type":"integer"},"card":{"id":"card","type":"integer"}},"required":["deck","card"]},"required":["0"]}
+				"data": {
+					"type":"array",
+					"items":{
+						"type":"object",
+						"properties":{
+							"deck":{"type":"integer"},
+							"card":{"type":"integer"}
+						},
+						"required":["deck","card"]
+					},
+					"required":["0"]
+				}
 			},
 			"required": [ "type", "data" ]
 		},
@@ -405,7 +416,18 @@ schema = {
 			"type": "object",
 			"properties": {
 				"type": { "enum": [ "addCardTypeToDeck" ] },
-				"data": {"$schema":"http://json-schema.org/draft-04/schema#","id":"/","type":"array","items":{"id":"0","type":"object","properties":{"deck":{"id":"deck","type":"integer"},"card":{"id":"card","type":"string"}},"required":["deck","card"]},"required":["0"]}
+				"data": {
+					"type":"array",
+					"items":{
+						"type":"object",
+						"properties":{
+							"deck":{"type":"integer"},
+							"card":{"type":"string"}
+						},
+						"required":["deck","card"]
+					},
+					"required":["0"]
+				}
 			},
 			"required": [ "type", "data" ]
 		},
@@ -413,7 +435,17 @@ schema = {
 			"type": "object",
 			"properties": {
 				"type": { "enum": [ "drawCard" ] },
-				"data": {"$schema":"http://json-schema.org/draft-04/schema#","id":"http://jsonschema.net","type":"array","items":{"id":"http://jsonschema.net/0","type":"object","properties":{"deck":{"id":"http://jsonschema.net/0/deck","type":"integer"}},"required":["deck"]},"required":["0"]}
+				"data": {
+					"type":"array",
+					"items":{
+						"type":"object",
+						"properties":{
+							"deck":{"type":"integer"}
+						},
+						"required":["deck"]
+					},
+					"required":["0"]
+				}
 			},
 			"required": [ "type", "data" ]
 		},
@@ -421,7 +453,40 @@ schema = {
 			"type": "object",
 			"properties": {
 				"type": { "enum": [ "createPrivateZone" ] },
-				"data": {"$schema":"http://json-schema.org/draft-04/schema#","id":"http://jsonschema.net","type":"array","items":{"id":"http://jsonschema.net/0","type":"object","properties":{"color":{"id":"http://jsonschema.net/0/color","type":"array","items":[{"id":"http://jsonschema.net/0/color/0","type":"integer"},{"id":"http://jsonschema.net/0/color/1","type":"integer"},{"id":"http://jsonschema.net/0/color/2","type":"integer"}],"required":["0","1","2"]},"pos":{"id":"http://jsonschema.net/0/pos","type":"array","items":[{"id":"http://jsonschema.net/0/pos/0","type":"number"},{"id":"http://jsonschema.net/0/pos/1","type":"number"}]},"size":{"id":"http://jsonschema.net/0/size","type":"array","items":[{"id":"http://jsonschema.net/0/size/0","type":"integer"},{"id":"http://jsonschema.net/0/size/1","type":"integer"}]},"r":{"id":"http://jsonschema.net/0/r","type":"number"}},"required":["color","pos","size","r"]},"required":["0"]}
+				"data": {
+					"type":"array",
+					"items":{
+						"type":"object",
+						"properties":{
+							"color":{
+								"type":"array",
+								"items":[
+									{"type":"integer"},
+									{"type":"integer"},
+									{"type":"integer"}
+								],
+								"required":["0","1","2"]
+							},
+							"pos":{
+								"type":"array",
+								"items":[
+									{"type":"number"},
+									{"type":"number"}
+								]
+							},
+							"size":{
+								"type":"array",
+								"items":[
+									{"type":"integer"},
+									{"type":"integer"}
+								]
+							},
+							"r":{"type":"number"}
+						},
+						"required":["color","pos","size","r"]
+					},
+					"required":["0"]
+				}
 			},
 			"required": [ "type", "data" ]
 		},
@@ -447,7 +512,43 @@ schema = {
 			"type": "object",
 			"properties": {
 				"type": { "enum": [ "drawScribble" ] },
-				"data": {"$schema":"http://json-schema.org/draft-04/schema#","id":"http://jsonschema.net","type":"array","items":{"id":"http://jsonschema.net/0","type":"object","properties":{"ttl":{"id":"http://jsonschema.net/0/ttl","type":"integer"},"points":{"id":"http://jsonschema.net/0/points","type":"array","items":[{"id":"http://jsonschema.net/0/points/0","type":"array","items":[{"id":"http://jsonschema.net/0/points/0/0","type":"number"},{"id":"http://jsonschema.net/0/points/0/1","type":"number"}]},{"id":"http://jsonschema.net/0/points/1","type":"array","items":[{"id":"http://jsonschema.net/0/points/1/0","type":"number"},{"id":"http://jsonschema.net/0/points/1/1","type":"number"}]},{"id":"http://jsonschema.net/0/points/2","type":"array","items":[{"id":"http://jsonschema.net/0/points/2/0","type":"number"},{"id":"http://jsonschema.net/0/points/2/1","type":"number"}]}]}},"required":["ttl","points"]},"required":["0"]}
+				"data": {
+					"type":"array",
+					"items":{
+						"type":"object",
+						"properties":{
+							"ttl":{"type":"integer"},
+							"points":{
+								"type":"array",
+								"items":[
+									{
+										"type":"array",
+										"items":[
+											{"type":"number"},
+											{"type":"number"}
+										]
+									},
+									{
+										"type":"array",
+										"items":[
+											{"type":"number"},
+											{"type":"number"}
+										]
+									},
+									{
+										"type":"array",
+										"items":[
+											{"type":"number"},
+											{"type":"number"}
+										]
+									}
+								]
+							}
+						},
+						"required":["ttl","points"]
+					},
+					"required":["0"]
+				}
 			},
 			"required": [ "type", "data" ]
 		},
@@ -455,7 +556,14 @@ schema = {
 			"type": "object",
 			"properties": {
 				"type": { "enum": [ "changeHost" ] },
-				"data": {"$schema":"http://json-schema.org/draft-04/schema#","id":"http://jsonschema.net","type":"object","properties":{"user":{"id":"http://jsonschema.net/user","type":"integer"},"msg":{"id":"http://jsonschema.net/msg","type":"string"}},"required":["user","msg"]}
+				"data": {
+					"type":"object",
+					"properties":{
+						"user":{"type":"integer"},
+						"msg":{"type":"string"}
+					},
+					"required":["user","msg"]
+				}
 			},
 			"required": [ "type", "data" ]
 		},
@@ -463,7 +571,13 @@ schema = {
 			"type": "object",
 			"properties": {
 				"type": { "enum": [ "announcement" ] },
-				"data": {"$schema":"http://json-schema.org/draft-04/schema#","id":"http://jsonschema.net","type":"object","properties":{"msg":{"id":"http://jsonschema.net/msg","type":"string"}},"required":["msg"]}
+				"data": {
+					"type":"object",
+					"properties":{
+						"msg":{"type":"string"}
+					},
+					"required":["msg"]
+				}
 			},
 			"required": [ "type", "data" ]
 		},
@@ -471,7 +585,14 @@ schema = {
 			"type": "object",
 			"properties": {
 				"type": { "enum": [ "changeServerInfo" ] },
-				"data": {"$schema":"http://json-schema.org/draft-04/schema#","id":"http://jsonschema.net","type":"object","properties":{"name":{"id":"http://jsonschema.net/name","type":"string"},"password":{"id":"http://jsonschema.net/password","type":"string"}},"required":["name","password"]}
+				"data": {
+					"type":"object",
+					"properties":{
+						"name":{"type":"string"},
+						"password":{"type":"string"}
+					},
+					"required":["name","password"]
+				}
 			},
 			"required": [ "type", "data" ]
 		},
@@ -479,7 +600,14 @@ schema = {
 			"type": "object",
 			"properties": {
 				"type": { "enum": [ "kickUser" ] },
-				"data": {"$schema":"http://json-schema.org/draft-04/schema#","id":"http://jsonschema.net","type":"object","properties":{"user":{"id":"http://jsonschema.net/user","type":"integer"},"msg":{"id":"http://jsonschema.net/msg","type":"string"}},"required":["user","msg"]}
+				"data": {
+					"type":"object",
+					"properties":{
+						"user":{"type":"integer"},
+						"msg":{"type":"string"}
+					},
+					"required":["user","msg"]
+				}
 			},
 			"required": [ "type", "data" ]
 		},
