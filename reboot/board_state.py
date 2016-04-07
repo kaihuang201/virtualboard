@@ -19,7 +19,10 @@ class Piece:
 		self.size = pieceData["s"]
 		self.in_private_zone = False
 		self.zone = None
-		self.always_private = pieceData["private"] == 1
+		self.always_private = False
+
+		if "private" in pieceData:
+			self.always_private = pieceData["private"] == 1
 
 		self.isCard = False
 		self.isDie = False
