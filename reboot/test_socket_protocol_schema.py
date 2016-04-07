@@ -347,7 +347,16 @@ schema = {
 			"type": "object",
 			"properties": {
 				"type": { "enum": [ "flipCard" ] },
-				"data": {"$schema":"http://json-schema.org/draft-04/schema#","id":"/","type":"array","items":{"id":"0","type":"object","properties":{"piece":{"id":"piece","type":"integer"}},"required":["piece"]},"required":["0"]}
+				"data": {
+					"type":"array",
+					"items": {
+						"type":"object",
+						"properties":{
+							"piece":{"type":"integer"}
+						},
+						"required":["piece"]
+					},
+				"required":["0"]}
 			},
 			"required": [ "type", "data" ]
 		},
@@ -388,7 +397,18 @@ schema = {
 			"type": "object",
 			"properties": {
 				"type": { "enum": [ "addCardPieceToDeck" ] },
-				"data": {"$schema":"http://json-schema.org/draft-04/schema#","id":"/","type":"array","items":{"id":"0","type":"object","properties":{"deck":{"id":"deck","type":"integer"},"card":{"id":"card","type":"integer"}},"required":["deck","card"]},"required":["0"]}
+				"data": {
+					"type":"array",
+					"items":{
+						"type":"object",
+						"properties":{
+							"deck":{"type":"integer"},
+							"card":{"type":"integer"}
+						},
+						"required":["deck","card"]
+					},
+					"required":["0"]
+				}
 			},
 			"required": [ "type", "data" ]
 		},
@@ -396,7 +416,18 @@ schema = {
 			"type": "object",
 			"properties": {
 				"type": { "enum": [ "addCardTypeToDeck" ] },
-				"data": {"$schema":"http://json-schema.org/draft-04/schema#","id":"/","type":"array","items":{"id":"0","type":"object","properties":{"deck":{"id":"deck","type":"integer"},"card":{"id":"card","type":"string"}},"required":["deck","card"]},"required":["0"]}
+				"data": {
+					"type":"array",
+					"items":{
+						"type":"object",
+						"properties":{
+							"deck":{"type":"integer"},
+							"card":{"type":"string"}
+						},
+						"required":["deck","card"]
+					},
+					"required":["0"]
+				}
 			},
 			"required": [ "type", "data" ]
 		},
@@ -404,7 +435,17 @@ schema = {
 			"type": "object",
 			"properties": {
 				"type": { "enum": [ "drawCard" ] },
-				"data": {"$schema":"http://json-schema.org/draft-04/schema#","id":"http://jsonschema.net","type":"array","items":{"id":"http://jsonschema.net/0","type":"object","properties":{"deck":{"id":"http://jsonschema.net/0/deck","type":"integer"}},"required":["deck"]},"required":["0"]}
+				"data": {
+					"type":"array",
+					"items":{
+						"type":"object",
+						"properties":{
+							"deck":{"type":"integer"}
+						},
+						"required":["deck"]
+					},
+					"required":["0"]
+				}
 			},
 			"required": [ "type", "data" ]
 		},
@@ -412,7 +453,40 @@ schema = {
 			"type": "object",
 			"properties": {
 				"type": { "enum": [ "createPrivateZone" ] },
-				"data": {"$schema":"http://json-schema.org/draft-04/schema#","id":"http://jsonschema.net","type":"array","items":{"id":"http://jsonschema.net/0","type":"object","properties":{"color":{"id":"http://jsonschema.net/0/color","type":"array","items":[{"id":"http://jsonschema.net/0/color/0","type":"integer"},{"id":"http://jsonschema.net/0/color/1","type":"integer"},{"id":"http://jsonschema.net/0/color/2","type":"integer"}],"required":["0","1","2"]},"pos":{"id":"http://jsonschema.net/0/pos","type":"array","items":[{"id":"http://jsonschema.net/0/pos/0","type":"number"},{"id":"http://jsonschema.net/0/pos/1","type":"number"}]},"size":{"id":"http://jsonschema.net/0/size","type":"array","items":[{"id":"http://jsonschema.net/0/size/0","type":"integer"},{"id":"http://jsonschema.net/0/size/1","type":"integer"}]},"r":{"id":"http://jsonschema.net/0/r","type":"number"}},"required":["color","pos","size","r"]},"required":["0"]}
+				"data": {
+					"type":"array",
+					"items":{
+						"type":"object",
+						"properties":{
+							"color":{
+								"type":"array",
+								"items":[
+									{"type":"integer"},
+									{"type":"integer"},
+									{"type":"integer"}
+								],
+								"required":["0","1","2"]
+							},
+							"pos":{
+								"type":"array",
+								"items":[
+									{"type":"number"},
+									{"type":"number"}
+								]
+							},
+							"size":{
+								"type":"array",
+								"items":[
+									{"type":"integer"},
+									{"type":"integer"}
+								]
+							},
+							"r":{"type":"number"}
+						},
+						"required":["color","pos","size","r"]
+					},
+					"required":["0"]
+				}
 			},
 			"required": [ "type", "data" ]
 		},
@@ -438,7 +512,43 @@ schema = {
 			"type": "object",
 			"properties": {
 				"type": { "enum": [ "drawScribble" ] },
-				"data": {"$schema":"http://json-schema.org/draft-04/schema#","id":"http://jsonschema.net","type":"array","items":{"id":"http://jsonschema.net/0","type":"object","properties":{"ttl":{"id":"http://jsonschema.net/0/ttl","type":"integer"},"points":{"id":"http://jsonschema.net/0/points","type":"array","items":[{"id":"http://jsonschema.net/0/points/0","type":"array","items":[{"id":"http://jsonschema.net/0/points/0/0","type":"number"},{"id":"http://jsonschema.net/0/points/0/1","type":"number"}]},{"id":"http://jsonschema.net/0/points/1","type":"array","items":[{"id":"http://jsonschema.net/0/points/1/0","type":"number"},{"id":"http://jsonschema.net/0/points/1/1","type":"number"}]},{"id":"http://jsonschema.net/0/points/2","type":"array","items":[{"id":"http://jsonschema.net/0/points/2/0","type":"number"},{"id":"http://jsonschema.net/0/points/2/1","type":"number"}]}]}},"required":["ttl","points"]},"required":["0"]}
+				"data": {
+					"type":"array",
+					"items":{
+						"type":"object",
+						"properties":{
+							"ttl":{"type":"integer"},
+							"points":{
+								"type":"array",
+								"items":[
+									{
+										"type":"array",
+										"items":[
+											{"type":"number"},
+											{"type":"number"}
+										]
+									},
+									{
+										"type":"array",
+										"items":[
+											{"type":"number"},
+											{"type":"number"}
+										]
+									},
+									{
+										"type":"array",
+										"items":[
+											{"type":"number"},
+											{"type":"number"}
+										]
+									}
+								]
+							}
+						},
+						"required":["ttl","points"]
+					},
+					"required":["0"]
+				}
 			},
 			"required": [ "type", "data" ]
 		},
@@ -446,7 +556,14 @@ schema = {
 			"type": "object",
 			"properties": {
 				"type": { "enum": [ "changeHost" ] },
-				"data": {"$schema":"http://json-schema.org/draft-04/schema#","id":"http://jsonschema.net","type":"object","properties":{"user":{"id":"http://jsonschema.net/user","type":"integer"},"msg":{"id":"http://jsonschema.net/msg","type":"string"}},"required":["user","msg"]}
+				"data": {
+					"type":"object",
+					"properties":{
+						"user":{"type":"integer"},
+						"msg":{"type":"string"}
+					},
+					"required":["user","msg"]
+				}
 			},
 			"required": [ "type", "data" ]
 		},
@@ -454,7 +571,13 @@ schema = {
 			"type": "object",
 			"properties": {
 				"type": { "enum": [ "announcement" ] },
-				"data": {"$schema":"http://json-schema.org/draft-04/schema#","id":"http://jsonschema.net","type":"object","properties":{"msg":{"id":"http://jsonschema.net/msg","type":"string"}},"required":["msg"]}
+				"data": {
+					"type":"object",
+					"properties":{
+						"msg":{"type":"string"}
+					},
+					"required":["msg"]
+				}
 			},
 			"required": [ "type", "data" ]
 		},
@@ -462,7 +585,14 @@ schema = {
 			"type": "object",
 			"properties": {
 				"type": { "enum": [ "changeServerInfo" ] },
-				"data": {"$schema":"http://json-schema.org/draft-04/schema#","id":"http://jsonschema.net","type":"object","properties":{"name":{"id":"http://jsonschema.net/name","type":"string"},"password":{"id":"http://jsonschema.net/password","type":"string"}},"required":["name","password"]}
+				"data": {
+					"type":"object",
+					"properties":{
+						"name":{"type":"string"},
+						"password":{"type":"string"}
+					},
+					"required":["name","password"]
+				}
 			},
 			"required": [ "type", "data" ]
 		},
@@ -470,7 +600,14 @@ schema = {
 			"type": "object",
 			"properties": {
 				"type": { "enum": [ "kickUser" ] },
-				"data": {"$schema":"http://json-schema.org/draft-04/schema#","id":"http://jsonschema.net","type":"object","properties":{"user":{"id":"http://jsonschema.net/user","type":"integer"},"msg":{"id":"http://jsonschema.net/msg","type":"string"}},"required":["user","msg"]}
+				"data": {
+					"type":"object",
+					"properties":{
+						"user":{"type":"integer"},
+						"msg":{"type":"string"}
+					},
+					"required":["user","msg"]
+				}
 			},
 			"required": [ "type", "data" ]
 		},
@@ -581,10 +718,21 @@ class TestSocketProtocolSchema(unittest.TestCase):
 		global schema
 		self.assertTrue(Draft4Validator(schema).is_valid(data))
 
+	def test_initJoin2(self):
+		initJoin_json = '{ "type" : "initJoin", "data" : { "name" : 123, "color" : [ 0, 255, 0 ], "gameID" : 2, "password" : 123 } }'
+		data = json.loads(initJoin_json)
+		global schema
+		self.assertFalse(Draft4Validator(schema).is_valid(data))
+
 	def test_initHost(self):
 		data = json.loads('{"type" : "initHost", "data" : {"name" : "sam", "color" : [255, 0, 0 ], "gameName" : "coolville", "password" : "12345"} }')
 		global schema
 		self.assertTrue(Draft4Validator(schema).is_valid(data))
+
+	def test_initHost2(self):
+		data = json.loads('{"type" : "initHost", "data" : {"name" : 123, "color" : [255, 0, 0 ], "gameName" : 123, "password" : 123} }')
+		global schema
+		self.assertFalse(Draft4Validator(schema).is_valid(data))
 
 	def test_listGames(self):
 		data = json.loads('{"type" : "listGames"}')
@@ -606,7 +754,17 @@ class TestSocketProtocolSchema(unittest.TestCase):
 		global schema
 		self.assertTrue(Draft4Validator(schema).is_valid(data))
 
+	def test_chat2(self):
+		data = json.loads('{"type" : "chat", "data" : [{"msg" : 123} ] }')
+		global schema
+		self.assertFalse(Draft4Validator(schema).is_valid(data))
+
 	def test_beacon(self):
+		data = json.loads('{"type" : "beacon", "data" : [{"pos" : [54.5435, 0.534 ] } ] }')
+		global schema
+		self.assertTrue(Draft4Validator(schema).is_valid(data))
+
+	def test_beacon2(self):
 		data = json.loads('{"type" : "beacon", "data" : [{"pos" : [54.5435, 0.534 ] } ] }')
 		global schema
 		self.assertTrue(Draft4Validator(schema).is_valid(data))
@@ -621,6 +779,11 @@ class TestSocketProtocolSchema(unittest.TestCase):
 		global schema
 		self.assertTrue(Draft4Validator(schema).is_valid(data))
 
+	def test_pieceAdd2(self):
+		data = json.loads('{"type" : "pieceAdd", "data" : [{"piece" : 6, "user" : 4, "icon" : 123, "static" : 0, "color" : [255, 255, 255 ], "pos" : [6.6435, 65.2543 ], "r" : 0.45656, "s" : 1.0, "cardData" : {"faceDown" : 0, "backIcon" : 123}, "diceData" : {"min" : 1, "max" : 6, "faces" : [123, 123, 123, 123, 123, 123] } } ] }')
+		global schema
+		self.assertFalse(Draft4Validator(schema).is_valid(data))
+
 	def test_pieceRemove(self):
 		data = json.loads('{"type" : "pieceRemove", "data" : [{"piece" : 6, "user" : 4 } ] }')
 		global schema
@@ -631,10 +794,20 @@ class TestSocketProtocolSchema(unittest.TestCase):
 		global schema
 		self.assertTrue(Draft4Validator(schema).is_valid(data))
 
+	def test_setBackground2(self):
+		data = json.loads('{"type" : "setBackground", "data" : {"icon" : 123} }')
+		global schema
+		self.assertFalse(Draft4Validator(schema).is_valid(data))
+
 	def test_disconnect(self):
 		data = json.loads('{"type" : "disconnect", "data" : {"msg" : "brb food"} }')
 		global schema
 		self.assertTrue(Draft4Validator(schema).is_valid(data))
+
+	def test_disconnect2(self):
+		data = json.loads('{"type" : "disconnect", "data" : {"msg" : 123} }')
+		global schema
+		self.assertFalse(Draft4Validator(schema).is_valid(data))
 
 	def test_listClients(self):
 		data = json.loads('{"type" : "listClients"}')
@@ -661,6 +834,11 @@ class TestSocketProtocolSchema(unittest.TestCase):
 		global schema
 		self.assertTrue(Draft4Validator(schema).is_valid(data))
 
+	def test_createDeck2(self):
+		data = json.loads('{"type" : "createDeck", "data" : [{"icon" : 123, "color" : [255, 255, 255 ], "pos" : [6.6435, 65.2543 ], "r" : 0.45656, "s" : 1.0, "static" : 0 } ] }')
+		global schema
+		self.assertFalse(Draft4Validator(schema).is_valid(data))
+
 	def test_addCardPieceToDeck(self):
 		data = json.loads('{"type" : "addCardPieceToDeck", "data" : [{"deck" : 7, "card" : 3 } ] }')
 		global schema
@@ -670,6 +848,11 @@ class TestSocketProtocolSchema(unittest.TestCase):
 		data = json.loads('{"type" : "addCardTypeToDeck", "data" : [{"deck" : 7, "card" : "/res/kingclubs.png"} ] }')
 		global schema
 		self.assertTrue(Draft4Validator(schema).is_valid(data))
+
+	def test_addCardTypeToDeck2(self):
+		data = json.loads('{"type" : "addCardTypeToDeck", "data" : [{"deck" : 7, "card" : 123} ] }')
+		global schema
+		self.assertFalse(Draft4Validator(schema).is_valid(data))
 
 	def test_drawCard(self):
 		data = json.loads('{"type" : "drawCard", "data" : [{"deck" : 7 } ] }')
@@ -696,20 +879,40 @@ class TestSocketProtocolSchema(unittest.TestCase):
 		global schema
 		self.assertTrue(Draft4Validator(schema).is_valid(data))
 
+	def test_changeHost2(self):
+		data = json.loads('{"type" : "changeHost", "data" : {"user" : 2, "msg" : 123} }')
+		global schema
+		self.assertFalse(Draft4Validator(schema).is_valid(data))
+
 	def test_announcement(self):
 		data = json.loads('{"type" : "announcement", "data" : {"msg" : "this is important"} }')
 		global schema
 		self.assertTrue(Draft4Validator(schema).is_valid(data))
+
+	def test_announcement2(self):
+		data = json.loads('{"type" : "announcement", "data" : {"msg" : 123} }')
+		global schema
+		self.assertFalse(Draft4Validator(schema).is_valid(data))
 
 	def test_changeServerInfo(self):
 		data = json.loads('{"type" : "changeServerInfo", "data" : {"name" : "coolville 2", "password" : "542512"} }')
 		global schema
 		self.assertTrue(Draft4Validator(schema).is_valid(data))
 
+	def test_changeServerInfo2(self):
+		data = json.loads('{"type" : "changeServerInfo", "data" : {"name" : 123, "password" : 123} }')
+		global schema
+		self.assertFalse(Draft4Validator(schema).is_valid(data))
+
 	def test_kickUser(self):
 		data = json.loads('{"type" : "kickUser", "data" : {"user" : 1, "msg" : "stop scribbling everywhere"} }')
 		global schema
 		self.assertTrue(Draft4Validator(schema).is_valid(data))
+
+	def test_kickUser2(self):
+		data = json.loads('{"type" : "kickUser", "data" : {"user" : 1, "msg" : 123} }')
+		global schema
+		self.assertFalse(Draft4Validator(schema).is_valid(data))
 
 	def test_clearBoard(self):
 		data = json.loads('{"type" : "clearBoard"}')
@@ -725,6 +928,11 @@ class TestSocketProtocolSchema(unittest.TestCase):
 		data = json.loads('{"type" : "loadBoardState", "data" : {"background" : "/res/img/background.png", "privateZones" : [{"pos" : [5.426, -7.234 ], "size" : [2, 5 ], "r" : 0, "color" : [255, 0, 0 ] } ], "pieces" : [{"pos" : [5.734, 3.64 ], "icon" : "static/img/crown.png", "color" : [255, 0, 0 ], "static" : 0, "r" : 3.14159, "s" : 1.0, "cardData" : {"faceDown" : 0, "backIcon" : "/res/cardback.png"}, "diceData" : {"min" : 1, "max" : 6, "faces" : ["/res/dice1.png", "/res/dice2.png", "/res/dice3.png", "/res/dice4.png", "/res/dice5.png", "/res/dice6.png"] } } ] } }')
 		global schema
 		self.assertTrue(Draft4Validator(schema).is_valid(data))
+
+	def test_loadBoardState2(self):
+		data = json.loads('{"type" : "loadBoardState", "data" : {"background" : 123, "privateZones" : [{"pos" : [5.426, -7.234 ], "size" : [2, 5 ], "r" : 0, "color" : [255, 0, 0 ] } ], "pieces" : [{"pos" : [5.734, 3.64 ], "icon" : 123, "color" : [255, 0, 0 ], "static" : 0, "r" : 3.14159, "s" : 1.0, "cardData" : {"faceDown" : 0, "backIcon" : 123}, "diceData" : {"min" : 1, "max" : 6, "faces" : [123, 123, 123, 123, 123, 123] } } ] } }')
+		global schema
+		self.assertFalse(Draft4Validator(schema).is_valid(data))
 
 if __name__ == '__main__':
     unittest.main()

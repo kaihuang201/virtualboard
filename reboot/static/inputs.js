@@ -13,6 +13,7 @@ var VBoard = VBoard || {};
 		isDraggingBox: false,
 		chatBoxActivated: false,
 		addPrivateZoneNextClick: false,
+		inputsEnabled: true,
 
 		handlers: {
 			up: function (elapsed, dist) {
@@ -139,6 +140,10 @@ var VBoard = VBoard || {};
 			});
 		},
 
+		setEnabled: function (enabled) {
+			this.inputsEnabled = enabled;
+		},
+
 		//mouse handlers
 		onMouseUp: function (event) {
 			this.mouseDown = false;
@@ -199,7 +204,7 @@ var VBoard = VBoard || {};
 
 		//dispatches key press events
 		onKeyDown: function (key) {
-			if (!VBoard.inputs.chatBoxActivated){
+			if(VBoard.inputs.inputsEnabled) {
 				this.keysPressed[key] = true;
 
 				if(this.keyMap.hasOwnProperty(key)) {
@@ -218,11 +223,13 @@ var VBoard = VBoard || {};
 				delete this.keysPressed[key];
 			}
 
-			if(this.keyMap.hasOwnProperty(key)) {
-				keyData = this.keyMap[key];
+			if(VBoard.inputs.inputsEnabled) {
+				if(this.keyMap.hasOwnProperty(key)) {
+					keyData = this.keyMap[key];
 
-				if(keyData.hasOwnProperty("release")) {
-					keyData.release();
+					if(keyData.hasOwnProperty("release")) {
+						keyData.release();
+					}
 				}
 			}
 		},
@@ -315,15 +322,17 @@ var VBoard = VBoard || {};
 
 		//dispatches polling events
 		processInputs: function (elapsed) {
-			var dist = (elapsed / this.inertia) * vb.size;
+			if(VBoard.inputs.inputsEnabled) {
+				var dist = (elapsed / this.inertia) * vb.size;
 
-			for(key in this.keysPressed) {
-				if(this.keysPressed.hasOwnProperty(key)) {
-					if(this.keyMap.hasOwnProperty(key)) {
-						keyData = this.keyMap[key];
+				for(key in this.keysPressed) {
+					if(this.keysPressed.hasOwnProperty(key)) {
+						if(this.keyMap.hasOwnProperty(key)) {
+							keyData = this.keyMap[key];
 
-						if(keyData.hasOwnProperty("poll")) {
-							keyData.poll(elapsed, dist);
+							if(keyData.hasOwnProperty("poll")) {
+								keyData.poll(elapsed, dist);
+							}
 						}
 					}
 				}
