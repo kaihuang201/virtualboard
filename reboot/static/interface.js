@@ -521,6 +521,9 @@ var VBoard = VBoard || {};
 			$("#chatbox-msg").on("blur",function () {
 				$("#chatbox-inbox").fadeOut("slow");
 			});
+			$(window).resize(function () {
+				$("#chatbox-inbox")[0].scrollTop = $("#chatbox-inbox")[0].scrollHeight;
+			});
 			//$("#chatbox").on("mouseenter",function () {
 			//	if (!($("#chatbox-inbox").is(":visible"))) $("#chatbox-inbox").fadeIn("fast");
 			// });
@@ -530,7 +533,7 @@ var VBoard = VBoard || {};
 
 			$("#chatbox-msg").focus(function(){VBoard.inputs.setEnabled(false)});
 			$("#chatbox-msg").blur(function(){VBoard.inputs.setEnabled(true)});
-			// vb.interface.setInputFocusAndEnterKeyCallback("#chatbox-msg","#send-chat",false);
+			vb.interface.setInputFocusAndEnterKeyCallback("#chatbox-msg","#send-chat",false);
 		},
 
 		chatIncomingMsg: function (messageData) {
@@ -570,6 +573,7 @@ var VBoard = VBoard || {};
 			entryWrapper.appendChild(nameWrapper);
 			entryWrapper.appendChild(messageWrapper);
 			inbox.appendChild(entryWrapper);
+			inbox.scrollTop = inbox.scrollHeight;
 
 			//if (needDecoding) {
 			//	// first decode the message

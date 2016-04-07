@@ -262,7 +262,7 @@ div#chatbox-inbox {
 	overflow-y: auto;
 	word-wrap: break-word;
 	background-color: rgba(255,255,255,0.8);
-	padding: 10px;
+	padding: 6px;
 }
 
 div#chatbox-input {
@@ -270,6 +270,10 @@ div#chatbox-input {
 	width: 26%;
 	bottom: 10px;
 	left: 16px;
+}
+
+div#chatbox-inbox > p {
+	margin-bottom: 2px;
 }
 
 div#right-panel-container {
