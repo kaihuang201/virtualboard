@@ -117,7 +117,7 @@ class Game:
 		self.movebuffer.add_client(new_client.user_id)
 
 		abridged_users = self.get_abridged_clients(new_client)
-		board_data = self.board_state.get_json_obj()
+		board_data = self.board_state.get_json_obj(color=new_client.color)
 		mainResponse = {
 			"type" : "initSuccess",
 			"data" : {

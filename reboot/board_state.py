@@ -334,11 +334,12 @@ class BoardState:
 		return None
 
 	#complete is set to true when the board state is being saved
-	def get_json_obj(self, complete=False):
+	def get_json_obj(self, complete=False, color=[255, 255, 255]):
 		pieces_json = []
 
 		for piece in self.pieces:
-			pieces_json.append(piece.get_json_obj(complete))
+			if color == [255, 255, 255] or color == piece.color or not piece.in_private_zone:
+				pieces_json.append(piece.get_json_obj(complete))
 
 		zones_json = []
 
