@@ -34,6 +34,10 @@ In-Game/General
    - context menus should not go off edge of screen
    - right now it seems the camera is limited in movement but pieces are not
    - sub menu for custom content
+   - chat and usernames have script injection vulnerabilities
+   - sidebars should not interfere with the canvas when not being used
+   - the chat box should scale with its contents
+   - apparently control+c, control+a, and the like are disabled for some reason
 
 Feature Ideas
 ==========

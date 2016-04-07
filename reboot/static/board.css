@@ -213,7 +213,7 @@ div#loading-notification > p {
 }
 
 
-/* chat box style sheet */
+/* chat box style sheet 
 div#chatbox {
 	position: fixed;
 	width: 26%; 
@@ -244,6 +244,28 @@ div#chatbox > div#chatbox-input {
 	bottom: 10px;
 	left: 1%; 
 	width: 98%;
+}*/
+
+div#chatbox-inbox {
+	display: none;
+	position: fixed;
+	width: 26%;
+	max-height: 20%;
+	bottom: 48px;
+	left: 16px;
+	border-radius: 10px;
+	border: 0px solid #dddddd;
+	overflow-y: auto;
+	word-wrap: break-word;
+	background-color: rgba(255,255,255,0.8);
+	padding: 10px;
+}
+
+div#chatbox-input {
+	position: fixed;
+	width: 26%;
+	bottom: 10px;
+	left: 16px;
 }
 
 div#right-panel-container {

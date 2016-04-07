@@ -63,8 +63,8 @@ var VBoard = VBoard || {};
 		colorLastSelectedStr: '',
 		userName: "",
 		autoGameListIntervalID: 0,
+		fadeTimeout: null,
 
-		
 
 		// interface initializer
 		init: function () {
@@ -76,12 +76,12 @@ var VBoard = VBoard || {};
 				vb.interface.setUserName(usrnameFromCookie,colorFromCookie);
 				VBoard.interface.colorSelected = colorFromCookie;
 				VBoard.interface.colorLastSelectedStr = vb.interface.arrayRGB2StrRGB(colorFromCookie);
-				
+
 				// send a game id poll to init Resume button
 				// vb.limboIO.gameIDExists(lobbyNoFromCookie);
 				setTimeout(function() {vb.limboIO.gameIDExists(lobbyNoFromCookie);},500);
 
-				
+
 
 			} else {
 				vb.interface.userNamePrompt();
@@ -97,7 +97,7 @@ var VBoard = VBoard || {};
 			});
 
 			// $("#listGames").on("click", function () {
-				
+
 			// 	$("#template-modal").modal();
 
 			// 	var listOfLobbies = vb.interface.listLobbiesRequest();
@@ -112,7 +112,7 @@ var VBoard = VBoard || {};
 			});
 
 			// right panel
-			
+
 
 			$("#player-list-toggler").click(function () {
 				if(!($("#players-list").is(':visible')) && vb.interface.rightPanelIsShown()) {
@@ -303,8 +303,20 @@ var VBoard = VBoard || {};
 				for (var j = listOfGames.length - 1; j >= 0; j--) {
 					var lobbyID = listOfGames[j]["id"];
 					var lobbyName = listOfGames[j]["name"];
-					var singleLobby = '<a id="lobby-' + listOfGames[j]["id"].toString() + '" class="list-group-item"><span class="badge badge-default pull-right">' + listOfGames[j]["players"] + ' ' + ((listOfGames[j]["players"]==1)?'player':'players')+ ' online</span><h2><i class="fa fa-gamepad"></i>  ' + listOfGames[j]["name"] + (listOfGames[j]["password"]?' <i class="fa fa-lock"></i>':'') + '</h2></a>'
-					$("#lobby-list > #inner").append(singleLobby);
+					//var singleLobby = '<a id="lobby-' + listOfGames[j]["id"].toString() + '" class="list-group-item"><span class="badge badge-default pull-right">' + listOfGames[j]["players"] + ' ' + ((listOfGames[j]["players"]==1)?'player':'players')+ ' online</span><h2><i class="fa fa-gamepad"></i>  ' + listOfGames[j]["name"] + (listOfGames[j]["password"]?' <i class="fa fa-lock"></i>':'') + '</h2></a>'
+					//$("#lobby-list > #inner").append(singleLobby);
+
+					var atag = document.createElement("a");
+					atag.id = "lobby-" + listOfGames[j]["id"].toString();
+					atag.className = "list-group-item";
+					$(atag).html('<span class=\"badge badge-default pull-right\">' + listOfGames[j]["players"] + ' ' + ((listOfGames[j]["players"]==1)?'player':'players')+ ' online</span>');
+					var h2tag = document.createElement("h2");
+					$(h2tag).text("  " + listOfGames[j]["name"]);
+					$(h2tag).prepend("<i class=\"fa fa-gamepad\"></i>");
+					$(h2tag).append((listOfGames[j]["password"]?' <i class=\"fa fa-lock\"></i>':''));
+					atag.appendChild(h2tag);
+					$("#lobby-list > #inner").append(atag);
+
 					var currentLobby = $("#lobby-" + listOfGames[j]["id"].toString());
 					currentLobby.unbind();
 
@@ -346,9 +358,10 @@ var VBoard = VBoard || {};
 			// enable chat
 			vb.interface.chatInit();
 
-			$("#chatbox-msg").focus(function(){VBoard.inputs.chatBoxActivated = true});
-			$("#chatbox-msg").blur(function(){VBoard.inputs.chatBoxActivated = false});
+			$("#chatbox-msg").focus(function(){VBoard.inputs.setEnabled(false)});
+			$("#chatbox-msg").blur(function(){VBoard.inputs.setEnabled(true)});
 			// bind enter key to focus chat
+			//this should not be bound on the entire document
 			$(document).keypress(function(event){
 				if (event.keyCode == 13) {
 					$("#chatbox-msg").focus();
@@ -364,7 +377,9 @@ var VBoard = VBoard || {};
 									<label for="lobby-password" class="form-control-label">Optional Passw**d:</label> \
 									<input type="password" class="form-control" id="lobby-password" placeholder="Password">\
 								</div>');
-			$('#random-gamename').unbind().on('click',function(){$('#lobby-name').val(generate_game_name());});
+			$('#random-gamename').unbind().on('click',function(){
+				$('#lobby-name').val(generate_game_name());
+			});
 			$('#template-modal #submit-btn-modal-template').show().html('Create');
 			// $("#selected-color").css('color',this.colorLastSelectedStr);
 			// vb.interface.colorPickerInit();
@@ -373,7 +388,7 @@ var VBoard = VBoard || {};
 		switchToJoinLobbyModal: function (lobbyName,requirePwd) {
 			vb.interface.clearTemplateModalAlert();
 			vb.interface.clearTemplateModal();
-			$('#modal-template-title').html('Join 『' + lobbyName + '』');
+			$('#modal-template-title').text('Join \"' + lobbyName + '\"');
 
 			if(requirePwd) {
 				$('#modal-template-content').html('<div class="form-group">\
@@ -391,7 +406,7 @@ var VBoard = VBoard || {};
 		switchToResumeGameModal: function (lobbyName,requirePwd) {
 			vb.interface.clearTemplateModalAlert();
 			vb.interface.clearTemplateModal();
-			$('#modal-template-title').html('Resume 『' + lobbyName + '』');
+			$('#modal-template-title').text("Resume \"" + lobbyName + "\"");
 
 			if(requirePwd) {
 				$('#modal-template-content').html('<div class="form-group">\
@@ -399,7 +414,11 @@ var VBoard = VBoard || {};
 									<input type="password" class="form-control" id="lobby-password">\
 								</div>');	
 			} else {
-				$('#modal-template-content').html('<h5>Joining '+ lobbyName +'...</h5>');
+				var header = document.createElement("h5");
+				$(header).text("Joining "+ lobbyName +"...");
+				$('#modal-template-content').empty();
+				$('#modal-template-content').append(header);
+				//$('#modal-template-content').text('<h5>Joining '+ lobbyName +'...</h5>');
 			}
 			
 			$('#template-modal #submit-btn-modal-template').show().html('Re-Join');
@@ -489,7 +508,8 @@ var VBoard = VBoard || {};
 			$("#send-chat").on("click", function () {
 				var msg = $("#chatbox-msg").val();
 				if (msg != "") {
-					vb.sessionIO.sendChatMessage(VBoard.interface.userName + "#1ax}#" + VBoard.interface.colorLastSelectedStr + "#1ax}#" + msg);
+					//vb.sessionIO.sendChatMessage(VBoard.interface.userName + "#1ax}#" + VBoard.interface.colorLastSelectedStr + "#1ax}#" + msg);
+					vb.sessionIO.sendChatMessage(msg);
 					// clear out the input box
 					$("#chatbox-msg").val("");
 				} else {
@@ -497,40 +517,75 @@ var VBoard = VBoard || {};
 				}
 			});
 			$("#chatbox-msg").on("focus",function () {
-				if (!($("#chatbox-inbox").is(":visible"))) $("#chatbox-inbox").fadeIn("fast");
+				clearTimeout(this.fadeTimeout);
+				$("#chatbox-inbox").fadeIn("fast");
 			});
-			$("#chatbox").on("mouseenter",function () {
-				if (!($("#chatbox-inbox").is(":visible"))) $("#chatbox-inbox").fadeIn("fast");
-			});
-			$("#chatbox").on("mouseleave",function () {
+			$("#chatbox-msg").on("blur",function () {
 				$("#chatbox-inbox").fadeOut("slow");
 			});
+			//$("#chatbox").on("mouseenter",function () {
+			//	if (!($("#chatbox-inbox").is(":visible"))) $("#chatbox-inbox").fadeIn("fast");
+			// });
+			//$("#chatbox").on("mouseleave",function () {
+			//	$("#chatbox-inbox").fadeOut("slow");
+			// });
 
 
 			vb.interface.setInputFocusAndEnterKeyCallback("#chatbox-msg","#send-chat",false);
 		},
 
-		chatIncomingMsg: function (msg,needDecoding) {
-			if (!($("#chatbox-inbox").is(":visible"))) {
-				$("#chatbox-inbox").fadeIn("fast");
+		chatIncomingMsg: function (messageData) {
+			clearTimeout(this.fadeTimeout);
+			var inbox = document.getElementById("chatbox-inbox");
+			$(inbox).fadeIn("fast");
 
-				//TODO: moving the mouse back over the chatbox while it is fading out should have it fade back in again immediately
-				setTimeout(function () {$("#chatbox-inbox").fadeOut("slow");},8000);
+			if(!$("#chatbox-msg").is(':focus')) {
+				this.fadeTimeout = setTimeout(function () {
+					$(inbox).fadeOut("slow");
+				}, 8000);
 			}
-			if (needDecoding) {
-				// first decode the message
-				var msgDecoded = msg.split("#1ax}#");
-				if (msgDecoded.length == 3) {
-					var username =  (msgDecoded[0] == VBoard.interface.userName)? vb.interface.abbrLongStr(msgDecoded[0],10)+"(me)": vb.interface.abbrLongStr(msgDecoded[0],10);
-					var color = msgDecoded[1];
-					// animate new message
-					var tempHTML = '<p id="new-msg" style="display: none;"><span style="color:'+color+';">'+username+' : </span><span class="chat_message">'+msgDecoded[2]+'</span></p>';
-					$("#chatbox-inbox").prepend(tempHTML);
-					$("#new-msg").slideToggle("fast").attr("id","processed");
-				}
-			} else {
-				$("#chatbox-inbox").prepend('<p><span style="color: #000099;" class="chat_message_system"><strong>'+msg+'</strong></span></p>');
+
+			var client = vb.users.getFromID(messageData["user"]);
+			var message = messageData["msg"];
+			var username = client.name;
+
+			var displayName = vb.interface.abbrLongStr(username, 10);
+
+			if(username == VBoard.interface.userName) {
+				displayName = displayName + "(me)";
 			}
+
+			var entryWrapper = document.createElement("p");
+			var nameWrapper = document.createElement("span");
+			var messageWrapper = document.createElement("span");
+			var displayNameText = document.createTextNode(displayName + ": ");
+			var messageText = document.createTextNode(message);
+
+			var c = client.color;
+
+			nameWrapper.style.color = "rgb(" + 255*c.r + "," + 255*c.g + "," + 255*c.b + ")";
+			messageWrapper.className = "chat_message";
+
+			nameWrapper.innerText = displayNameText.textContent;
+			messageWrapper.innerText = messageText.textContent;
+			entryWrapper.appendChild(nameWrapper);
+			entryWrapper.appendChild(messageWrapper);
+			inbox.appendChild(entryWrapper);
+
+			//if (needDecoding) {
+			//	// first decode the message
+			//	var msgDecoded = msg.split("#1ax}#");
+			//	if (msgDecoded.length == 3) {
+			//		var username =  (msgDecoded[0] == VBoard.interface.userName)? vb.interface.abbrLongStr(msgDecoded[0],10)+"(me)": vb.interface.abbrLongStr(msgDecoded[0],10);
+			//		var color = msgDecoded[1];
+			//		// animate new message
+			//		var tempHTML = '<p id="new-msg" style="display: none;"><span style="color:'+color+';">'+username+' : </span><span class="chat_message">'+msgDecoded[2]+'</span></p>';
+			//		$("#chatbox-inbox").prepend(tempHTML);
+			//		$("#new-msg").slideToggle("fast").attr("id","processed");
+			//	}
+			// } else {
+			//	$("#chatbox-inbox").prepend('<p><span style="color: #000099;" class="chat_message_system"><strong>'+msg+'</strong></span></p>');
+			// }
 
 		},
 
@@ -557,16 +612,19 @@ var VBoard = VBoard || {};
 						}
 					}
 				});
-				
 		},
 		showPlayerList: function (data) {
 			console.log(JSON.stringify(data));
 			$("#players-list-list").empty();
-			
+
 			for (var i = data.length - 1; i >= 0; i--) {
 				console.log(JSON.stringify(data[i]));
-				var str = '<p><i class="fa fa-user"  style="color: '+ vb.interface.arrayRGB2StrRGB(data[i]['color'])+';"></i> ' + vb.interface.abbrLongStr(data[i]['name'],10) + ((data[i]['host'])?" (host)":"") + '</p>'; 
-				$("#players-list-list").append(str);
+				var ptag = document.createElement("p");
+				$(ptag).text(" " + vb.interface.abbrLongStr(data[i]['name'],10));
+				$(ptag).prepend('<i class=\"fa fa-user\"  style=\"color: '+ vb.interface.arrayRGB2StrRGB(data[i]['color'])+';\"></i>');
+				$(ptag).append((data[i]['host']) ? " (host)":"");
+				//var str = '<p><i class="fa fa-user"  style="color: '+ vb.interface.arrayRGB2StrRGB(data[i]['color'])+';"></i> ' + vb.interface.abbrLongStr(data[i]['name'],10) + ((data[i]['host'])?" (host)":"") + '</p>'; 
+				$("#players-list-list").append(ptag);
 			}
 		},
 		// helper function
@@ -582,7 +640,9 @@ var VBoard = VBoard || {};
 			VBoard.interface.userName = username;
 			
 			if (optionalColor) {
-				$('#change-username').html('<i class="fa fa-user" style="color: ' + vb.interface.arrayRGB2StrRGB(optionalColor) +'"></i> ' + VBoard.interface.userName);
+				//$('#change-username').html('<i class="fa fa-user" style="color: ' + vb.interface.arrayRGB2StrRGB(optionalColor) +'"></i> ' + VBoard.interface.userName);
+				$('#change-username').text(VBoard.interface.userName);
+				$('#change-username').prepend('<i class="fa fa-user" style="color: ' + vb.interface.arrayRGB2StrRGB(optionalColor) +'"></i> ');
 				// set color to the border
 				$("#change-username").css("border","1px solid "+ vb.interface.arrayRGB2StrRGB(optionalColor));
 				$("#change-username").hover(function() {
@@ -591,7 +651,9 @@ var VBoard = VBoard || {};
 					$(this).css("box-shadow", "none");
 				});
 			} else {
-				$('#change-username').html('<i class="fa fa-user"></i> ' + VBoard.interface.userName);
+				//$('#change-username').html('<i class="fa fa-user"></i> ' + VBoard.interface.userName);
+				$('#change-username').text(VBoard.interface.userName);
+				$('#change-username').prepend('<i class="fa fa-user"></i> ');
 			}
 		},
 		getRandomName: function () {

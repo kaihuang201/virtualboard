@@ -39,6 +39,13 @@ var VBoard = VBoard || {};
 			this.remove(user);
 		},
 
+		getFromID: function (id) {
+			if(this.userList.hasOwnProperty(id)) {
+				return this.userList[id];
+			}
+			return null;
+		},
+
 		//to do: actual implementation
 		setLocal: function (user) {
 			this.local = user;

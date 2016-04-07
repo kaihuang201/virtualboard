@@ -756,19 +756,30 @@ var VBoard = VBoard || {};
 				case "pong":
 					break;
 				case "error":
-					if (($("#template-modal").data('bs.modal') || {}).isShown) {
-						vb.interface.setTemplateModalAlert(data["data"][0]["msg"]);
-					} else {
-						vb.interface.alertModal(data["data"][0]["msg"],0);
+					var errors = data["data"];
+
+					for(var i=0; i<errors.length; i++) {
+						var error = errors[i];
+
+						if (($("#template-modal").data('bs.modal') || {}).isShown) {
+							vb.interface.setTemplateModalAlert(error["msg"]);
+						} else {
+							vb.interface.alertModal(error["msg"], 0);
+						}
 					}
 					break;
 				case "chat":
-					vb.interface.chatIncomingMsg(data["data"][0]["msg"],true);
+					var messages = data["data"];
+
+					for(var i=0; i<messages.length; i++) {
+						var messageData = messages[i];
+						vb.interface.chatIncomingMsg(messageData);
+					}
 					break;
 				case "beacon":
 					var beacons = data["data"];
 
-					for(index in beacons) {
+					for(var index in beacons) {
 						var beaconData = beacons[index];
 						vb.board.beacon(beaconData);
 					}
@@ -784,7 +795,7 @@ var VBoard = VBoard || {};
 						var mainUser = -1;
 					}
 
-					for(index in pieces) {
+					for(var index in pieces) {
 						var pieceData = pieces[index];
 
 						if(pieceData.hasOwnProperty("p")) {
@@ -804,7 +815,7 @@ var VBoard = VBoard || {};
 				case "pieceAdd":
 					var pieces = data["data"];
 
-					for(index in pieces) {
+					for(var index in pieces) {
 						var pieceData = pieces[index];
 						vb.board.generateNewPiece(pieceData);
 					}
