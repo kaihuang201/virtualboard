@@ -10,6 +10,18 @@ class PrivateZone:
         self.rotation = rotation
         self.color = color
 
+    def get_json_obj(self):
+        return {
+            "pos" : {
+                "x" : self.x,
+                "y" : self.y
+            },
+            "width" : self.width,
+            "height" : self.height,
+            "rotation" : self.rotation,
+            "color" : self.color
+        }
+
     def contains(self, x, y):
         ax = self.x + ((self.height / 2.0) * -math.sin(self.rotation) - (self.width / 2.0) * math.cos(self.rotation))
         ay = self.y + ((self.height / 2.0) * math.cos(self.rotation) - (self.width / 2.0) * math.sin(self.rotation))

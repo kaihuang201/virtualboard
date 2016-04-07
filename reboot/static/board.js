@@ -40,7 +40,22 @@ var VBoard = VBoard || {};
 		},
 
 		addPrivateZone: function (zoneData) {
-			//TODO
+			var size = zoneData["height"];
+			var ratio = zoneData["width"] / zoneData["height"];
+			var c = zoneData["color"];
+
+			var plane = BABYLON.Mesh.CreatePlane("plane", size, vb.scene);
+			var material = new BABYLON.StandardMaterial("std", vb.scene);
+
+			material.emissiveColor = new BABYLON.Color3(c[0]/255, c[1]/255, c[2]/255);
+			material.diffuseColor = new BABYLON.Color3(c[0]/255, c[1]/255, c[2]/255);
+			material.disableLighting = true;
+			plane.material = material;
+			plane.position.x = zoneData["pos"].x;
+			plane.position.y = zoneData["pos"].y;
+			plane.position.z = 12; // Higher z-index than any piece will have, max for pieces is 11
+			plane.scaling.x = ratio;
+			plane.rotation.z = zoneData["rotation"];
 		},
 
 		ourIndexOf: function (piece) {
@@ -470,14 +485,18 @@ var VBoard = VBoard || {};
 			this.setBackground(boardData["background"]);
 
 			var pieces = boardData["pieces"];
+			var privateZones = boardData["privateZones"];
 
 			//TODO: it turns out for ... in does not guarantee any particular order, so this should be rewritten
-			for(index in pieces) {
+			for(var index in pieces) {
 				var pieceData = pieces[index];
 				this.generateNewPiece(pieceData);
 			}
 
-			//TODO: private zones
+			for (var index in privateZones) {
+				var zoneData = privateZones[index];
+				this.addPrivateZone(zoneData);
+			}
 		},
 
 		//TODO: maybe a toggle for auto resizing
