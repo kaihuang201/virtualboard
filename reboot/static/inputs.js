@@ -149,6 +149,13 @@ var VBoard = VBoard || {};
 			this.mouseDown = false;
 			this.isDraggingBox = false;
 
+			if (vb.board.gridConfig.enabled) {
+				for (var i in vb.selection.pieces) {
+					var p = vb.selection.pieces[i];	
+					vb.board.snapPieceToGrid(p);
+				}
+			}
+
 			vb.selection.clearAndSelect();
 
 			if(!vb.selection.isEmpty()) {

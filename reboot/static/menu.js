@@ -208,6 +208,14 @@ var VBoard = VBoard || {};
 				$("#load-game-modal").modal("toggle");
 			});
 
+			$("#setGrid").change(function() {
+				if($(this).is(":checked")) {
+		            vb.board.gridConfig.enabled = true;
+		        } else {
+		        	vb.board.gridConfig.enabled = false;
+		    	}
+			});
+
 		},
 
 		loadPieceOptions: function () {

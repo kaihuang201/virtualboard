@@ -178,6 +178,16 @@ div#menu
 	z-index: 800;
 }
 
+input#setGrid {
+	display: inline;
+	margin: 0;
+	height: 16px;
+}
+
+span.menu-label{
+	padding-left: 10px;
+}
+
 #context-menu{
 	visibility: hidden;
 	background-color: white;

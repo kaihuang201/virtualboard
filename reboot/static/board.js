@@ -29,6 +29,34 @@ var VBoard = VBoard || {};
 		background: null,
 		selectionBox: null,
 
+		gridConfig: {
+			enabled: false,
+			scale: 10,
+			aspect: 1, // height / width
+			originX: 0, // grind origin in world coordinates
+			originY: 0,
+			sensitivity: 0.5
+		},
+
+		snapPieceToGrid : function(piece) {
+			closestGridPos = this.getClosestGridPos(piece.position.x, piece.position.y);
+			console.log(closestGridPos);
+			vb.sessionIO.movePiece(piece.id, closestGridPos.x, closestGridPos.y);
+		},
+
+		getClosestGridPos : function(pieceX, pieceY) {
+			var pieceX = pieceX - this.gridConfig.originX;
+			var pieceY = pieceY - this.gridConfig.originY;
+
+			var closestGridX = Math.round(pieceX / this.gridConfig.scale);
+			var closestGridY = Math.round(pieceY / this.gridConfig.scale * this.gridConfig.aspect)
+
+			var closestX = closestGridX * this.gridConfig.scale + this.gridConfig.originX
+			var closestY = closestGridY * this.gridConfig.scale * this.gridConfig.aspect + this.gridConfig.originY
+
+			return {x: closestX, y: closestY} 
+		},
+
 		//methods
 
 		//adds a new piece to the front of the board
