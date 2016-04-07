@@ -9,6 +9,7 @@ class PrivateZone:
         self.height = float(height)
         self.rotation = float(rotation)
         self.color = color
+        self.pieces = set()
 
     def get_json_obj(self):
         return {
@@ -45,3 +46,11 @@ class PrivateZone:
             return False
 
         return True
+
+    def add_piece(self, piece):
+        self.pieces.add(piece)
+        piece.zone = self
+
+    def remove_piece(self, piece):
+        self.pieces.remove(piece)
+        piece.zone = None

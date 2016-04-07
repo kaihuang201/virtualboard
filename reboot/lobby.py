@@ -18,6 +18,7 @@ MOVE_TICK_DURATION = 0.05 #50 ms
 KEY_MAX = 1000000000000000
 SAVE_RETRY_TIME = 1
 
+WHITE = [255, 255, 255]
 
 #maximum allowed "spammable" actions per timeout
 SPAM_FILTER_TIMEOUT = 1
@@ -36,6 +37,7 @@ class Game:
 		self.movebuffer = MoveBuffer()
 		self.spam_timeout = None
 		self.save_key = 0
+		self.load_key = 0
 		self.save_in_process = False
 
 		#this is just to get the loop going
@@ -177,7 +179,7 @@ class Game:
 
 	def message_color(self, color, response, compliment=False):
 		for client in self.clients.itervalues():
-			if (client.color == color) ^ compliment:
+			if (client.color == color) ^ compliment or color == WHITE:
 				client.write_message(json.dumps(response))
 
 	def send_error(self, client, message):
@@ -197,13 +199,58 @@ class Game:
 
 	def add_private_zone(self, client, zoneData):
 		if self.host.user_id == client.user_id:
-			zoneData["id"] = self.board_state.add_private_zone(zoneData["pos"]["x"], zoneData["pos"]["y"], \
+			zoneData["id"], pieces = self.board_state.add_private_zone(zoneData["pos"]["x"], zoneData["pos"]["y"], \
 				zoneData["width"], zoneData["height"], zoneData["rotation"], zoneData["color"])
 			response = {
 				"type" : "addPrivateZone",
-				"data" : zoneData
+				"data" : [zoneData]
 			}
 			self.message_all(response)
+
+			response_data = []
+
+			for piece in pieces:
+				response_data.append({
+					"user" : client.user_id,
+					"piece" : piece.piece_id
+				})
+
+			response = {
+				"type" : "pieceRemove",
+				"data" : response_data
+			}
+
+			self.message_color(zoneData["color"], response, True)
+
+		else:
+			self.send_error(client, "Only the host can use that command")
+
+	def remove_private_zone(self, client, zoneData):
+		if self.host.user_id == client.user_id:
+			color, pieces = self.board_state.remove_private_zone(zoneData["id"])
+			if color != WHITE:
+				if len(pieces) > 0:
+					response_data = []
+
+					for piece in pieces:
+						data_entry = piece.get_json_obj()
+						data_entry["user"] = client.user_id
+						response_data.append(data_entry)
+
+					if len(response_data) > 0:
+						response = {
+							"type" : "pieceAdd",
+							"data" : response_data
+						}
+						self.message_color(color, response, True)
+
+				response = {
+					"type" : "removePrivateZone",
+					"data" : {
+						"id" : zoneData["id"]
+					}
+				}
+				self.message_all(response)
 		else:
 			self.send_error(client, "Only the host can use that command")
 
@@ -351,7 +398,7 @@ class Game:
 
 		for pieceData in pieces:
 			piece = self.board_state.get_piece(pieceData["piece"])
-			if piece.color == [255, 255, 255] or piece.color == client.color:
+			if piece.color == WHITE or piece.color == client.color:
 				was_in_private_zone = piece.in_private_zone
 				old_color = piece.color
 				if self.board_state.transform_piece(client, pieceData):
@@ -421,7 +468,7 @@ class Game:
 			#buffer magic
 			for pieceData in pieces:
 				piece = self.board_state.get_piece(pieceData["piece"])
-				if piece.color == [255, 255, 255] or piece.color == client.color:
+				if piece.color == WHITE or piece.color == client.color:
 					self.movebuffer.add(pieceData["piece"], pieceData["pos"], client.user_id)
 
 			if self.movebuffer.flush_timeout is None:
@@ -494,7 +541,7 @@ class Game:
 			"type" : "pieceAdd",
 			"data" : response_data
 		}
-		self.message_all(response)
+		self.message_color(piece.color, response)
 
 	def pieceRemove(self, client, pieces):
 		client.spam_amount += 0.5 + 0.1*len(pieces) #less spammable because it requires spam to already exist
@@ -773,7 +820,7 @@ class Game:
 			client.write_message(json.dumps(response))
 		else:
 			tornado.ioloop.IOLoop.instance().add_timeout(datetime.timedelta(seconds=SAVE_RETRY_TIME), self.prepareToSave, client)
-'''
+
 	def prepareToLoad(self, client):
 		if client.user_id == self.host.user_id:
 			self.load_key = random.randint(0, KEY_MAX)
@@ -809,23 +856,40 @@ class Game:
 
 		#set background
 		self.setBackground(self.host, {
-			"icon" : boardData["background"]
+			"icon" : self.board_state.background
 		})
+
+		colors = set()
+		for user_id, client in self.clients.iteritems():
+			colors.add(str(client.color))
+
+		for color in colors:
+			response_data = []
+
+			for piece in self.board_state.pieces:
+				data_entry = piece.get_json_obj()
+				data_entry["user"] = self.host.user_id
+				if data_entry["color"] == WHITE or data_entry["color"] == eval(color):
+					response_data.append(data_entry)
+
+			if len(response_data) > 0:
+				response = {
+					"type" : "pieceAdd",
+					"data" : response_data
+				}
+				self.message_color(eval(color), response)
 
 		response_data = []
 
-		for piece in self.board_state.pieces:
-			data_entry = piece.get_json_obj()
-			data_entry["user"] = self.host.user_id
-			response_data.append(data_entry)
+		for zone_id, zone in self.board_state.private_zones.iteritems():
+			zoneData = zone.get_json_obj()
+			zoneData["id"] = zone_id
+			response_data.append(zoneData)
 
-		if len(response_data) == 0:
-			return
-
-		response = {
-			"type" : "pieceAdd",
-			"data" : response_data
-		}
-		self.message_all(response)
-'''
+		if len(response_data) > 0:
+			response = {
+				"type" : "addPrivateZone",
+				"data" : response_data
+			}
+			self.message_all(response)
 

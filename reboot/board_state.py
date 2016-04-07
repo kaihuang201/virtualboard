@@ -4,6 +4,8 @@ import math
 from deck import *
 from private_zone import *
 
+WHITE = [255, 255, 255]
+
 class Piece:
 	def __init__(self, pieceData, id):
 		#TODO: check for reasonable values
@@ -16,6 +18,7 @@ class Piece:
 		self.rotation = pieceData["r"]
 		self.size = pieceData["s"]
 		self.in_private_zone = False
+		self.zone = None
 		self.always_private = False
 
 		self.isCard = False
@@ -130,7 +133,28 @@ class BoardState:
 		new_zone = PrivateZone(x, y, width, height, rotation, color)
 		self.private_zones[self.next_zone_id] = new_zone
 		self.next_zone_id += 1
-		return self.next_zone_id - 1
+
+		for piece in self.pieces:
+			if new_zone.contains(piece.pos[0], piece.pos[1]):
+				new_zone.add_piece(piece)
+
+		return (self.next_zone_id - 1, new_zone.pieces)
+
+	# returns all pieces in the zone, and the color of the zone
+	def remove_private_zone(self, zone_id):
+		if self.private_zones.has_key(zone_id):
+			zone = self.private_zones[zone_id]
+			color = zone.color
+			pieces = zone.pieces
+
+			for piece in pieces:
+				if not piece.always_private:
+					piece.color = WHITE
+
+			del self.private_zones[zone_id]
+			return (color, pieces)
+		else:
+			return (WHITE, set())
 
 	#returns false if the piece is not found, true otherwise
 	def transform_piece(self, client, pieceData):
@@ -148,12 +172,15 @@ class BoardState:
 				# stil in a private zone, however if it is a permanently private piece, we do not
 				# reset the color 
 				if not piece.always_private:
-					piece.color = [255, 255, 255]
+					piece.color = WHITE
+					if piece.zone != None:
+						piece.zone.remove_piece(piece)
 
 				for zone in self.private_zones.itervalues():
 					if zone.contains(piece.pos[0], piece.pos[1]):
 						piece.in_private_zone = True
 						piece.color = zone.color
+						zone.add_piece(piece)
 
 				#only for positional changes do we bring the piece to the front
 				#note that this also invalidates the index variable we have
@@ -224,7 +251,7 @@ class BoardState:
 			index = self.piecemap[piece_id]
 			piece = self.pieces[index]
 
-			if piece.isDie and (piece.color == [255, 255, 255] or piece.color == client.color):
+			if piece.isDie and (piece.color == WHITE or piece.color == client.color):
 				value = random.randint(0, piece.max-1)
 
 				if value < len(piece.faces):
@@ -243,7 +270,7 @@ class BoardState:
 			index = self.piecemap[piece_id]
 			piece = self.pieces[index]
 
-			if piece.isCard and (piece.color == [255, 255, 255] or piece.color == client.color):
+			if piece.isCard and (piece.color == WHITE or piece.color == client.color):
 				piece.cardData.flip()
 				piece.icon = piece.cardData.get_icon()
 				return piece.icon
@@ -256,7 +283,7 @@ class BoardState:
 			index = self.piecemap[piece_id]
 			piece = self.pieces[index]
 
-			if piece.isCard and (piece.color == [255, 255, 255] or piece.color == client.color):
+			if piece.isCard and (piece.color == WHITE or piece.color == client.color):
 				data = piece.cardData.draw()
 
 				if data is not None:
@@ -304,7 +331,7 @@ class BoardState:
 			index = self.piecemap[piece_id]
 			piece = self.pieces[index]
 
-			if piece.isCard and (piece.color == [255, 255, 255] or piece.color == client.color):
+			if piece.isCard and (piece.color == WHITE or piece.color == client.color):
 				piece.cardData.shuffle()
 				piece.icon = piece.cardData.get_icon()
 				return piece.icon
@@ -320,8 +347,8 @@ class BoardState:
 			deck = self.pieces[deck_index]
 
 			if (card.isCard and deck.isCard and card_id != deck_id
-				and (card.color == [255, 255, 255] or card.color == client.color)
-				and (deck.color == [255, 255, 255] or deck.color == client.color)):
+				and (card.color == WHITE or card.color == client.color)
+				and (deck.color == WHITE or deck.color == client.color)):
 				deck.cardData.absorb(card.cardData)
 				deck.icon = deck.cardData.get_icon()
 
@@ -334,11 +361,11 @@ class BoardState:
 		return None
 
 	#complete is set to true when the board state is being saved
-	def get_json_obj(self, complete=False, color=[255, 255, 255]):
+	def get_json_obj(self, complete=False, color=WHITE):
 		pieces_json = []
 
 		for piece in self.pieces:
-			if color == [255, 255, 255] or color == piece.color or not piece.in_private_zone:
+			if color == WHITE or color == piece.color or piece.color == WHITE or not piece.in_private_zone:
 				pieces_json.append(piece.get_json_obj(complete))
 
 		zones_json = []
@@ -353,12 +380,19 @@ class BoardState:
 			"privateZones" : zones_json,
 			"pieces" : pieces_json
 		}
-'''
+
 	def load_from_json(self, json_obj):
 		self.background = json_obj["background"]
 		self.pieces = []
 		self.piecemap = {}
 		self.next_piece_id = 0
+		self.privateZones = {}
+		self.next_zone_id = 0
+
+		# make private zones first, so pieces know if they are in a private zone
+		for zone_json in json_obj["privateZones"]:
+			self.add_private_zone(zone_json["pos"]["x"], zone_json["pos"]["y"], zone_json["width"],
+				zone_json["height"], zone_json["rotation"], zone_json["color"])
+
 		for piece_json in json_obj["pieces"]:
 			self.generate_new_piece(piece_json)
-'''

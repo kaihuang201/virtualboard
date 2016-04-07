@@ -83,6 +83,10 @@ var VBoard = VBoard || {};
 					vb.cookie.setCookie(VBoard.interface.userName, VBoard.interface.colorSelected, data["data"]["gameID"], 120); // make sure this step comes before switchToGameMode()
 					// console.log("cookie setup ->> "+VBoard.interface.userName + VBoard.interface.colorSelected + data["data"]["gameID"]);
 
+					if (!vb.users.getLocal().isHost) {
+						vb.menu.hideHostOnlyButtons();
+					}
+
 					//switch from lobby state to game state
 					vb.interface.switchToGameMode();
 					vb.sessionIO.getClientList();
@@ -619,14 +623,6 @@ var VBoard = VBoard || {};
 
 		},
 
-		createPrivateZone: function (zoneData) {
-			//TODO
-		},
-
-		removePrivateZone: function (id) {
-			//TODO
-		},
-
 		drawScribble: function (scribbleData) {
 			//TODO
 		},
@@ -638,12 +634,12 @@ var VBoard = VBoard || {};
 			this.send(data);
 		},
 
-		//requestLoad: function () {
-		//	var data = {
-		//		"type" : "requestLoad"
-		//	}
-		//	this.send(data);
-		//},
+		requestLoad: function () {
+			var data = {
+				"type" : "requestLoad"
+			}
+			this.send(data);
+		},
 
 		//host only commands
 
@@ -660,6 +656,19 @@ var VBoard = VBoard || {};
 						"height" : height,
 						"rotation" : Math.atan2(vb.camera.upVector.y, vb.camera.upVector.x) - Math.PI/2,
 						"color" : color
+					}
+				};
+				this.send(data);
+			}
+		},
+
+
+		removePrivateZone: function (id) {
+			if(vb.users.getLocal().isHost) {
+				var data = {
+					"type" : "removePrivateZone",
+					"data" : {
+						"id" : id
 					}
 				};
 				this.send(data);
@@ -861,7 +870,16 @@ var VBoard = VBoard || {};
 					}
 					break;
 				case "addPrivateZone":
-					vb.board.addPrivateZone(data["data"])
+					var zones = data["data"];
+
+					for (var index in zones) {
+						zoneData = zones[index];
+						vb.board.addPrivateZone(zoneData)
+					}
+					break;
+				case "removePrivateZone":
+					var id = data["data"].id;
+					vb.board.removePrivateZone(id);
 					break;
 				case "changeHost":
 					vb.users.changeHost(data["data"]["user"]);
@@ -905,8 +923,6 @@ var VBoard = VBoard || {};
 						vb.board.shuffleDeck(deckData);
 					}
 					break;
-				case "removePrivateZone":
-					break;
 				case "drawScribble":
 					break;
 				case "savePrep":
@@ -914,18 +930,18 @@ var VBoard = VBoard || {};
 					var key = data["data"].key;
 					window.location = "/save?lobbyId=" + lobby + "&key=" + key;
 	                break;
-//	            case "loadPrep":
-//					var file_field = $("#fileField")[0];
-//					var formData = new FormData();
-//			        formData.append("upload", file_field.files[0]);
-//			        formData.append("lobbyId", data["data"].lobbyId);
-//			        formData.append("key", data["data"].key);
-//			        var xhr = new XMLHttpRequest();
-//			        xhr.open('POST', 'load', true);
-//			        xhr.onload = function () {
-//			        };
-//			        xhr.send(formData);
-//	            	break;
+	            case "loadPrep":
+					var file_field = $("#fileField")[0];
+					var formData = new FormData();
+			        formData.append("upload", file_field.files[0]);
+			        formData.append("lobbyId", data["data"].lobbyId);
+			        formData.append("key", data["data"].key);
+			        var xhr = new XMLHttpRequest();
+			        xhr.open('POST', 'load', true);
+			        xhr.onload = function () {
+			        };
+			        xhr.send(formData);
+	            	break;
 				default:
 					console.log("unhandled server message: " + data["type"]);
 			}

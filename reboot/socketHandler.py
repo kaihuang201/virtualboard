@@ -158,12 +158,6 @@ class WebSocketGameHandler(tornado.websocket.WebSocketHandler):
 				game.drawCard(self, data["data"])
 			elif data["type"] == "shuffleDeck":
 				game.shuffleDeck(self, data["data"])
-			elif data["type"] == "createPrivateZone":
-				print "todo"
-				#Todo: Needs to be implemented
-			elif data["type"] == "removePrivateZone":
-				print "todo"
-				#Todo: Needs to be implemented
 			elif data["type"] == "drawScribble":
 				print "todo"
 				#Todo: Needs to be implemented
@@ -171,15 +165,16 @@ class WebSocketGameHandler(tornado.websocket.WebSocketHandler):
 			#save and load related commands
 			elif data["type"] == "requestSave":
 				game.prepareToSave(self)
-			#elif data["type"] == "requestLoad":
-			#	game.prepareToLoad(self)
-				#TODO
+			elif data["type"] == "requestLoad":
+				game.prepareToLoad(self)
 
 			#host only commands
 			#do not need to determine if client is host in this function, that is handled by the Game class
 
 			elif data["type"] == "addPrivateZone":
 				game.add_private_zone(self, data["data"])
+			elif data["type"] == "removePrivateZone":
+				game.remove_private_zone(self, data["data"])
 			elif data["type"] == "changeHost":
 				target = data["data"]["user"]
 				message = data["data"]["msg"]

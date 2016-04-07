@@ -57,6 +57,14 @@ var VBoard = VBoard || {};
 			plane.position.z = 12; // Higher z-index than any piece will have, max for pieces is 11
 			plane.scaling.x = ratio;
 			plane.rotation.z = zoneData["rotation"];
+			plane.zone = zoneData["id"];
+
+			this.privateZones[zoneData["id"]] = plane;
+		},
+
+		removePrivateZone: function (id) {
+			this.privateZones[id].dispose();
+			delete this.privateZones[id];
 		},
 
 		ourIndexOf: function (piece) {
@@ -513,6 +521,12 @@ var VBoard = VBoard || {};
 		clearBoard: function () {
 			while(this.pieces.length > 0) {
 				this.remove(this.pieces[this.pieces.length-1]);
+			}
+
+			for (var id in this.privateZones) {
+				if (this.privateZones.hasOwnProperty(id)) {
+					this.removePrivateZone(id);
+				}
 			}
 		},
 

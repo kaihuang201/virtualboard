@@ -171,6 +171,16 @@ var VBoard = VBoard || {};
 					vb.sessionIO.addPrivateZone(pos.x, pos.y, this.privateZoneWidth,
 						this.privateZoneHeight, this.privateZoneColor);
 					this.addPrivateZoneNextClick = false;
+					document.body.style.cursor = "";
+				}
+				else if (this.removePrivateZoneNextClick) {
+					zoneId = this.getZoneUnderMouse();
+					console.log(zoneId);
+					if (zoneId != null) {
+						vb.sessionIO.removePrivateZone(zoneId);
+					}
+					this.removePrivateZoneNextClick = false;
+					document.body.style.cursor = "";
 				}
 				else {
 					this.mouseDown = true;
@@ -310,6 +320,20 @@ var VBoard = VBoard || {};
 			return null;
 		},
 
+		getZoneUnderMouse: function () {
+			var pick = vb.scene.pick(vb.scene.pointerX, vb.scene.pointerY, function (mesh) {
+				if(mesh.hasOwnProperty("zone")) {
+					return true;
+				}
+				return false;
+			});
+
+			if(pick.hit) {
+				return pick.pickedMesh.zone;
+			}
+			return null;
+		},
+
 		onRightClick: function () {
 			var piece = this.getPieceUnderMouse();
 
@@ -344,6 +368,12 @@ var VBoard = VBoard || {};
 			this.privateZoneHeight = height;
 			this.privateZoneColor = color;
 			this.addPrivateZoneNextClick = true;
+			document.body.style.cursor = "crosshair";
+		},
+
+		prepRemovePrivateZone: function() {
+			this.removePrivateZoneNextClick = true;
+			document.body.style.cursor = "crosshair";
 		}
 	};
 
