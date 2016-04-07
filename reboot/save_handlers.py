@@ -15,6 +15,7 @@ class DownloadStateHandler(tornado.web.RequestHandler):
                 self.set_header('Content-Type', 'application/virtualboard')
                 self.set_header('Content-Disposition', 'attachment; filename=' + filename)
                 self.write(json.dumps(games[lobby_id].board_state.get_json_obj(True)))
+                games[lobby_id].save_in_process = False
             else:
                 self.write("Incorrect key, expected " + str(games[lobby_id].save_key) + " but got " + str(key))
         else:

@@ -16,6 +16,8 @@ next_game_id = 0
 
 MOVE_TICK_DURATION = 0.05 #50 ms
 KEY_MAX = 1000000000000000
+SAVE_RETRY_TIME = 1
+
 
 #maximum allowed "spammable" actions per timeout
 SPAM_FILTER_TIMEOUT = 1
@@ -34,6 +36,7 @@ class Game:
 		self.movebuffer = MoveBuffer()
 		self.spam_timeout = None
 		self.save_key = 0
+		self.save_in_process = False
 
 		#this is just to get the loop going
 		tornado.ioloop.IOLoop.instance().add_callback(self.check_spam)
@@ -756,16 +759,20 @@ class Game:
 		self.message_all(response)
 
 	def prepareToSave(self, client):
-		self.save_key = random.randint(0, KEY_MAX)
+		if not self.save_in_process:
+			self.save_in_process = True
+			self.save_key = random.randint(0, KEY_MAX)
 
-		response = {
-			"type" : "savePrep",
-			"data" : {
-					"lobbyId" : self.game_id,
-					"key" : self.save_key
-				}
-		}
-		client.write_message(json.dumps(response))
+			response = {
+				"type" : "savePrep",
+				"data" : {
+						"lobbyId" : self.game_id,
+						"key" : self.save_key
+					}
+			}
+			client.write_message(json.dumps(response))
+		else:
+			tornado.ioloop.IOLoop.instance().add_timeout(datetime.timedelta(seconds=SAVE_RETRY_TIME), self.prepareToSave, client)
 '''
 	def prepareToLoad(self, client):
 		if client.user_id == self.host.user_id:
