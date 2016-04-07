@@ -101,6 +101,51 @@ var VBoard = VBoard || {};
 				}
 			};
 			vb.sessionIO.addPiece(properties);
+		},
+
+		// below are test functions 
+		createChessBoard: function() {
+			// Parameters
+		    var xmin = -3;
+		    var zmin = -3;
+		    var xmax =  3;
+		    var zmax =  3;
+		    var precision = {
+		        "w" : 2,
+		        "h" : 2
+		    };
+		    var subdivisions = {
+		        'h' : 8,
+		        'w' : 8
+		    };
+		    // Create the Tiled Ground
+		    var tiledGround = new BABYLON.Mesh.CreateTiledGround("Tiled Ground", xmin, zmin, xmax, zmax, subdivisions, precision, VBoard.scene);
+
+		    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			var whiteMaterial = new BABYLON.StandardMaterial("White", VBoard.scene);
+			whiteMaterial.diffuseColor = new BABYLON.Color3(1, 1, 1);
+			 
+			var blackMaterial = new BABYLON.StandardMaterial("Black", VBoard.scene);
+			blackMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
+			
+			var multimat = new BABYLON.MultiMaterial("multi", VBoard.scene);
+			multimat.subMaterials.push(whiteMaterial);
+			multimat.subMaterials.push(blackMaterial);
+			multimat.backFaceCulling = false;
+			
+			tiledGround.material = multimat;
+
+			var verticesCount = tiledGround.getTotalVertices();
+			var tileIndicesLength = tiledGround.getIndices().length / (subdivisions.w * subdivisions.h);
+
+			tiledGround.subMeshes = [];
+			var base = 0;
+			for (var row = 0; row < subdivisions.h; row++) {
+			    for (var col = 0; col < subdivisions.w; col++) {
+			         tiledGround.subMeshes.push(new BABYLON.SubMesh(row%2 ^ col%2, 0, verticesCount, base, tileIndicesLength, tiledGround));
+			         base += tileIndicesLength;
+			     }
+			}
 		}
 	};
 })(VBoard);

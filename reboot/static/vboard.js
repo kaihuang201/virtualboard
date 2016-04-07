@@ -76,7 +76,7 @@ var VBoard = VBoard || {};
 		vb.engine = new BABYLON.Engine(canvas, true);
 		vb.scene = (function () {
 			var scene = new BABYLON.Scene(vb.engine);
-			scene.clearColor = new BABYLON.Color3(0.5, 1, 0.984);
+			// scene.clearColor = new BABYLON.Color3(0.5, 1, 0.984);
 			var camera = new BABYLON.FreeCamera("Camera", new BABYLON.Vector3.Zero(), scene);
 			vb.camera = camera;
 			camera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
@@ -103,6 +103,7 @@ var VBoard = VBoard || {};
 			vb.light = new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0, 1, 0), scene);
 			vb.light.groundColor = new BABYLON.Color3(1, 1, 1);
 			vb.light.specular = new BABYLON.Color3(0, 0, 0);
+			vb.light.intensity = .6;
 
 			vb.board.background = BABYLON.Mesh.CreatePlane("background", 50, scene);
 			vb.board.background.position = new BABYLON.Vector3(0, 0, 100);
@@ -113,6 +114,23 @@ var VBoard = VBoard || {};
 			vb.board.selectionBox.position.z = 100;
 			vb.board.selectionBox.subMeshes = [];
 			vb.staticMeshCount++;
+
+			scene.onPointerDown = function(evt,pickResult) {
+				if (pickResult.hit) {
+					console.log("mousedown at (" + (pickResult.pickedPoint.x).toString() +',' +(pickResult.pickedPoint.y).toString() +")");
+					vb.inputs.onMouseDown(evt, pickResult);	
+				}
+			};
+				
+			scene.onPointerMove = function (evt,pickResult) {
+				vb.inputs.onMouseMove(evt, pickResult);
+			};
+			scene.onPointerUp = function (evt,pickResult) {
+				vb.inputs.onMouseUp(evt, pickResult);
+			};
+			scene.onPointerPick = function (evt,pickResult) {
+				// vb.inputs.onMousePick(evt, pickResult);
+			};
 
 			return scene;
 		})();

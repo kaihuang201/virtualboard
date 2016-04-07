@@ -127,15 +127,17 @@ var VBoard = VBoard || {};
 				vb.inputs.onScroll(Math.max(-1, Math.min(1, (-evt.detail))));
 			});
 
-			window.addEventListener("mouseup", function (event) {
-				vb.inputs.onMouseUp(event);
-			});
-			window.addEventListener("mousemove", function (event) {
-				vb.inputs.onMouseMove(event);
-			});
-			window.addEventListener("mousedown", function (event) {
-				vb.inputs.onMouseDown(event);
-			});
+			// window.addEventListener("mouseup", function (event) {
+			// 	vb.inputs.onMouseUp(event);
+			// });
+			// window.addEventListener("mousemove", function (event) {
+			// 	vb.inputs.onMouseMove(event);
+			// });
+			// window.addEventListener("mousedown", function (event) {
+			// 	vb.inputs.onMouseDown(event);
+			// });
+			// test built-in event trigger to fix the offset issue
+
 		},
 
 		setEnabled: function (enabled) {
@@ -143,7 +145,7 @@ var VBoard = VBoard || {};
 		},
 
 		//mouse handlers
-		onMouseUp: function (event) {
+		onMouseUp: function (event, pickResult) {
 			this.mouseDown = false;
 			this.isDraggingBox = false;
 
@@ -159,17 +161,17 @@ var VBoard = VBoard || {};
 			}
 		},
 
-		onMouseDown: function (event) {
-			var pos = vb.board.screenToGameSpace(new BABYLON.Vector2(vb.scene.pointerX, vb.scene.pointerY));
+		onMouseDown: function (event,pickResult) {
+			var pos = vb.board.screenToGameSpace(new BABYLON.Vector2(pickResult.pickedPoint.x, pickResult.pickedPoint.y));
 
 			if(event.altKey) {
-				vb.sessionIO.sendBeacon(pos.x, pos.y);
+				vb.sessionIO.sendBeacon(pickResult.pickedPoint.x, pickResult.pickedPoint.y);
 			} else {
 				this.mouseDown = true;
 				console.log("mouseDown: " + event.handled);
 
-				this.lastDragX = pos.x;
-				this.lastDragY = pos.y;
+				this.lastDragX = pickResult.pickedPoint.x;
+				this.lastDragY = pickResult.pickedPoint.y;
 
 				if(!event.handled) {
 					if (!event.shiftKey) {
@@ -182,7 +184,7 @@ var VBoard = VBoard || {};
 			}
 		},
 
-		onMouseMove: function (event) {
+		onMouseMove: function (event,pickResult) {
 			//TODO: needs rework
 			if(vb.inputs.mouseDown) {
 				vb.selection.clearAndSetOnMouseUp = null;
