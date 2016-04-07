@@ -21,6 +21,7 @@ var VBoard = VBoard || {};
 	vb.testImageURL = "http://i.imgur.com/KUALoHO.jpg";
 
 	//number of static meshes that are not pieces
+	//should probably be tied to vb.board but whatever
 	vb.staticMeshCount = 0;
 
 	vb.quickStart = function () {
@@ -104,19 +105,25 @@ var VBoard = VBoard || {};
 			vb.light.groundColor = new BABYLON.Color3(1, 1, 1);
 			vb.light.specular = new BABYLON.Color3(0, 0, 0);
 
-			vb.board.background = BABYLON.Mesh.CreatePlane("background", 50, scene);
-			vb.board.background.position = new BABYLON.Vector3(0, 0, 100);
-			vb.board.background.isPickable = false;
-			vb.staticMeshCount++;
-
-			vb.board.selectionBox = BABYLON.Mesh.CreatePlane("selection box", 1, scene);
-			vb.board.selectionBox.position.z = 100;
-			vb.board.selectionBox.subMeshes = [];
-			vb.staticMeshCount++;
-
 			return scene;
 		})();
+		vb.loadStaticMeshes();
 		vb.engine.runRenderLoop(vb.renderLoop);
+	};
+
+	vb.loadStaticMeshes = function () {
+
+		vb.board.background = BABYLON.Mesh.CreatePlane("background", 50, vb.scene);
+		vb.board.background.position = new BABYLON.Vector3(0, 0, 100);
+		vb.board.background.isPickable = false;
+		//vb.staticMeshCount++;
+		vb.board.registerStaticMesh(vb.board.background);
+
+		vb.board.selectionBox = BABYLON.Mesh.CreatePlane("selection box", 1, vb.scene);
+		vb.board.selectionBox.position.z = 100;
+		vb.board.selectionBox.subMeshes = [];
+		//vb.staticMeshCount++;
+		vb.board.registerStaticMesh(vb.board.selectionBox);
 	};
 
 	vb.setCameraPerspective = function () {

@@ -60,11 +60,28 @@ var VBoard = VBoard || {};
 			plane.zone = zoneData["id"];
 
 			this.privateZones[zoneData["id"]] = plane;
+
+			this.registerStaticMesh(plane);
 		},
 
 		removePrivateZone: function (id) {
 			this.privateZones[id].dispose();
 			delete this.privateZones[id];
+		},
+
+		registerStaticMesh: function (mesh) {
+			for(var index = vb.scene.meshes.length-1; index >= 0; index--) {
+				if(vb.scene.meshes[index].uniqueId == mesh.uniqueId) {
+					var i;
+					for(i = index; i > vb.staticMeshCount; i--) {
+						vb.scene.meshes[i] = vb.scene.meshes[i-1];
+					}
+					vb.scene.meshes[i] = mesh;
+					vb.staticMeshCount++;
+					return;
+				}
+			}
+			console.log("failed to register mesh: " + mesh.uniqueId);
 		},
 
 		ourIndexOf: function (piece) {
