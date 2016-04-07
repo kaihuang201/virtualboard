@@ -104,6 +104,7 @@ class BoardState:
 			if zone.contains(piece.pos[0], piece.pos[1]):
 				piece.in_private_zone = True
 				piece.color = zone.color
+				zone.add_piece(piece)
 
 		return piece
 
