@@ -142,16 +142,20 @@ html, body {
 
 canvas#canvas
 {
+	position: absolute;
+	z-index: 0;
 	width: 100%;
 	height: 100%;
 	top: 0px;
 	left: 0px;
 	touch-action: none;
+
 }
 
 div#menu
 {
 	position: absolute;
+	z-index: 1;
 	height: 100%;
 	width: 200px;
 	padding: 15px;
@@ -271,7 +275,7 @@ div#chatbox-input {
 div#right-panel-container {
 	position: absolute;
 	height: 100%;
-	width: 300px;
+	width: 200px;
 	top: 0px;
 	right: -200px; 
 	/*transition: right 0.3s cubic-bezier(.14,.75,.51,.96);*/
