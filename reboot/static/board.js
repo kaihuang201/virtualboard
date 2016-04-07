@@ -57,6 +57,22 @@ var VBoard = VBoard || {};
 			plane.position.z = 12; // Higher z-index than any piece will have, max for pieces is 11
 			plane.scaling.x = ratio;
 			plane.rotation.z = zoneData["rotation"];
+			this.registerStaticMesh(plane);
+		},
+
+		registerStaticMesh: function (mesh) {
+			for(var index = vb.scene.meshes.length-1; index >= 0; index--) {
+				if(vb.scene.meshes[index].uniqueId == mesh.uniqueId) {
+					var i;
+					for(i = index; i > vb.staticMeshCount; i--) {
+						vb.scene.meshes[i] = vb.scene.meshes[i-1];
+					}
+					vb.scene.meshes[i] = mesh;
+					vb.staticMeshCount++;
+					return;
+				}
+			}
+			console.log("failed to register mesh: " + mesh.uniqueId);
 		},
 
 		ourIndexOf: function (piece) {
