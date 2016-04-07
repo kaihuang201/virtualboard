@@ -894,8 +894,6 @@ var VBoard = VBoard || {};
 						vb.board.shuffleDeck(deckData);
 					}
 					break;
-				case "createPrivateZone":
-					break;
 				case "removePrivateZone":
 					break;
 				case "drawScribble":

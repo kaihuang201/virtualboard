@@ -1,6 +1,8 @@
 var VBoard = VBoard || {};
 (function (vb) {
 	vb.menu = {
+		privateZoneColorSelected: [255, 255, 255],
+
 		init: function () {
 			//TODO: menu should not be active until we are in a game session
 			$.getJSON("/static/json/piecemap.json", function (data) {
@@ -34,13 +36,28 @@ var VBoard = VBoard || {};
 				}, 300);
 			});
 
-			
-
 			$("#addPiece").on("click", function () {
 				$("#add-piece-modal").modal();
 			});
+
 			$("#addDie").on("click", function () {
 				$("#add-die-modal").modal();
+			});
+			
+			$("#addPrivateZone").on("click", function () {
+				$("#add-private-zone-modal").modal();
+			});
+
+			$('#private-zone-color-picker').empty().addColorPicker({
+				clickCallback: function(c) {
+					$("#private-zone-selected-color").velocity({ color: vb.interface.strRGB2HexRGB(c) },{duration: 200});
+					vb.menu.privateZoneColorSelected = vb.interface.strRGB2ArrayRGB(c);
+				},
+				colors: [ '#00ffcc','#FF4351', '#7D79F2', '#1B9AF7', '#A5DE37', '#FEAE1B' , '#ff9999'],
+				iterationCallback: function(target,elem,color,iterationNumber) {
+      				target.append('&nbsp;&nbsp;');
+					elem.html("&nbsp;&nbsp;&nbsp;&nbsp;");
+				}
 			});
 
 			$("#addChessBoard").on("click", function () {
@@ -139,6 +156,15 @@ var VBoard = VBoard || {};
 				};
 				vb.sessionIO.addPiece(data);
 				$("#add-die-modal").modal("toggle");
+			});
+
+			$("#submit-add-private-zone").click(function () {
+				var selectedWidth = $("#add-private-zone-width").val();
+				var selectedHeight = $("#add-private-zone-height").val();
+
+				vb.inputs.prepAddPrivateZone(selectedWidth, selectedHeight, vb.menu.privateZoneColorSelected);
+
+				$("#add-private-zone-modal").modal("toggle");
 			});
 
 			$("#submit-change-background").click(function() {

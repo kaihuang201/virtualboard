@@ -800,6 +800,11 @@ class Game:
 
 		self.message_all(clearResponse)
 
+		#set background
+		self.setBackground(self.host, {
+			"icon" : boardData["background"]
+		})
+
 		response_data = []
 
 		for piece in self.board_state.pieces:

@@ -12,6 +12,7 @@ var VBoard = VBoard || {};
 		lastDragY: 0,
 		isDraggingBox: false,
 		chatBoxActivated: false,
+		addPrivateZoneNextClick: false,
 
 		handlers: {
 			up: function (elapsed, dist) {
@@ -161,19 +162,26 @@ var VBoard = VBoard || {};
 			if(event.altKey) {
 				vb.sessionIO.sendBeacon(pos.x, pos.y);
 			} else {
-				this.mouseDown = true;
-				console.log("mouseDown: " + event.handled);
+				if (this.addPrivateZoneNextClick) {
+					vb.sessionIO.addPrivateZone(pos.x, pos.y, this.privateZoneWidth,
+						this.privateZoneHeight, this.privateZoneColor);
+					this.addPrivateZoneNextClick = false;
+				}
+				else {
+					this.mouseDown = true;
+					console.log("mouseDown: " + event.handled);
 
-				this.lastDragX = pos.x;
-				this.lastDragY = pos.y;
+					this.lastDragX = pos.x;
+					this.lastDragY = pos.y;
 
-				if(!event.handled) {
-					if (!event.shiftKey) {
-						vb.selection.clear();
+					if(!event.handled) {
+						if (!event.shiftKey) {
+							vb.selection.clear();
+						}
+
+						vb.selection.startDragBox(pos);
+						this.isDraggingBox = true;
 					}
-
-					vb.selection.startDragBox(pos);
-					this.isDraggingBox = true;
 				}
 			}
 		},
@@ -321,6 +329,13 @@ var VBoard = VBoard || {};
 				}
 			}
 		},
+
+		prepAddPrivateZone: function(width, height, color) {
+			this.privateZoneWidth = width;
+			this.privateZoneHeight = height;
+			this.privateZoneColor = color;
+			this.addPrivateZoneNextClick = true;
+		}
 	};
 
 	//this needs to be done after, since we can't actually refer to vb.inputs otherwise

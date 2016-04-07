@@ -3,11 +3,11 @@ import math
 class PrivateZone:
     
     def __init__(self, x, y, width, height, rotation, color):
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
-        self.rotation = rotation
+        self.x = float(x)
+        self.y = float(y)
+        self.width = float(width)
+        self.height = float(height)
+        self.rotation = float(rotation)
         self.color = color
 
     def get_json_obj(self):
