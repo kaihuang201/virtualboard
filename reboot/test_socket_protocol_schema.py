@@ -718,10 +718,21 @@ class TestSocketProtocolSchema(unittest.TestCase):
 		global schema
 		self.assertTrue(Draft4Validator(schema).is_valid(data))
 
+	def test_initJoin2(self):
+		initJoin_json = '{ "type" : "initJoin", "data" : { "name" : 123, "color" : [ 0, 255, 0 ], "gameID" : 2, "password" : 123 } }'
+		data = json.loads(initJoin_json)
+		global schema
+		self.assertFalse(Draft4Validator(schema).is_valid(data))
+
 	def test_initHost(self):
 		data = json.loads('{"type" : "initHost", "data" : {"name" : "sam", "color" : [255, 0, 0 ], "gameName" : "coolville", "password" : "12345"} }')
 		global schema
 		self.assertTrue(Draft4Validator(schema).is_valid(data))
+
+	def test_initHost2(self):
+		data = json.loads('{"type" : "initHost", "data" : {"name" : 123, "color" : [255, 0, 0 ], "gameName" : 123, "password" : 123} }')
+		global schema
+		self.assertFalse(Draft4Validator(schema).is_valid(data))
 
 	def test_listGames(self):
 		data = json.loads('{"type" : "listGames"}')
@@ -743,7 +754,17 @@ class TestSocketProtocolSchema(unittest.TestCase):
 		global schema
 		self.assertTrue(Draft4Validator(schema).is_valid(data))
 
+	def test_chat2(self):
+		data = json.loads('{"type" : "chat", "data" : [{"msg" : 123} ] }')
+		global schema
+		self.assertFalse(Draft4Validator(schema).is_valid(data))
+
 	def test_beacon(self):
+		data = json.loads('{"type" : "beacon", "data" : [{"pos" : [54.5435, 0.534 ] } ] }')
+		global schema
+		self.assertTrue(Draft4Validator(schema).is_valid(data))
+
+	def test_beacon2(self):
 		data = json.loads('{"type" : "beacon", "data" : [{"pos" : [54.5435, 0.534 ] } ] }')
 		global schema
 		self.assertTrue(Draft4Validator(schema).is_valid(data))
@@ -758,6 +779,11 @@ class TestSocketProtocolSchema(unittest.TestCase):
 		global schema
 		self.assertTrue(Draft4Validator(schema).is_valid(data))
 
+	def test_pieceAdd2(self):
+		data = json.loads('{"type" : "pieceAdd", "data" : [{"piece" : 6, "user" : 4, "icon" : 123, "static" : 0, "color" : [255, 255, 255 ], "pos" : [6.6435, 65.2543 ], "r" : 0.45656, "s" : 1.0, "cardData" : {"faceDown" : 0, "backIcon" : 123}, "diceData" : {"min" : 1, "max" : 6, "faces" : [123, 123, 123, 123, 123, 123] } } ] }')
+		global schema
+		self.assertFalse(Draft4Validator(schema).is_valid(data))
+
 	def test_pieceRemove(self):
 		data = json.loads('{"type" : "pieceRemove", "data" : [{"piece" : 6, "user" : 4 } ] }')
 		global schema
@@ -768,10 +794,20 @@ class TestSocketProtocolSchema(unittest.TestCase):
 		global schema
 		self.assertTrue(Draft4Validator(schema).is_valid(data))
 
+	def test_setBackground2(self):
+		data = json.loads('{"type" : "setBackground", "data" : {"icon" : 123} }')
+		global schema
+		self.assertFalse(Draft4Validator(schema).is_valid(data))
+
 	def test_disconnect(self):
 		data = json.loads('{"type" : "disconnect", "data" : {"msg" : "brb food"} }')
 		global schema
 		self.assertTrue(Draft4Validator(schema).is_valid(data))
+
+	def test_disconnect2(self):
+		data = json.loads('{"type" : "disconnect", "data" : {"msg" : 123} }')
+		global schema
+		self.assertFalse(Draft4Validator(schema).is_valid(data))
 
 	def test_listClients(self):
 		data = json.loads('{"type" : "listClients"}')
@@ -798,6 +834,11 @@ class TestSocketProtocolSchema(unittest.TestCase):
 		global schema
 		self.assertTrue(Draft4Validator(schema).is_valid(data))
 
+	def test_createDeck2(self):
+		data = json.loads('{"type" : "createDeck", "data" : [{"icon" : 123, "color" : [255, 255, 255 ], "pos" : [6.6435, 65.2543 ], "r" : 0.45656, "s" : 1.0, "static" : 0 } ] }')
+		global schema
+		self.assertFalse(Draft4Validator(schema).is_valid(data))
+
 	def test_addCardPieceToDeck(self):
 		data = json.loads('{"type" : "addCardPieceToDeck", "data" : [{"deck" : 7, "card" : 3 } ] }')
 		global schema
@@ -807,6 +848,11 @@ class TestSocketProtocolSchema(unittest.TestCase):
 		data = json.loads('{"type" : "addCardTypeToDeck", "data" : [{"deck" : 7, "card" : "/res/kingclubs.png"} ] }')
 		global schema
 		self.assertTrue(Draft4Validator(schema).is_valid(data))
+
+	def test_addCardTypeToDeck2(self):
+		data = json.loads('{"type" : "addCardTypeToDeck", "data" : [{"deck" : 7, "card" : 123} ] }')
+		global schema
+		self.assertFalse(Draft4Validator(schema).is_valid(data))
 
 	def test_drawCard(self):
 		data = json.loads('{"type" : "drawCard", "data" : [{"deck" : 7 } ] }')
@@ -833,20 +879,40 @@ class TestSocketProtocolSchema(unittest.TestCase):
 		global schema
 		self.assertTrue(Draft4Validator(schema).is_valid(data))
 
+	def test_changeHost2(self):
+		data = json.loads('{"type" : "changeHost", "data" : {"user" : 2, "msg" : 123} }')
+		global schema
+		self.assertFalse(Draft4Validator(schema).is_valid(data))
+
 	def test_announcement(self):
 		data = json.loads('{"type" : "announcement", "data" : {"msg" : "this is important"} }')
 		global schema
 		self.assertTrue(Draft4Validator(schema).is_valid(data))
+
+	def test_announcement2(self):
+		data = json.loads('{"type" : "announcement", "data" : {"msg" : 123} }')
+		global schema
+		self.assertFalse(Draft4Validator(schema).is_valid(data))
 
 	def test_changeServerInfo(self):
 		data = json.loads('{"type" : "changeServerInfo", "data" : {"name" : "coolville 2", "password" : "542512"} }')
 		global schema
 		self.assertTrue(Draft4Validator(schema).is_valid(data))
 
+	def test_changeServerInfo2(self):
+		data = json.loads('{"type" : "changeServerInfo", "data" : {"name" : 123, "password" : 123} }')
+		global schema
+		self.assertFalse(Draft4Validator(schema).is_valid(data))
+
 	def test_kickUser(self):
 		data = json.loads('{"type" : "kickUser", "data" : {"user" : 1, "msg" : "stop scribbling everywhere"} }')
 		global schema
 		self.assertTrue(Draft4Validator(schema).is_valid(data))
+
+	def test_kickUser2(self):
+		data = json.loads('{"type" : "kickUser", "data" : {"user" : 1, "msg" : 123} }')
+		global schema
+		self.assertFalse(Draft4Validator(schema).is_valid(data))
 
 	def test_clearBoard(self):
 		data = json.loads('{"type" : "clearBoard"}')
@@ -863,157 +929,10 @@ class TestSocketProtocolSchema(unittest.TestCase):
 		global schema
 		self.assertTrue(Draft4Validator(schema).is_valid(data))
 
-	#Failure Tests - still working on them
-	def test_initJoin2(self):
-		initJoin_json = '{ "type" : "initJoin", "data" : { "name" : "fred", "color" : [ 0, 255, 0 ], "gameID" : 2, "password" : "12345" } }'
-		data = json.loads(initJoin_json)
-		global schema
-		self.assertTrue(Draft4Validator(schema).is_valid(data))
-
-	def test_initHost2(self):
-		data = json.loads('{"type" : "initHost", "data" : {"name" : "sam", "color" : [255, 0, 0 ], "gameName" : "coolville", "password" : "12345"} }')
-		global schema
-		self.assertTrue(Draft4Validator(schema).is_valid(data))
-
-	def test_listGames2(self):
-		data = json.loads('{"type" : "listGames"}')
-		global schema
-		self.assertTrue(Draft4Validator(schema).is_valid(data))
-
-	def test_gameIDExists2(self):
-		data = json.loads('{"type" : "gameIDExists", "data" : {"gameID" : 3}}')
-		global schema
-		self.assertTrue(Draft4Validator(schema).is_valid(data))
-
-	def test_ping2(self):
-		data = json.loads('{"type" : "ping", "data" : {"msg" : "sequence number or something"} }')
-		global schema
-		self.assertTrue(Draft4Validator(schema).is_valid(data))
-
-	def test_chat2(self):
-		data = json.loads('{"type" : "chat", "data" : [{"msg" : "actual text here"} ] }')
-		global schema
-		self.assertTrue(Draft4Validator(schema).is_valid(data))
-
-	def test_beacon2(self):
-		data = json.loads('{"type" : "beacon", "data" : [{"pos" : [54.5435, 0.534 ] } ] }')
-		global schema
-		self.assertTrue(Draft4Validator(schema).is_valid(data))
-
-	def test_pieceTransform2(self):
-		data = json.loads('{"type" : "pieceTransform", "data" :  [{"piece" : 3, "p" : 3, "icon" : "/res/img.png", "pos" : [6.98721345, 90.6532 ], "r" : 0.45656, "s" : 1.0, "color" : [0, 0, 0 ], "static" : 1 } ] }')
-		global schema
-		self.assertTrue(Draft4Validator(schema).is_valid(data))
-
-	def test_pieceAdd2(self):
-		data = json.loads('{"type" : "pieceAdd", "data" : [{"piece" : 6, "user" : 4, "icon" : "/res/img.png", "static" : 0, "color" : [255, 255, 255 ], "pos" : [6.6435, 65.2543 ], "r" : 0.45656, "s" : 1.0, "cardData" : {"faceDown" : 0, "backIcon" : "/res/cardback.png"}, "diceData" : {"min" : 1, "max" : 6, "faces" : ["/res/dice1.png", "/res/dice2.png", "/res/dice3.png", "/res/dice4.png", "/res/dice5.png", "/res/dice6.png"] } } ] }')
-		global schema
-		self.assertTrue(Draft4Validator(schema).is_valid(data))
-
-	def test_pieceRemove2(self):
-		data = json.loads('{"type" : "pieceRemove", "data" : [{"piece" : 6, "user" : 4 } ] }')
-		global schema
-		self.assertTrue(Draft4Validator(schema).is_valid(data))
-
-	def test_setBackground2(self):
-		data = json.loads('{"type" : "setBackground", "data" : {"icon" : "/res/img/background.png"} }')
-		global schema
-		self.assertTrue(Draft4Validator(schema).is_valid(data))
-
-	def test_disconnect2(self):
-		data = json.loads('{"type" : "disconnect", "data" : {"msg" : "brb food"} }')
-		global schema
-		self.assertTrue(Draft4Validator(schema).is_valid(data))
-
-	def test_listClients2(self):
-		data = json.loads('{"type" : "listClients"}')
-		global schema
-		self.assertTrue(Draft4Validator(schema).is_valid(data))
-
-	def test_changeColor2(self):
-		data = json.loads('{"type" : "changeColor", "data" : {"color" : [0, 255, 0 ] } }')
-		global schema
-		self.assertTrue(Draft4Validator(schema).is_valid(data))
-
-	def test_rollDice2(self):
-		data = json.loads('{"type" : "rollDice", "data" : [{"piece" : 12 } ] }')
-		global schema
-		self.assertTrue(Draft4Validator(schema).is_valid(data))
-
-	def test_flipCard2(self):
-		data = json.loads('{"type" : "flipCard", "data" : [{"piece" : 5 } ] }')
-		global schema
-		self.assertTrue(Draft4Validator(schema).is_valid(data))
-
-	def test_createDeck2(self):
-		data = json.loads('{"type" : "createDeck", "data" : [{"icon" : "/res/deckicon.png", "color" : [255, 255, 255 ], "pos" : [6.6435, 65.2543 ], "r" : 0.45656, "s" : 1.0, "static" : 0 } ] }')
-		global schema
-		self.assertTrue(Draft4Validator(schema).is_valid(data))
-
-	def test_addCardPieceToDeck2(self):
-		data = json.loads('{"type" : "addCardPieceToDeck", "data" : [{"deck" : 7, "card" : 3 } ] }')
-		global schema
-		self.assertTrue(Draft4Validator(schema).is_valid(data))
-
-	def test_addCardTypeToDeck2(self):
-		data = json.loads('{"type" : "addCardTypeToDeck", "data" : [{"deck" : 7, "card" : "/res/kingclubs.png"} ] }')
-		global schema
-		self.assertTrue(Draft4Validator(schema).is_valid(data))
-
-	def test_drawCard2(self):
-		data = json.loads('{"type" : "drawCard", "data" : [{"deck" : 7 } ] }')
-		global schema
-		self.assertTrue(Draft4Validator(schema).is_valid(data))
-
-	def test_createPrivateZone2(self):
-		data = json.loads('{"type" : "createPrivateZone", "data" : [{"color" : [255, 0, 0 ], "pos" : [1.045, -8.53 ], "size" : [7, 2 ], "r" : 3.14159265 } ] }')
-		global schema
-		self.assertTrue(Draft4Validator(schema).is_valid(data))
-
-	def test_removePrivateZone2(self):
-		data = json.loads('{"type" : "removePrivateZone", "data" : [{"id" : 3 } ] }')
-		global schema
-		self.assertTrue(Draft4Validator(schema).is_valid(data))
-
-	def test_drawScribble2(self):
-		data = json.loads('{"type" : "drawScribble", "data" : [{"ttl" : 10, "points" : [[-6.573456, 1.54352 ], [-6.4652, 1.462453 ], [-6.4642, 1.41877 ] ] } ] }')
-		global schema
-		self.assertTrue(Draft4Validator(schema).is_valid(data))
-
-	def test_changeHost2(self):
-		data = json.loads('{"type" : "changeHost", "data" : {"user" : 2, "msg" : "he paid me $5 to make him host"} }')
-		global schema
-		self.assertTrue(Draft4Validator(schema).is_valid(data))
-
-	def test_announcement2(self):
-		data = json.loads('{"type" : "announcement", "data" : {"msg" : "this is important"} }')
-		global schema
-		self.assertTrue(Draft4Validator(schema).is_valid(data))
-
-	def test_changeServerInfo2(self):
-		data = json.loads('{"type" : "changeServerInfo", "data" : {"name" : "coolville 2", "password" : "542512"} }')
-		global schema
-		self.assertTrue(Draft4Validator(schema).is_valid(data))
-
-	def test_kickUser2(self):
-		data = json.loads('{"type" : "kickUser", "data" : {"user" : 1, "msg" : "stop scribbling everywhere"} }')
-		global schema
-		self.assertTrue(Draft4Validator(schema).is_valid(data))
-
-	def test_clearBoard2(self):
-		data = json.loads('{"type" : "clearBoard"}')
-		global schema
-		self.assertTrue(Draft4Validator(schema).is_valid(data))
-
-	def test_closeServer2(self):
-		data = json.loads('{"type" : "closeServer"}')
-		global schema
-		self.assertTrue(Draft4Validator(schema).is_valid(data))
-
 	def test_loadBoardState2(self):
-		data = json.loads('{"type" : "loadBoardState", "data" : {"background" : "/res/img/background.png", "privateZones" : [{"pos" : [5.426, -7.234 ], "size" : [2, 5 ], "r" : 0, "color" : [255, 0, 0 ] } ], "pieces" : [{"pos" : [5.734, 3.64 ], "icon" : "static/img/crown.png", "color" : [255, 0, 0 ], "static" : 0, "r" : 3.14159, "s" : 1.0, "cardData" : {"faceDown" : 0, "backIcon" : "/res/cardback.png"}, "diceData" : {"min" : 1, "max" : 6, "faces" : ["/res/dice1.png", "/res/dice2.png", "/res/dice3.png", "/res/dice4.png", "/res/dice5.png", "/res/dice6.png"] } } ] } }')
+		data = json.loads('{"type" : "loadBoardState", "data" : {"background" : 123, "privateZones" : [{"pos" : [5.426, -7.234 ], "size" : [2, 5 ], "r" : 0, "color" : [255, 0, 0 ] } ], "pieces" : [{"pos" : [5.734, 3.64 ], "icon" : 123, "color" : [255, 0, 0 ], "static" : 0, "r" : 3.14159, "s" : 1.0, "cardData" : {"faceDown" : 0, "backIcon" : 123}, "diceData" : {"min" : 1, "max" : 6, "faces" : [123, 123, 123, 123, 123, 123] } } ] } }')
 		global schema
-		self.assertTrue(Draft4Validator(schema).is_valid(data))
+		self.assertFalse(Draft4Validator(schema).is_valid(data))
 
 if __name__ == '__main__':
     unittest.main()
