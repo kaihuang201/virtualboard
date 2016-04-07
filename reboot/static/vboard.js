@@ -18,6 +18,11 @@ var VBoard = VBoard || {};
 
 	vb.doubleClickTime = 250;
 
+	vb.testImageURL = "http://i.imgur.com/KUALoHO.jpg";
+
+	//number of static meshes that are not pieces
+	vb.staticMeshCount = 0;
+
 	vb.quickStart = function () {
 		vb.limboIO.hostGame("bill", [0, 0, 255], "chess deathmatch", "12345");
 		vb.quickStarted = true;
@@ -101,6 +106,13 @@ var VBoard = VBoard || {};
 
 			vb.board.background = BABYLON.Mesh.CreatePlane("background", 50, scene);
 			vb.board.background.position = new BABYLON.Vector3(0, 0, 100);
+			vb.board.background.isPickable = false;
+			vb.staticMeshCount++;
+
+			vb.board.selectionBox = BABYLON.Mesh.CreatePlane("selection box", 1, scene);
+			vb.board.selectionBox.position.z = 100;
+			vb.board.selectionBox.subMeshes = [];
+			vb.staticMeshCount++;
 
 			return scene;
 		})();
@@ -125,6 +137,7 @@ var VBoard = VBoard || {};
 		vb.frame++;
 		vb.inputs.processInputs(dt);
 		vb.board.movePieces(dt);
+		vb.engine.setDepthWrite(false);
 		vb.scene.render();
 	};
 })(VBoard);

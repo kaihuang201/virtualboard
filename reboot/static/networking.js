@@ -246,6 +246,9 @@ var VBoard = VBoard || {};
 					pieceData.push({
 						"piece" : id[i]
 					});
+
+					//since we are going to remove the piece, we cancel pending moves
+					this.moveBuffer.remove(id[i]);
 				}
 			} else {
 				var pieceData = [
@@ -253,6 +256,9 @@ var VBoard = VBoard || {};
 						"piece" : id
 					}
 				];
+
+				//since we are going to remove the piece, we cancel pending moves
+				this.moveBuffer.remove(id);
 			}
 			var data = {
 				"type" : "pieceRemove",
@@ -539,6 +545,9 @@ var VBoard = VBoard || {};
 						"deck" : deckID[i],
 						"card" : cardID[i]
 					});
+
+					//since we are going to remove the piece, we cancel pending moves
+					this.moveBuffer.remove(cardID[i]);
 				}
 			} else {
 				var pieceData = [
@@ -547,6 +556,9 @@ var VBoard = VBoard || {};
 						"card" : cardID
 					}
 				];
+
+				//since we are going to remove the piece, we cancel pending moves
+				this.moveBuffer.remove(cardID);
 			}
 			var data = {
 				"type" : "addCardToDeck",

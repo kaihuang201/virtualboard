@@ -27,6 +27,7 @@ var VBoard = VBoard || {};
 		unknownTexture: null,
 
 		background: null,
+		selectionBox: null,
 
 		//methods
 
@@ -120,36 +121,76 @@ var VBoard = VBoard || {};
 			vb.selection.computeBoxSelection();
 		},
 
+		verifySceneIndex: function (index, piece) {
+			var meshes = vb.scene.meshes;
+			index += vb.staticMeshCount;
+
+			if(index < meshes.length) {
+				var mesh = meshes[index];
+
+				if(mesh && mesh.piece && mesh.piece.id == piece.id) {
+					return index;
+				}
+			}
+
+			for(var i=0; i<meshes.length; i++) {
+				var mesh = meshes[i];
+
+				if(mesh && mesh.piece && mesh.piece.id == piece.id) {
+					return i;
+				}
+			}
+			return -1;
+		},
+
 		//moves a piece to the back of the board (highest z index)
 		pushToBack: function (piece) {
 			var index = this.ourIndexOf(piece);
+			var sceneIndex = this.verifySceneIndex(index, piece);
+			var mesh = vb.scene.meshes[sceneIndex];
 
 			for(var i = index; i > 0; i--) {
 				var p = this.pieces[i-1];
 				this.pieceHash[p.id] = i;
 				this.pieces[i] = p;
 				p.mesh.position.z = this.getZIndex(i);
+
+				//also update babylon mesh ordering
+				var m = vb.scene.meshes[sceneIndex - 1];
+				vb.scene.meshes[sceneIndex] = m;
+				sceneIndex--;
 			}
 			this.pieceHash[piece.id] = 0;
 			this.pieces[0] = piece;
 			piece.mesh.position.z = this.getZIndex(0);
+
+			vb.scene.meshes[sceneIndex] = mesh;
 		},
 
 		//moves a piece to the front of the board (lowest z index)
 		bringToFront: function (piece) {
 			var index = this.ourIndexOf(piece);
+			var sceneIndex = this.verifySceneIndex(index, piece);
+			var mesh = vb.scene.meshes[sceneIndex];
 
 			for(var i = index; i < this.pieces.length-1; i++) {
 				var p = this.pieces[i+1];
 				this.pieceHash[p.id] = i;
 				this.pieces[i] = p;
 				p.mesh.position.z = this.getZIndex(i);
+
+				//also update babylon mesh ordering
+				var m = vb.scene.meshes[sceneIndex + 1];
+				vb.scene.meshes[sceneIndex] = m;
+				sceneIndex++;
 			}
 
 			var end = this.pieces.length-1;
 			this.pieceHash[piece.id] = end;
 			this.pieces[end] = piece;
 			piece.mesh.position.z = this.getZIndex(end);
+
+			vb.scene.meshes[sceneIndex] = mesh;
 		},
 
 		//toggles whether a piece should be static or not
@@ -173,7 +214,7 @@ var VBoard = VBoard || {};
 			if(pieceData.hasOwnProperty("color")) {
 				var c = pieceData["color"];
 				piece.color = new BABYLON.Color3(c[0]/255, c[1]/255, c[2]/255);
-				piece.mesh.material.diffuseColor = piece.color;
+				piece.mesh.material.mainMaterial.diffuseColor = piece.color;
 			}
 
 			if(pieceData.hasOwnProperty("pos")) {
@@ -308,6 +349,7 @@ var VBoard = VBoard || {};
 				on = true;
 			}
 			piece.outlined = on;
+			//piece.mesh.showBoundingBox = on;
 
 			if(on) {
 				piece.mesh.outlineColor = color;
@@ -320,6 +362,28 @@ var VBoard = VBoard || {};
 			}
 		},
 
+		drawSelectionBox: function (corner1, corner2) {
+			var up = vb.camera.upVector;
+			var centerX = (corner1.x + corner2.x)/2;
+			var centerY = (corner1.y + corner2.y)/2;
+			var screenCorner1 = this.rotateToCameraSpace(corner1);
+			var screenCorner2 = this.rotateToCameraSpace(corner2);
+			var width = Math.abs(screenCorner1.x - screenCorner2.x);
+			var height = Math.abs(screenCorner1.y - screenCorner2.y);
+
+			//TODO: FINISH
+			this.selectionBox.rotation.z = -Math.atan2(up.x, up.y);
+			this.selectionBox.position.x = centerX;
+			this.selectionBox.position.y = centerY;
+			this.selectionBox.scaling.x = width;
+			this.selectionBox.scaling.y = height;
+			this.selectionBox.showBoundingBox = true;
+		},
+
+		hideSelectionBox: function () {
+			this.selectionBox.showBoundingBox = false;
+		},
+
 		//takes JSON formatted data from socket handler
 		generateNewPiece: function (pieceData) {
 			var piece = {};
@@ -328,12 +392,30 @@ var VBoard = VBoard || {};
 			var c = pieceData["color"];
 			piece.color = new BABYLON.Color3(c[0]/255, c[1]/255, c[2]/255);
 
-			var plane = BABYLON.Mesh.CreatePlane("plane", piece.size, vb.scene);
-			var material = new BABYLON.StandardMaterial("std", vb.scene);
+			var plane = BABYLON.Mesh.CreatePlane("plane", 1.0, vb.scene);
+			plane.scaling.y = piece.size;
+			plane.scaling.x = piece.size;
+			var subMaterial = new BABYLON.StandardMaterial("std", vb.scene);
+			var infoMaterial = new BABYLON.StandardMaterial("std", vb.scene);
+			var infoTexture = new BABYLON.DynamicTexture("info", 512, vb.scene, true);
+			infoTexture.hasAlpha = true;
+			infoMaterial.diffuseTexture = infoTexture;
+			infoMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+			infoMaterial.emissiveColor = new BABYLON.Color3(1, 1, 1);
+			var material = new BABYLON.MultiMaterial("multi", vb.scene);
+			material.subMaterials.push(subMaterial);
+			material.subMaterials.push(infoMaterial);
+			material.mainMaterial = subMaterial;
+			material.infoTexture = infoTexture;
+
 			plane.position = new BABYLON.Vector3(pieceData["pos"][0], pieceData["pos"][1], 0);
 			plane.rotation.z = pieceData["r"];
 			plane.piece = piece;
 			plane.material = material;
+
+			plane.subMeshes = [];
+			plane.subMeshes.push(new BABYLON.SubMesh(0, 0, 4, 0, 6, plane));
+			plane.subMeshes.push(new BABYLON.SubMesh(1, 0, 4, 0, 6, plane));
 
 			//position - last server confirmed position		
 			//targetPosition - the same as position except for when the local user is moving the piece		
@@ -349,6 +431,7 @@ var VBoard = VBoard || {};
 			piece.isDie = false;
 			piece.lastTrigger = 0;
 			this.setIcon(piece, pieceData["icon"]);
+			this.setInfo(piece, "");
 
 			if(pieceData.hasOwnProperty("cardData")) {
 				piece.isCard = true;
@@ -473,6 +556,13 @@ var VBoard = VBoard || {};
 			return new BABYLON.Vector2(totalX, totalY);
 		},
 
+		rotateToCameraSpace: function (pos) {
+			var up = vb.camera.upVector;
+			var x = pos.x * up.y - pos.y * up.x;
+			var y = pos.x * up.x + pos.y * up.y;
+			return {"x" : x, "y" : y};
+		},
+
 		setBackground: function (icon) {
 			//TODO: set background
 			var backgroundMaterial = new BABYLON.StandardMaterial("backgroundMat", vb.scene);
@@ -509,7 +599,7 @@ var VBoard = VBoard || {};
 			piece.icon = icon;
 
 			if(this.textureMap.hasOwnProperty(icon)) {
-				piece.mesh.material.diffuseTexture = this.textureMap[icon];
+				piece.mesh.material.mainMaterial.diffuseTexture = this.textureMap[icon];
 				vb.board.adjustPieceWidth(piece);
 			} else {
 				if(!this.pendingTextures.hasOwnProperty(icon)) {
@@ -525,7 +615,7 @@ var VBoard = VBoard || {};
 							if(vb.board.pendingTextures[icon].hasOwnProperty(pieceID)) {
 								var index = vb.board.pieceHash[pieceID];
 								var p = vb.board.pieces[index];
-								p.mesh.material.diffuseTexture = texture;
+								p.mesh.material.mainMaterial.diffuseTexture = texture;
 								vb.board.adjustPieceWidth(p);
 							}
 						}
@@ -543,12 +633,12 @@ var VBoard = VBoard || {};
 					this.unknownTexture = new BABYLON.Texture("/static/img/unknown.png", vb.scene);
 					this.unknownTexture.hasAlpha = true;
 				}
-				piece.mesh.material.diffuseTexture = this.unknownTexture;
+				piece.mesh.material.mainMaterial.diffuseTexture = this.unknownTexture;
 			}
 		},
 
 		adjustPieceWidth: function (piece) {
-			var t = piece.mesh.material.diffuseTexture._texture;
+			var t = piece.mesh.material.mainMaterial.diffuseTexture._texture;
 			//for some bizzare reason, not using the intermediate ratio variable makes this not work
 			ratio = piece.mesh.scaling.y * t._baseWidth / t._baseHeight;
 			piece.mesh.scaling.x = ratio;
@@ -650,7 +740,48 @@ var VBoard = VBoard || {};
 			//TODO: remove text when only one is remaining
 			//TODO: figure out how to overlay text on actual background
 			piece.numCards = newCount;
+
+			if(newCount > 1) {
+				this.setInfo(piece, newCount.toString());
+			} else {
+				this.setInfo(piece, "");
+			}
 			//this.mesh.material.diffuseTexture.drawText(this.numCards, null, 50 * this.size, "bold 128px Arial", "rgba(255,255,255,1.0)", "black");
+		},
+
+		//TODO: BARELY WORKS, NEEDS OVERHAUL
+		setInfo: function (piece, info) {
+			//http://www.html5gamedevs.com/topic/8958-dynamic-texure-drawtext-attributes-get-text-to-wrap/?do=findComment&comment=62014
+			function wrapText(context, text, x, y, maxWidth, lineHeight) {
+				var words = text.split(' ');
+				var line = '';
+				for(var n = 0; n < words.length; n++) {
+					var testLine = line + words[n] + ' ';
+					var metrics = context.measureText(testLine);
+					var testWidth = metrics.width;
+					if (testWidth > maxWidth && n > 0) {
+						context.fillText(line, x, y);
+						line = words[n] + ' ';
+						y += lineHeight;
+					} else {
+						line = testLine;
+					}
+				}
+				context.fillText(line, x, y);
+			}
+			var tex = piece.mesh.material.infoTexture;
+			var context = tex.getContext();
+			context.clearRect(0, 0, 512, 512);
+			context.font = "140px verdana";
+			context.save();
+			context.textAlign = "start";
+			context.shadowColor = "white";
+			context.shadowOffsetY = 5;
+			context.shadowOffsetX = 5;
+			wrapText(context, info, 256, 128, 512, 512);
+			context.restore();
+			tex.update();
+			//tex.drawText(info, 0, 300, "140px verdana", "black", "transparent");
 		},
 
 		doubleClick: function(piece) {

@@ -303,13 +303,17 @@ var VBoard = VBoard || {};
 				for (var j = listOfGames.length - 1; j >= 0; j--) {
 					var lobbyID = listOfGames[j]["id"];
 					var lobbyName = listOfGames[j]["name"];
-					var singleLobby = '<a id="lobby-' + listOfGames[j]["id"].toString() + '" class="list-group-item"><span class="badge badge-default pull-right">' + listOfGames[j]["players"] + ' ' + ((listOfGames[j]["players"]==1)?'player':'players')+ ' online</span><h2><i class="fa fa-gamepad"></i>  ' + listOfGames[j]["name"] + (!listOfGames[j]["password"]?' <i class="fa fa-lock"></i>':'') + '</h2></a>'
+					var singleLobby = '<a id="lobby-' + listOfGames[j]["id"].toString() + '" class="list-group-item"><span class="badge badge-default pull-right">' + listOfGames[j]["players"] + ' ' + ((listOfGames[j]["players"]==1)?'player':'players')+ ' online</span><h2><i class="fa fa-gamepad"></i>  ' + listOfGames[j]["name"] + (listOfGames[j]["password"]?' <i class="fa fa-lock"></i>':'') + '</h2></a>'
 					$("#lobby-list > #inner").append(singleLobby);
 					var currentLobby = $("#lobby-" + listOfGames[j]["id"].toString());
 					currentLobby.unbind();
 
 					// this line fixes the infamous loop closure thing
-					func[j] = (function(a,b,c){currentLobby.on("click",function() {vb.interface.joinLobbyRequest(a,b,c);});})(lobbyID,lobbyName,!listOfGames[j]['password']);
+					func[j] = (function (a,b,c) {
+						currentLobby.on("click",function () {
+							vb.interface.joinLobbyRequest(a,b,c);
+						});
+					})(lobbyID, lobbyName, listOfGames[j]['password']);
 
 					// currentLobby.on("click",function() {vb.interface.joinLobbyRequest(lobbyID,lobbyName);});
 				}

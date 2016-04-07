@@ -43,7 +43,7 @@ class Game:
 			"id" : self.game_id,
 			"name" : self.name,
 			"players" : len(self.clients),
-			"password" : 0 if self.password else 1
+			"password" : 1 if self.password else 0
 		}
 		return data
 
@@ -338,7 +338,7 @@ class Game:
 		self.message_all(response)
 
 	def pieceTransform(self, client, pieces):
-		#client.spam_amount += 0.1 + 0.1*len(pieces)
+		client.spam_amount += 0.1 + 0.1*len(pieces)
 		response_data = []
 		colored_response = dict()
 		remove_response = dict()
@@ -424,6 +424,7 @@ class Game:
 			if self.movebuffer.flush_timeout is None:
 				self.movebuffer.flush_timeout = tornado.ioloop.IOLoop.instance().add_callback(self.end_move_timeout)
 		else:
+			client.spam_amount += 0.4 + 0.4*len(pieces)
 			response = {
 				"type" : "pt",
 				"data" : response_data
@@ -615,7 +616,7 @@ class Game:
 			self.message_all(decktransform_response)
 
 	def flipCard(self, client, pieces):
-		client.spam_amount += 0.5 + 0.5*len(pieces)
+		client.spam_amount += 0.5 + 0.25*len(pieces)
 		response_data = []
 		for pieceData in pieces:
 			piece_id = pieceData["piece"]
