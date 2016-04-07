@@ -346,8 +346,7 @@ var VBoard = VBoard || {};
 			// enable chat
 			vb.interface.chatInit();
 
-			$("#chatbox-msg").focus(function(){VBoard.inputs.chatBoxActivated = true});
-			$("#chatbox-msg").blur(function(){VBoard.inputs.chatBoxActivated = false});
+			
 			// bind enter key to focus chat
 			$(document).keypress(function(event){
 				if (event.keyCode == 13) {
@@ -506,8 +505,9 @@ var VBoard = VBoard || {};
 				$("#chatbox-inbox").fadeOut("slow");
 			});
 
-
-			vb.interface.setInputFocusAndEnterKeyCallback("#chatbox-msg","#send-chat",false);
+			$("#chatbox-msg").focus(function(){VBoard.inputs.chatBoxActivated = true});
+			$("#chatbox-msg").blur(function(){VBoard.inputs.chatBoxActivated = false});
+			// vb.interface.setInputFocusAndEnterKeyCallback("#chatbox-msg","#send-chat",false);
 		},
 
 		chatIncomingMsg: function (msg,needDecoding) {

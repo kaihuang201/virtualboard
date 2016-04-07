@@ -21,7 +21,7 @@ Pre-game
 In-Game/General
 ==========
  x - when getting multiple errors from the server, they should all stack in some kind of scrollable display - this includes errors received while an old error is still up
- o - we need typing in the chat to not register key events in the game
+ x - we need typing in the chat to not register key events in the game
  o - sending a chat message maybe should cause the text box to lose focus, but maybe not idk (comment: I will go for the way it is now)
    - chat box view needs to go top to bottom and not be a fixed size
  o - hit enter to bring chat box into focus
