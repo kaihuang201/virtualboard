@@ -455,6 +455,7 @@ var VBoard = VBoard || {};
 			piece.isCard = false;
 			piece.isDie = false;
 			piece.lastTrigger = 0;
+			piece.private = pieceData["private"] == 1;
 			this.setIcon(piece, pieceData["icon"]);
 			this.setInfo(piece, "");
 

@@ -667,6 +667,7 @@ class Game:
 
 	def flipCard(self, client, pieces):
 		client.spam_amount += 0.5 + 0.25*len(pieces)
+		colored_response_data = {}
 		response_data = []
 		for pieceData in pieces:
 			piece_id = pieceData["piece"]
@@ -675,20 +676,37 @@ class Game:
 			if result is None:
 				self.send_error(client, "invalid deck: " + str(piece_id))
 			else:
-				response_data.append({
-					"user" : client.user_id,
-					"piece" : piece_id,
-					"icon" : result
-				})
+				color = self.board_state.get_piece(piece_id).color
+				if color == WHITE:
+					response_data.append({
+						"user" : client.user_id,
+						"piece" : piece_id,
+						"icon" : result
+					})
+				else:
+					if not colored_response_data.has_key(str(color)):
+						colored_response_data[str(color)] = []
 
-		if len(response_data) == 0:
-			return
+					colored_response_data[str(color)].append({
+						"user" : client.user_id,
+						"piece" : piece_id,
+						"icon" : result
+					})
 
-		response = {
-			"type" : "flipCard",
-			"data" : response_data
-		}
-		self.message_all(response)
+		if len(response_data) > 0:
+			response = {
+				"type" : "flipCard",
+				"data" : response_data
+			}
+			self.message_all(response)
+
+		if len(colored_response_data) > 0:
+			for color, response_data in colored_response_data:
+				response = {
+					"type" : "flipCard",
+					"data" : response_data
+				}
+				self.message_color(eval(color), response)
 
 	def addCardToDeck(self, client, pieces):
 		#TODO: spam protection needs to be more advanced here

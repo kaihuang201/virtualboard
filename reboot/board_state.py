@@ -19,7 +19,7 @@ class Piece:
 		self.size = pieceData["s"]
 		self.in_private_zone = False
 		self.zone = None
-		self.always_private = False
+		self.always_private = pieceData["private"] == 1
 
 		self.isCard = False
 		self.isDie = False
@@ -65,7 +65,8 @@ class Piece:
 			"color" : self.color,
 			"static" : 1 if self.static else 0,
 			"r" : self.rotation,
-			"s" : self.size
+			"s" : self.size,
+			"private" : 1 if self.always_private else 0
 		}
 
 		if self.isCard:
@@ -149,6 +150,7 @@ class BoardState:
 			pieces = zone.pieces
 
 			for piece in pieces:
+				piece.in_private_zone = False
 				if not piece.always_private:
 					piece.color = WHITE
 
@@ -172,15 +174,12 @@ class BoardState:
 				# Typically we will reset the piece's color to white until we determine if it is
 				# stil in a private zone, however if it is a permanently private piece, we do not
 				# reset the color 
-				if not piece.always_private:
-					piece.color = WHITE
-					if piece.zone != None:
-						piece.zone.remove_piece(piece)
+				if piece.zone != None:
+					piece.zone.remove_piece(piece)
 
 				for zone in self.private_zones.itervalues():
 					if zone.contains(piece.pos[0], piece.pos[1]):
 						piece.in_private_zone = True
-						piece.color = zone.color
 						zone.add_piece(piece)
 
 				#only for positional changes do we bring the piece to the front
@@ -199,6 +198,7 @@ class BoardState:
 
 			if "color" in pieceData and not piece.in_private_zone:
 				piece.color = pieceData["color"]
+				piece.always_private = True
 
 			if "icon" in pieceData:
 				piece.icon = pieceData["icon"]

@@ -1,5 +1,7 @@
 import math
 
+WHITE = [255, 255, 255]
+
 class PrivateZone:
     
     def __init__(self, x, y, width, height, rotation, color):
@@ -50,7 +52,10 @@ class PrivateZone:
     def add_piece(self, piece):
         self.pieces.add(piece)
         piece.zone = self
+        piece.color = self.color
 
     def remove_piece(self, piece):
         self.pieces.remove(piece)
         piece.zone = None
+        if not piece.always_private:
+            piece.color = WHITE
