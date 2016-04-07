@@ -1,7 +1,7 @@
 var VBoard = VBoard || {};
 (function (vb) {
 	vb.menu = {
-		privateZoneColorSelected: [255, 255, 255],
+		privateZoneColorSelected: null,
 
 		init: function () {
 			//TODO: menu should not be active until we are in a game session
@@ -163,10 +163,22 @@ var VBoard = VBoard || {};
 			});
 
 			$("#submit-add-private-zone").click(function () {
+				if (vb.menu.privateZoneColorSelected == null) {
+					var warning = "You must select a color for the private zone";
+					if (($("#template-modal").data('bs.modal') || {}).isShown) {
+						vb.interface.setTemplateModalAlert(warning);
+					}
+					else {
+						vb.interface.alertModal(warning,0);
+					}
+					return;
+				}
+
 				var selectedWidth = $("#add-private-zone-width").val();
 				var selectedHeight = $("#add-private-zone-height").val();
 
 				vb.inputs.prepAddPrivateZone(selectedWidth, selectedHeight, vb.menu.privateZoneColorSelected);
+				vb.menu.privateZoneColorSelected = null;
 
 				$("#add-private-zone-modal").modal("toggle");
 			});
