@@ -31,17 +31,23 @@ var VBoard = VBoard || {};
 
 		gridConfig: {
 			enabled: false,
-			scale: 10,
+			scale: 2,
 			aspect: 1, // height / width
 			originX: 0, // grind origin in world coordinates
 			originY: 0,
-			sensitivity: 0.5
+			sensitivity: 1 // Snap only if the sqr_dist between the piece and the grid point is below this value
 		},
 
 		snapPieceToGrid : function(piece) {
 			closestGridPos = this.getClosestGridPos(piece.position.x, piece.position.y);
 			console.log(closestGridPos);
-			vb.sessionIO.movePiece(piece.id, closestGridPos.x, closestGridPos.y);
+			
+			sqr_dist = (piece.position.x - closestGridPos.x) * (piece.position.x - closestGridPos.x) +
+			        (piece.position.y - closestGridPos.y) * (piece.position.y - closestGridPos.y);
+			
+			if(sqr_dist < this.gridConfig.sensitivity) {
+			    vb.sessionIO.movePiece(piece.id, closestGridPos.x, closestGridPos.y);
+			}
 		},
 
 		getClosestGridPos : function(pieceX, pieceY) {
