@@ -33,8 +33,8 @@ var VBoard = VBoard || {};
 			enabled: false,
 			scale: 2,
 			aspect: 1, // height / width
-			originX: 0, // grind origin in world coordinates
-			originY: 0,
+			originX: 1, // grind origin in world coordinates
+			originY: 1,
 			sensitivity: 1 // Snap only if the sqr_dist between the piece and the grid point is below this value
 		},
 
