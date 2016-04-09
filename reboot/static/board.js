@@ -580,7 +580,10 @@ var VBoard = VBoard || {};
 					this.removePrivateZone(id);
 				}
 			}
-			vb.board.background = null;
+			if(vb.board.background){
+				vb.board.background.material.alpha = 0;
+			}
+			
 		},
 
 		getCenter: function () {
