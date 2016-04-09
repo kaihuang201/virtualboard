@@ -1,11 +1,15 @@
 QUnit.module("SetBackgroundTests", function(hooks) {
 
-    hooks.beforeEach(function (assert) {
+    VBoard.javascriptInit();
+    VBoard.interface.init();
+    VBoard.menu.init();
 
+    hooks.beforeEach(function (assert) {
+        
     });
 
     hooks.afterEach(function(assert) {
-        VBoard.board.clearBoard();
+
     });
 
     QUnit.test("Testing background on init", function(assert) {
@@ -21,8 +25,9 @@ QUnit.module("SetBackgroundTests", function(hooks) {
                 numBackgrounds++;
             });
         });
-        console.log(numBackgrounds);
-        assert.equal(numBackgrounds, 19, "Expect the number of backgrounds to be 19");
+
+        //cant do asynchronous calls with QUNIT... This test aint gonna fly
+        assert.equal(VBoard.board.backgroundNameMap.length, 19, "Expect the number of backgrounds to be 19");
     });
 
     QUnit.test("Testing set background from null", function(assert) {
@@ -47,7 +52,7 @@ QUnit.module("SetBackgroundTests", function(hooks) {
 
         VBoard.board.clearBoard();
 
-        assert.equal(VBoard.board.background, null, "Expect the background to be null");
+        assert.equal(VBoard.board.background.material.alpha, 0, "Expect the background to be transparent");
     });
 
 });
