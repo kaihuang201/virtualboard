@@ -217,3 +217,8 @@ class IconProxyHandler(tornado.web.RequestHandler):
 	@tornado.web.asynchronous
 	def get(request):
 		pass
+
+class TestHandler(tornado.web.RequestHandler):
+	@tornado.web.asynchronous
+	def get(request):
+		request.render("static/test/runalltests.html")
