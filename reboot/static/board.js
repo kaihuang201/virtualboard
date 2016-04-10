@@ -580,10 +580,8 @@ var VBoard = VBoard || {};
 					this.removePrivateZone(id);
 				}
 			}
-			if(vb.board.background){
-				vb.board.background.material.alpha = 0;
-			}
-			
+			//bad practice, probably leaks memory, oh well
+			this.setBackground("");
 		},
 
 		getCenter: function () {

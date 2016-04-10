@@ -9,6 +9,7 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys as keys
 from selenium.webdriver.common.by import By as by
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver import ActionChains
 from selenium.webdriver.support.color import Color
@@ -381,6 +382,36 @@ class InterfaceTest(unittest.TestCase):
 		self.move_to_canvas_position(0, -4, canavs)
 		ActionChains(InterfaceTest.driver).release().perform()
 		wait.until(IntefaceTest.javascript_to_be("return VBoard.testing_subdeck.numCards;", 52))
+
+	def select_background(self, background):
+		driver = InterfaceTest.driver
+		wait = InterfaceTest.wait
+
+		side_hover = driver.find_element_by_id("viewMenuHover")
+		ActionChains(InterfaceTest.driver).move_to_element(side_hover).perform()
+		background_button = wait.until(ec.element_to_be_clickable((by.XPATH, "//*[contains(text(), 'Change Background')]")))
+		background_button.click()
+		background_list = wait.until(ec.element_to_be_clickable((by.ID, "change-background-list")))
+		select = Select(background_list)
+		select.select_by_visible_text(background)
+		driver.find_element_by_id("submit-change-background").click()
+		wait.until(ec.invisibility_of_element_located((by.ID, "template-modal")))
+
+	def test_set_background(self):
+		driver = InterfaceTest.driver
+		wait = InterfaceTest.wait
+		canvas = self.create_lobby()
+		driver = InterfaceTest.driver
+		wait = InterfaceTest.wait
+
+		#set background
+		self.select_background("Noodles")
+		wait.until(InterfaceTest.javascript_to_be("return VBoard.board.background.material.diffuseTexture.url;", "/static/img/backgrounds/Noodles.jpg"))
+
+		#change again
+		self.select_background("Bacon")
+		wait.until(InterfaceTest.javascript_to_be("return VBoard.board.background.material.diffuseTexture.url == \"/static/img/backgrounds/Noodles.jpg\";", False))
+		self.assertEqual(driver.execute_script("return VBoard.board.background.material.diffuseTexture.url;"), "/static/img/backgrounds/Bacon.jpg")
 
 
 if __name__ == '__main__':
