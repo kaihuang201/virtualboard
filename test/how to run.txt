@@ -1,0 +1,11 @@
+How to run the selenium tests
+1. pip install selenium
+2. Run the following depending on your OS:
+	mac:
+		java -Dwebdriver.chrome.driver=chromedriver_mac -jar selenium-server-standalone-2.48.2.jar
+	linux:
+		java -Dwebdriver.chrome.driver=chromedriver_linux -jar selenium-server-standalone-2.48.2.jar
+	windows:
+		go to step 3
+3. python test_interface.py
+4. Check to make sure that the selenium server closed (will only close automatically for windows)

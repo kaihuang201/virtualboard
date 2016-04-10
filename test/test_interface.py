@@ -47,7 +47,7 @@ class InterfaceTest(unittest.TestCase):
 
 	@classmethod
 	def setUpClass(cls):
-		InterfaceTest.process = subprocess.Popen(["java", "-Dwebdriver.chrome.driver=res/chromedriver.exe", "-jar", "selenium-server-standalone-2.48.2.jar"]);
+		InterfaceTest.process = subprocess.Popen(["java", "-Dwebdriver.chrome.driver=chromedriver.exe", "-jar", "selenium-server-standalone-2.48.2.jar"]);
 
 	@classmethod
 	def tearDownClass(cls):
