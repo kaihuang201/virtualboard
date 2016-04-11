@@ -437,8 +437,8 @@ class InterfaceTest(unittest.TestCase):
 		self.drag_from_to(1, -5, 1.5, -3.5, canvas)
 
 		self.move_to_canvas_position(1, -3, canvas)
-		wait.until(js("return VBoard.inputs.getPieceUnderMouse().position.x;", 1))
-		wait.until(js("return VBoard.inputs.getPieceUnderMouse().position.y;", -3))
+		wait.until(js("return VBoard.inputs.getPieceUnderMouse().mesh.position.x;", 1))
+		wait.until(js("return VBoard.inputs.getPieceUnderMouse().mesh.position.y;", -3))
 
 	def check_upload_piece_alert(self, imageURL):
 		driver = InterfaceTest.driver
