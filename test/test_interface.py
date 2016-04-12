@@ -413,6 +413,9 @@ class InterfaceTest(unittest.TestCase):
 		wait.until(InterfaceTest.javascript_to_be("return VBoard.board.background.material.diffuseTexture.url == \"/static/img/backgrounds/Noodles.jpg\";", False))
 		self.assertEqual(driver.execute_script("return VBoard.board.background.material.diffuseTexture.url;"), "/static/img/backgrounds/Bacon.jpg")
 
+#	def test_private_zone(self):
+#		pass
+
 
 if __name__ == '__main__':
         unittest.main()

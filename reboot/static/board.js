@@ -41,11 +41,20 @@ var VBoard = VBoard || {};
 		snapPieceToGrid : function(piece) {
 			closestGridPos = this.getClosestGridPos(piece.position.x, piece.position.y);
 			console.log(closestGridPos);
-			
+
 			sqr_dist = (piece.position.x - closestGridPos.x) * (piece.position.x - closestGridPos.x) +
 			        (piece.position.y - closestGridPos.y) * (piece.position.y - closestGridPos.y);
-			
+
 			if(sqr_dist < this.gridConfig.sensitivity) {
+				clearTimeout(piece.predictTimeout);
+
+				piece.mesh.position.x = closestGridPos.x;
+				piece.mesh.position.y = closestGridPos.y;
+
+				piece.predictTimeout = setTimeout(function () {
+					vb.board.undoPrediction(piece);
+					piece.predictTimeout = null;
+				}, vb.predictionTimeout);
 			    vb.sessionIO.movePiece(piece.id, closestGridPos.x, closestGridPos.y);
 			}
 		},
