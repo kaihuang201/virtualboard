@@ -40,14 +40,17 @@ var VBoard = VBoard || {};
 
 		snapPieceToGrid : function(piece) {
 			closestGridPos = this.getClosestGridPos(piece.position.x, piece.position.y);
-			console.log(closestGridPos);
 			
+			if(this.getIsWithinSensitivity(piece, closestGridPos)) {
+				vb.sessionIO.movePiece(piece.id, closestGridPos.x, closestGridPos.y);
+			}
+		},
+
+		getIsWithinSensitivity : function(piece, closestGridPos) {
 			sqr_dist = (piece.position.x - closestGridPos.x) * (piece.position.x - closestGridPos.x) +
 			        (piece.position.y - closestGridPos.y) * (piece.position.y - closestGridPos.y);
-			
-			if(sqr_dist < this.gridConfig.sensitivity) {
-			    vb.sessionIO.movePiece(piece.id, closestGridPos.x, closestGridPos.y);
-			}
+
+			return (sqr_dist < this.gridConfig.sensitivity);
 		},
 
 		getClosestGridPos : function(pieceX, pieceY) {
@@ -580,6 +583,8 @@ var VBoard = VBoard || {};
 					this.removePrivateZone(id);
 				}
 			}
+			//bad practice, probably leaks memory, oh well
+			this.setBackground("");
 		},
 
 		getCenter: function () {

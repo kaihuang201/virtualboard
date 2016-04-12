@@ -184,9 +184,7 @@ var VBoard = VBoard || {};
 			$("#submit-change-background").click(function() {
 				//TODO: implement session IO change background function
 				var selectedBackground = $("#change-background-list").val();
-				console.log(selectedBackground);
 				var mapEntry = vb.board.backgroundNameMap[selectedBackground];
-				console.log(mapEntry);
 				var data = mapEntry.icon;
 				vb.sessionIO.setBackground(data);
 				$("#change-background-modal").modal("toggle");

@@ -11,6 +11,8 @@ settings = {
 app = tornado.web.Application([
 	(r"/socket", WebSocketGameHandler),
 	(r"/game", IndexHandler),
+	(r"/test", TestHandler),
+	(r"/testsocket", WebSocketGameHandler),
 	(r"/", IndexHandler),
 	(r"/save", DownloadStateHandler),
 	(r"/load", UploadStateHandler),

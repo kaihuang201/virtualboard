@@ -147,7 +147,7 @@ class Game:
 					tornado.ioloop.IOLoop.instance().remove_timeout(self.spam_timeout)
 
 				if self.movebuffer.flush_timeout is not None:
-					instance.remove_timeout(self.movebuffer.flush_timeout)
+					tornado.ioloop.IOLoop.instance().remove_timeout(self.movebuffer.flush_timeout)
 
 				del games[self.game_id]
 				return
