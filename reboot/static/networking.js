@@ -517,6 +517,24 @@ var VBoard = VBoard || {};
 			this.send(data);
 		},
 
+		startTimer: function(id) {
+			var data = {
+				"type" : "startTimer",
+				"data" : {
+					"id" : id
+				}
+			}
+			this.send(data);
+		},
+
+		stopTimer: function(id) {
+
+		},
+
+		setTimer: function(id, time) {
+
+		},
+
 		flipCard: function (id) {
 			if(id.constructor === Array) {
 				var pieceData = [];

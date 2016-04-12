@@ -573,6 +573,60 @@ class Game:
 	# special pieces
 	#==========
 
+	def updateTimer(self, timer_id):
+		timer = self.board_state.get_piece(timer_id)
+		if timer == None:
+			return
+
+		timer.time -= 1
+
+		if timer.time == 0:
+			tornado.ioloop.IOLoop.instance().remove_timeout(timer.timeout)
+			timer.timeout = None
+			timer.isRunning = False
+
+		response = {
+			"type" : "updateTimer",
+			"data" : {
+				"piece" : timer_id,
+				"newTime" : timer.time
+			}
+		}
+		self.message_all(response)
+
+	def startTimer(self, client, timer_id):
+		timer = self.board_state.get_piece(timer_id)
+		if timer == None:
+			self.send_error(client, "Timer does not exist")
+			return
+
+		timer.isRunning = True
+		timer.timeout = tornado.ioloop.IOLoop.instance().add_timeout(datetime.timedelta(seconds=1), self.updateTimer, timer_id)
+
+	def stopTimer(self, client, timer_id):
+		timer = self.board_state.get_piece(timer_id)
+		if timer == None:
+			self.send_error(client, "Timer does not exist")
+			return
+
+		tornado.ioloop.IOLoop.instance().remove_timeout(timer.timeout)
+			timer.timeout = None
+			timer.isRunning = False
+
+	def setTimer(self, client, timer_data):
+		timer_id = timer_data["id"]
+		time = timer_data["time"]
+
+		timer = self.board_state.get_piece(timer_id)
+		if timer == None:
+			self.send_error(client, "Timer does not exist")
+			return
+
+		if timer.isRunning:
+			self.stopTimer(client, timer_id)
+
+		timer.time = time
+
 	def rollDice(self, client, pieces):
 		client.spam_amount += 0.5 + 0.25*len(pieces)
 		response_data = []
@@ -664,6 +718,9 @@ class Game:
 
 		if len(decktransform_response["data"]) > 0:
 			self.message_all(decktransform_response)
+
+	def addTimer(self, client, data):
+
 
 	def flipCard(self, client, pieces):
 		client.spam_amount += 0.5 + 0.25*len(pieces)
