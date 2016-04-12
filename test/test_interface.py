@@ -29,7 +29,9 @@ class InterfaceTest(unittest.TestCase):
 			self.result = result
 
 		def __call__(self, driver):
-			return InterfaceTest.driver.execute_script(self.script) == self.result
+			i = InterfaceTest.driver.execute_script(self.script)
+			print i
+			return i == self.result
 
 	def setUp(self):
 		print "SET UP"
@@ -413,8 +415,92 @@ class InterfaceTest(unittest.TestCase):
 		wait.until(InterfaceTest.javascript_to_be("return VBoard.board.background.material.diffuseTexture.url == \"/static/img/backgrounds/Noodles.jpg\";", False))
 		self.assertEqual(driver.execute_script("return VBoard.board.background.material.diffuseTexture.url;"), "/static/img/backgrounds/Bacon.jpg")
 
-#	def test_private_zone(self):
-#		pass
+	def toggle_snap_to_grid(self):
+		driver = InterfaceTest.driver
+		wait = InterfaceTest.wait
+
+		side_hover = driver.find_element_by_id("viewMenuHover")
+		ActionChains(InterfaceTest.driver).move_to_element(side_hover).perform()
+		enable_box = wait.until(ec.element_to_be_clickable((by.XPATH, '//input[@id="setGrid"]')))
+		enable_box.click()
+
+	def test_snap_to_grid(self):
+		driver = InterfaceTest.driver
+		wait = InterfaceTest.wait
+		canvas = self.create_lobby()
+		js = InterfaceTest.javascript_to_be
+
+		self.toggle_snap_to_grid()
+		self.spawn_chessboard()
+
+		self.move_to_canvas_position(1, -5, canvas)
+		self.drag_from_to(1, -5, 1.5, -3.5, canvas)
+
+		self.move_to_canvas_position(1, -3, canvas)
+		wait.until(js("return VBoard.inputs.getPieceUnderMouse().mesh.position.x;", 1))
+		wait.until(js("return VBoard.inputs.getPieceUnderMouse().mesh.position.y;", -3))
+
+	def check_upload_piece_alert(self, imageURL):
+		driver = InterfaceTest.driver
+		wait = InterfaceTest.wait
+
+		side_hover = driver.find_element_by_id("viewMenuHover")
+		ActionChains(InterfaceTest.driver).move_to_element(side_hover).perform()
+		pieceAdd_button = wait.until(ec.element_to_be_clickable((by.XPATH, "//*[contains(text(), 'Add Piece')]")))
+		pieceAdd_button.click()
+		driver.find_element_by_id("image-url").send_keys(imageURL)
+		driver.find_element_by_id("submit-upload-piece").click()
+		
+		try:
+			WebDriverWait(driver, 3).until(ec.alert_is_present())
+			return True
+		except TimeoutException:
+			return False
+	
+	#Test should fails because it not a link for an image	
+	def test_upload_piece1(self):
+		driver = InterfaceTest.driver
+		wait = InterfaceTest.wait
+		canvas = self.create_lobby()
+		driver = InterfaceTest.driver
+		wait = InterfaceTest.wait
+		self.assertTrue(self.check_upload_piece_alert("http://imgur.com/"))
+
+	#Should pass because it is a .jpg image
+	def test_upload_piece2(self):
+		driver = InterfaceTest.driver
+		wait = InterfaceTest.wait
+		canvas = self.create_lobby()
+		driver = InterfaceTest.driver
+		wait = InterfaceTest.wait
+		self.assertFalse(self.check_upload_piece_alert("http://i.imgur.com/GSTfEGH.jpg"))
+
+	#Should fail because invalid URL
+	def test_upload_piece3(self):
+		driver = InterfaceTest.driver
+		wait = InterfaceTest.wait
+		canvas = self.create_lobby()
+		driver = InterfaceTest.driver
+		wait = InterfaceTest.wait
+		self.assertTrue(self.check_upload_piece_alert("http://i.imgurawegabg.com/GSTfEGH.jpg"))
+
+	#Should fail because not a valid file format
+	def test_upload_piece4(self):
+		driver = InterfaceTest.driver
+		wait = InterfaceTest.wait
+		canvas = self.create_lobby()
+		driver = InterfaceTest.driver
+		wait = InterfaceTest.wait
+		self.assertTrue(self.check_upload_piece_alert("http://i.imgur.com/GO22Mqr.webm"))
+
+	#Should pass because it is a .png image
+	def test_upload_piece5(self):
+		driver = InterfaceTest.driver
+		wait = InterfaceTest.wait
+		canvas = self.create_lobby()
+		driver = InterfaceTest.driver
+		wait = InterfaceTest.wait
+		self.assertFalse(self.check_upload_piece_alert("http://i.imgur.com/8kvHaqH.png"))
 
 
 if __name__ == '__main__':
