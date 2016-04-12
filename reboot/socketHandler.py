@@ -165,6 +165,8 @@ class WebSocketGameHandler(tornado.websocket.WebSocketHandler):
 				game.startTimer(self, data["data"]["id"])
 			elif data["type"] == "stopTimer":
 				game.stopTimer(self, data["data"]["id"])
+			elif data["type"] == "setTimer":
+				game.setTimer(self, data["data"])
 
 			#save and load related commands
 			elif data["type"] == "requestSave":

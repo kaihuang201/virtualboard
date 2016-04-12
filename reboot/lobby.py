@@ -586,10 +586,10 @@ class Game:
 			timer.isRunning = False
 
 		response = {
-			"type" : "updateTimer",
+			"type" : "setTimer",
 			"data" : {
-				"piece" : timer_id,
-				"newTime" : timer.time
+				"id" : timer_id,
+				"time" : timer.time
 			}
 		}
 		self.message_all(response)
@@ -610,8 +610,8 @@ class Game:
 			return
 
 		tornado.ioloop.IOLoop.instance().remove_timeout(timer.timeout)
-			timer.timeout = None
-			timer.isRunning = False
+		timer.timeout = None
+		timer.isRunning = False
 
 	def setTimer(self, client, timer_data):
 		timer_id = timer_data["id"]
@@ -626,6 +626,16 @@ class Game:
 			self.stopTimer(client, timer_id)
 
 		timer.time = time
+
+		response_data = {
+			"type" : "setTimer",
+			"data" : {
+				"id" : timer_id,
+				"time" : time
+			}
+		}
+
+		self.message_all(response_data)
 
 	def rollDice(self, client, pieces):
 		client.spam_amount += 0.5 + 0.25*len(pieces)
@@ -718,9 +728,6 @@ class Game:
 
 		if len(decktransform_response["data"]) > 0:
 			self.message_all(decktransform_response)
-
-	def addTimer(self, client, data):
-
 
 	def flipCard(self, client, pieces):
 		client.spam_amount += 0.5 + 0.25*len(pieces)

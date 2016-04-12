@@ -738,6 +738,20 @@ var VBoard = VBoard || {};
 			this.setIcon(deck, deckData["icon"]);
 		},
 
+		setTimer: function(timer, time){
+			var minutes = time / 60;
+			var seconds = time % 60;
+			var minutesString = minutes.toString();
+			var secondsString = seconds.toString();
+			if(minutes < 10){
+				minutesString = "0" + minutesString;
+			}
+			if(seconds < 10){
+				secondsString = "0" + secondsString;
+			}
+			this.setInfo(timer, minutesString + ":" + secondsString);
+		},
+
 		//TODO: the naming doesn't make a ton of sense here, needs some updating
 		//I did it this way to reflect how remove/removePiece was done
 		rollDiePiece: function (pieceData) {
