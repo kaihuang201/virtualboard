@@ -541,7 +541,7 @@ var VBoard = VBoard || {};
 			var data = {
 				"type" : "setTimer",
 				"data" : {
-					"id" : id
+					"id" : id,
 					"time" : time
 				}
 			}
