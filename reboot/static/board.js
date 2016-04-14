@@ -42,6 +42,15 @@ var VBoard = VBoard || {};
 			closestGridPos = this.getClosestGridPos(piece.position.x, piece.position.y);
 			
 			if(this.getIsWithinSensitivity(piece, closestGridPos)) {
+				clearTimeout(piece.predictTimeout);
+
+				piece.mesh.position.x = closestGridPos.x;
+				piece.mesh.position.y = closestGridPos.y;
+
+				piece.predictTimeout = setTimeout(function () {
+					vb.board.undoPrediction(piece);
+					piece.predictTimeout = null;
+				}, vb.predictionTimeout);
 				vb.sessionIO.movePiece(piece.id, closestGridPos.x, closestGridPos.y);
 			}
 		},
