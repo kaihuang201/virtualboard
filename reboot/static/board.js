@@ -491,10 +491,14 @@ var VBoard = VBoard || {};
 			piece.predictTimeout = null;
 			piece.isCard = false;
 			piece.isDie = false;
+			piece.isTimer = false;
+			piece.time = 0;
 			piece.lastTrigger = 0;
 			piece.private = pieceData["private"] == 1;
-			this.setIcon(piece, pieceData["icon"]);
-			this.setInfo(piece, "");
+			if(!pieceData.hasOwnProperty("timerData")){
+				this.setIcon(piece, pieceData["icon"]);
+				this.setInfo(piece, "");
+			}
 
 			if(pieceData.hasOwnProperty("cardData")) {
 				piece.isCard = true;
@@ -510,6 +514,16 @@ var VBoard = VBoard || {};
 				piece.isDie = true;
 				piece.max = pieceData["diceData"]["max"];
 				piece.faces = pieceData["diceData"]["faces"];
+			}
+
+			if(pieceData.hasOwnProperty("timerData")){
+				piece.isTimer = true;
+				piece.time = pieceData["timerData"]["time"];
+				piece.mesh.material.mainMaterial.diffuseColor = new BABYLON.Color3(1,1,1);
+				piece.mesh.material.mainMaterial.emissiveColor = new BABYLON.Color3(1,1,1);
+				piece.mesh.material.mainMaterial.diffuseTexture = null;
+				piece.mesh.scaling.y = 0.35*piece.size;
+				this.setTimer(piece, piece.time);
 			}
 
 			plane.actionManager = new BABYLON.ActionManager(vb.scene);
@@ -672,7 +686,7 @@ var VBoard = VBoard || {};
 			if(this.textureMap.hasOwnProperty(icon)) {
 				piece.mesh.material.mainMaterial.diffuseTexture = this.textureMap[icon];
 				vb.board.adjustPieceWidth(piece);
-			} else {
+			}else {
 				if(!this.pendingTextures.hasOwnProperty(icon)) {
 					this.pendingTextures[icon] = {};
 
@@ -739,7 +753,7 @@ var VBoard = VBoard || {};
 		},
 
 		setTimer: function(timer, time){
-			var minutes = time / 60;
+			var minutes = Math.floor(time / 60);		
 			var seconds = time % 60;
 			var minutesString = minutes.toString();
 			var secondsString = seconds.toString();
@@ -749,7 +763,7 @@ var VBoard = VBoard || {};
 			if(seconds < 10){
 				secondsString = "0" + secondsString;
 			}
-			this.setInfo(timer, minutesString + ":" + secondsString);
+			this.setClockInfo(timer, minutesString + ":" + secondsString);
 		},
 
 		//TODO: the naming doesn't make a ton of sense here, needs some updating
@@ -864,6 +878,40 @@ var VBoard = VBoard || {};
 			context.shadowOffsetY = 5;
 			context.shadowOffsetX = 5;
 			wrapText(context, info, 256, 128, 512, 512);
+			context.restore();
+			tex.update();
+			//tex.drawText(info, 0, 300, "140px verdana", "black", "transparent");
+		},
+
+		setClockInfo: function (piece, info) {
+			//http://www.html5gamedevs.com/topic/8958-dynamic-texure-drawtext-attributes-get-text-to-wrap/?do=findComment&comment=62014
+			function wrapText(context, text, x, y, maxWidth, lineHeight) {
+				var words = text.split(' ');
+				var line = '';
+				for(var n = 0; n < words.length; n++) {
+					var testLine = line + words[n] + ' ';
+					var metrics = context.measureText(testLine);
+					var testWidth = metrics.width;
+					if (testWidth > maxWidth && n > 0) {
+						context.fillText(line, x, y);
+						line = words[n] + ' ';
+						y += lineHeight;
+					} else {
+						line = testLine;
+					}
+				}
+				context.fillText(line, x, y);
+			}
+			var tex = piece.mesh.material.infoTexture;
+			var context = tex.getContext();
+			context.clearRect(0, 0, 512, 512);
+			context.font = "140px verdana";
+			context.save();
+			context.textAlign = "start";
+			context.shadowColor = "white";
+			context.shadowOffsetY = 5;
+			context.shadowOffsetX = 5;
+			wrapText(context, info, 40, 300, 512, 1024);
 			context.restore();
 			tex.update();
 			//tex.drawText(info, 0, 300, "140px verdana", "black", "transparent");
