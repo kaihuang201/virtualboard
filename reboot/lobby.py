@@ -584,6 +584,8 @@ class Game:
 			tornado.ioloop.IOLoop.instance().remove_timeout(timer.timeout)
 			timer.timeout = None
 			timer.isRunning = False
+		else:
+			timer.timeout = tornado.ioloop.IOLoop.instance().add_timeout(datetime.timedelta(seconds=1), self.updateTimer, timer_id)
 
 		response = {
 			"type" : "setTimer",

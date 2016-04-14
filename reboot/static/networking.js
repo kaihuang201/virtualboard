@@ -927,7 +927,7 @@ var VBoard = VBoard || {};
 					var timer_id = data["data"]["id"];
 					var time = data["data"]["time"];
 
-					var timer = vb.board.pieceHash[timer_id];
+					var timer = vb.board.pieces[vb.board.pieceHash[timer_id]];
 
 					vb.board.setTimer(timer, time);
 					break;

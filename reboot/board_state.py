@@ -32,7 +32,7 @@ class Piece:
 
 		if "timerData" in pieceData:
 			self.isTimer = True
-			self.time = math.min(pieceData["timerData"]["time"], 3600)
+			self.time = min(pieceData["timerData"]["time"], 3600)
 			self.isRunning = False
 			self.timeout = None
 
