@@ -616,6 +616,16 @@ class Game:
 		timer.timeout = None
 		timer.isRunning = False
 
+		response = {
+			"type" : "setTimer",
+			"data" : {
+				"id" : timer_id,
+				"time" : timer.time,
+				"running" : 1 if timer.isRunning else 0
+			}
+		}
+		self.message_all(response)
+
 	def setTimer(self, client, timer_data):
 		timer_id = timer_data["id"]
 		time = timer_data["time"]

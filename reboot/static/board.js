@@ -773,7 +773,8 @@ var VBoard = VBoard || {};
 			if(seconds < 10){
 				secondsString = "0" + secondsString;
 			}
-			timer.isRunning = running;
+			timer.time = time;
+			timer.isRunning = (running == 0) ? false : true;
 			this.setClockInfo(timer, minutesString + ":" + secondsString);
 		},
 
