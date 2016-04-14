@@ -21,11 +21,20 @@ class Piece:
 		self.zone = None
 		self.always_private = False
 
+		self.isTimer = False
+		self.isCard = False
+		self.isDie = False
+		self.isRunning = False
+		self.timeout = None
+
 		if "private" in pieceData:
 			self.always_private = pieceData["private"] == 1
 
-		self.isCard = False
-		self.isDie = False
+		if "timerData" in pieceData:
+			self.isTimer = True
+			self.time = min(pieceData["timerData"]["time"], 3600)
+			self.isRunning = False
+			self.timeout = None
 
 		if "cardData" in pieceData:
 			self.isCard = True
@@ -79,6 +88,11 @@ class Piece:
 			data["diceData"] = {
 				"max" : self.max,
 				"faces" : self.faces
+			}
+
+		if self.isTimer:
+			data["timerData"] = {
+				"time" : self.time
 			}
 		return data
 

@@ -517,6 +517,37 @@ var VBoard = VBoard || {};
 			this.send(data);
 		},
 
+		startTimer: function(id) {
+			var data = {
+				"type" : "startTimer",
+				"data" : {
+					"id" : id
+				}
+			}
+			this.send(data);
+		},
+
+		stopTimer: function(id) {
+			var data = {
+				"type" : "stopTimer",
+				"data" : {
+					"id" : id
+				}
+			}
+			this.send(data);
+		},
+
+		setTimer: function(id, time) {
+			var data = {
+				"type" : "setTimer",
+				"data" : {
+					"id" : id,
+					"time" : time
+				}
+			}
+			this.send(data);
+		},
+
 		flipCard: function (id) {
 			if(id.constructor === Array) {
 				var pieceData = [];
@@ -891,6 +922,14 @@ var VBoard = VBoard || {};
 					break;
 				case "listClients":
 					vb.interface.showPlayerList(data["data"]);
+					break;
+				case "setTimer":
+					var timer_id = data["data"]["id"];
+					var time = data["data"]["time"];
+
+					var timer = vb.board.pieces[vb.board.pieceHash[timer_id]];
+
+					vb.board.setTimer(timer, time);
 					break;
 				case "rollDice":
 					var dice = data["data"];
