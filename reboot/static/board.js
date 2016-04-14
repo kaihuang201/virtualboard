@@ -492,6 +492,7 @@ var VBoard = VBoard || {};
 			piece.isCard = false;
 			piece.isDie = false;
 			piece.isTimer = false;
+			piece.isRunning = false;
 			piece.time = 0;
 			piece.lastTrigger = 0;
 			piece.private = pieceData["private"] == 1;
@@ -752,7 +753,7 @@ var VBoard = VBoard || {};
 			this.setIcon(deck, deckData["icon"]);
 		},
 
-		setTimer: function(timer, time){
+		setTimer: function(timer, time, running){
 			var minutes = Math.floor(time / 60);		
 			var seconds = time % 60;
 			var minutesString = minutes.toString();
@@ -763,6 +764,7 @@ var VBoard = VBoard || {};
 			if(seconds < 10){
 				secondsString = "0" + secondsString;
 			}
+			timer.isRunning = running;
 			this.setClockInfo(timer, minutesString + ":" + secondsString);
 		},
 

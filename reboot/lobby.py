@@ -591,7 +591,8 @@ class Game:
 			"type" : "setTimer",
 			"data" : {
 				"id" : timer_id,
-				"time" : timer.time
+				"time" : timer.time,
+				"running" : 1 if timer.isRunning else 0
 			}
 		}
 		self.message_all(response)
