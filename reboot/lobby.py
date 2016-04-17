@@ -727,7 +727,8 @@ class Game:
 			"type" : "setTimer",
 			"data" : {
 				"id" : timer_id,
-				"time" : timer.time
+				"time" : timer.time,
+				"running" : 1 if timer.isRunning else 0
 			}
 		}
 		self.message_all(response)
@@ -750,6 +751,16 @@ class Game:
 		tornado.ioloop.IOLoop.instance().remove_timeout(timer.timeout)
 		timer.timeout = None
 		timer.isRunning = False
+
+		response = {
+			"type" : "setTimer",
+			"data" : {
+				"id" : timer_id,
+				"time" : timer.time,
+				"running" : 1 if timer.isRunning else 0
+			}
+		}
+		self.message_all(response)
 
 	def setTimer(self, client, timer_data):
 		timer_id = timer_data["id"]

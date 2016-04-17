@@ -982,10 +982,11 @@ var VBoard = VBoard || {};
 				case "setTimer":
 					var timer_id = data["data"]["id"];
 					var time = data["data"]["time"];
+					var running = data["data"]["running"];
 
 					var timer = vb.board.pieces[vb.board.pieceHash[timer_id]];
 
-					vb.board.setTimer(timer, time);
+					vb.board.setTimer(timer, time, running);
 					break;
 				case "rollDice":
 					var dice = data["data"];
