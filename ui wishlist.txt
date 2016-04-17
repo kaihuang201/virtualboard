@@ -39,6 +39,10 @@ In-Game/General
    - sidebars should not interfere with the canvas when not being used
    - the chat box should scale with its contents
    - apparently control+c, control+a, and the like are disabled for some reason
+   - when adding a custom piece, the user should be able to specify a size
+   - we need an interface for resizing and rotating pieces
+   - when adding a private zone, it should automatically use the local player's color
+   - see about making private zones partially transparent
 
 Feature Ideas
 ==========

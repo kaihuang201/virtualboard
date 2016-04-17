@@ -788,7 +788,7 @@ var VBoard = VBoard || {};
 			if(this.textureMap.hasOwnProperty(icon)) {
 				piece.mesh.material.mainMaterial.diffuseTexture = this.textureMap[icon];
 				vb.board.adjustPieceWidth(piece);
-			}else {
+			} else {
 				if(!this.pendingTextures.hasOwnProperty(icon)) {
 					this.pendingTextures[icon] = {};
 
@@ -855,7 +855,7 @@ var VBoard = VBoard || {};
 		},
 
 		setTimer: function(timer, time, running){
-			var minutes = Math.floor(time / 60);		
+			var minutes = Math.floor(time / 60);
 			var seconds = time % 60;
 			var minutesString = minutes.toString();
 			var secondsString = seconds.toString();

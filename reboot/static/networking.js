@@ -222,8 +222,7 @@ var VBoard = VBoard || {};
 					"color" : [255, 255, 255],
 					"r" : Math.atan2(vb.camera.upVector.y, vb.camera.upVector.x) - Math.PI/2,
 					"s" : 1,
-					"static" : 0,
-					"private" : 0
+					"static" : 0
 				};
 
 				//update with input values
@@ -481,7 +480,7 @@ var VBoard = VBoard || {};
 				var pieceData = [
 					{
 						"piece" : id,
-						"static" : vb.board.getFromID(id[i]).static ? 1 : 0
+						"static" : vb.board.getFromID(id).static ? 1 : 0
 					}
 				];
 			}
