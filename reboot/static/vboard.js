@@ -6,8 +6,8 @@ var VBoard = VBoard || {};
 	//max/min/view size should probably be bound to VBoard.board
 	vb.maxSize = 55;
 	vb.minSize = 3;
-	vb.BoardHeight = 50;
-	vb.BoardWidth = 50;
+	vb.boardHeight = 50;
+	vb.boardWidth = 50;
 	vb.moveHighlightDuration = 500; //milliseconds
 	vb.addHighlightDuration = 500; //milliseconds
 	vb.predictionTimeout = 500; //delay until we roll back the client sided prediction

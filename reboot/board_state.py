@@ -31,14 +31,23 @@ class Piece:
 		#not yet implemented
 		self.private_changes = {}
 
+		self.isTimer = False
+		self.isCard = False
+		self.isDie = False
+		self.isRunning = False
+		self.timeout = None
+
 		#TODO: NOT YET IMPLEMENTED ON FRONT END
 		if "private" in pieceData:
 			#self.always_private = pieceData["private"] == 1
 			for color in pieceData["private"]:
 				self.private_colors.add(tuple(color))
 
-		self.isCard = False
-		self.isDie = False
+		if "timerData" in pieceData:
+			self.isTimer = True
+			self.time = min(pieceData["timerData"]["time"], 3600)
+			self.isRunning = False
+			self.timeout = None
 
 		if "cardData" in pieceData:
 			self.isCard = True
@@ -90,6 +99,11 @@ class Piece:
 			data["diceData"] = {
 				"max" : self.max,
 				"faces" : self.faces
+			}
+
+		if self.isTimer:
+			data["timerData"] = {
+				"time" : self.time
 			}
 
 		if complete:

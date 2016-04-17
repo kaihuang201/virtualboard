@@ -161,6 +161,12 @@ class WebSocketGameHandler(tornado.websocket.WebSocketHandler):
 			elif data["type"] == "drawScribble":
 				print "todo"
 				#Todo: Needs to be implemented
+			elif data["type"] == "startTimer":
+				game.startTimer(self, data["data"]["id"])
+			elif data["type"] == "stopTimer":
+				game.stopTimer(self, data["data"]["id"])
+			elif data["type"] == "setTimer":
+				game.setTimer(self, data["data"])
 
 			#save and load related commands
 			elif data["type"] == "requestSave":
@@ -217,3 +223,8 @@ class IconProxyHandler(tornado.web.RequestHandler):
 	@tornado.web.asynchronous
 	def get(request):
 		pass
+
+class TestHandler(tornado.web.RequestHandler):
+	@tornado.web.asynchronous
+	def get(request):
+		request.render("static/test/runalltests.html")

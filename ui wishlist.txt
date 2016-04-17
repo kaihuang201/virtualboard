@@ -17,6 +17,7 @@ Pre-game
  x - hitting the escape key should close a modal
    - Oh yeah that's right, we need an actual home page separate from the lobby list as our index page with information
  o - resume should only appear if the old lobby exists (comment: we need a polling function that tests if a lobby with given id exists)
+   - clicking on the message "No games found, but you can create a lobby!" should bring up the modal to create a lobby
 
 In-Game/General
 ==========
