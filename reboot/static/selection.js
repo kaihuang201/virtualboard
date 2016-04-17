@@ -180,6 +180,8 @@ var VBoard = VBoard || {};
 			for (var i = 0; i < vb.board.pieces.length; i++) {
 				var piece = vb.board.pieces[i];
 
+				//TODO: hidden pieces should also be filtered
+
 				if(piece.static || this.hasPiece(piece.id)) {
 					continue;
 				}

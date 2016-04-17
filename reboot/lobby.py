@@ -5,6 +5,7 @@ import json
 import time
 import datetime
 import random
+from copy import copy
 
 from board_state import *
 from movebuffer import *
@@ -15,10 +16,10 @@ games = {}
 next_game_id = 0
 
 MOVE_TICK_DURATION = 0.05 #50 ms
-KEY_MAX = 1000000000000000
-SAVE_RETRY_TIME = 1
+#KEY_MAX = 1000000000000000
+#SAVE_RETRY_TIME = 1
 
-WHITE = [255, 255, 255]
+#WHITE = [255, 255, 255]
 
 #maximum allowed "spammable" actions per timeout
 SPAM_FILTER_TIMEOUT = 1
@@ -36,9 +37,9 @@ class Game:
 		self.board_state = BoardState()
 		self.movebuffer = MoveBuffer()
 		self.spam_timeout = None
-		self.save_key = 0
-		self.load_key = 0
-		self.save_in_process = False
+		#self.save_key = 0
+		#self.load_key = 0
+		#self.save_in_process = False
 
 		#this is just to get the loop going
 		tornado.ioloop.IOLoop.instance().add_callback(self.check_spam)
@@ -59,7 +60,7 @@ class Game:
 			abridged_users.append({
 				"user" : client.user_id,
 				"name" : client.name,
-				"color" : client.color,
+				"color" : list(client.color),
 				"host" : 1 if client.user_id == self.host.user_id else 0,
 				"local" : 1 if local is not None and client.user_id == local.user_id else 0
 			})
@@ -86,7 +87,7 @@ class Game:
 
 		for user_id in victims:
 			self.kickUser(None, user_id, "Excessive spamming")
-		tornado.ioloop.IOLoop.instance().add_timeout(datetime.timedelta(seconds=SPAM_FILTER_TIMEOUT), self.check_spam)
+		self.spam_timeout = tornado.ioloop.IOLoop.instance().add_timeout(datetime.timedelta(seconds=SPAM_FILTER_TIMEOUT), self.check_spam)
 
 	def connect(self, new_client, name, color, password):
 		if self.password and not (self.host == new_client or password == self.password):
@@ -99,7 +100,7 @@ class Game:
 			new_client.write_message(json.dumps(response))
 			return
 		new_client.name = name
-		new_client.color = color
+		new_client.color = tuple(color)
 		new_client.spam_amount = 0
 		new_client.user_id = self.next_user_id
 		self.next_user_id += 1
@@ -122,7 +123,7 @@ class Game:
 		self.movebuffer.add_client(new_client.user_id)
 
 		abridged_users = self.get_abridged_clients(new_client)
-		board_data = self.board_state.get_json_obj(color=new_client.color)
+		board_data = self.board_state.get_json_obj(False)
 		mainResponse = {
 			"type" : "initSuccess",
 			"data" : {
@@ -177,9 +178,9 @@ class Game:
 		for user_id, client in self.clients.iteritems():
 			client.write_message(json.dumps(response))
 
-	def message_color(self, color, response, compliment=False):
+	def message_colors(self, response, colors):
 		for client in self.clients.itervalues():
-			if (client.color == color) ^ compliment or color == WHITE:
+			if client.color in colors:
 				client.write_message(json.dumps(response))
 
 	def send_error(self, client, message):
@@ -193,62 +194,107 @@ class Game:
 		}
 		client.write_message(json.dumps(error_message))
 
+	#BoardState has a similar function
+	#should probably be rewritten to avoid duplicaton, oh well
+	def client_can_interact(self, client, piece):
+		private_colors = piece.get_private_colors()
+
+		if private_colors:
+			if client.color in private_colors:
+				return True
+			return False
+		return True
+
+
 	#==========
 	# host only commands
 	#==========
 
-	def add_private_zone(self, client, zoneData):
-		if self.host.user_id == client.user_id:
-			zoneData["id"], pieces = self.board_state.add_private_zone(zoneData["pos"]["x"], zoneData["pos"]["y"], \
-				zoneData["width"], zoneData["height"], zoneData["rotation"], zoneData["color"])
-			response = {
-				"type" : "addPrivateZone",
-				"data" : [zoneData]
-			}
-			self.message_all(response)
+	def add_private_zone(self, client, zones):
+		if client is None or self.host.user_id == client.user_id:
+			new_zone_response = []
+			enter_zone_response = []
 
-			response_data = []
+			for zoneData in zones:
+				zone = self.board_state.add_private_zone(zoneData)
+				pieces = zone.pieces
+				zone_response = zone.get_json_obj()
+				zone_response["user"] = client.user_id
 
-			for piece in pieces:
-				response_data.append({
-					"user" : client.user_id,
-					"piece" : piece.piece_id
-				})
+				new_zone_response.append(zone_response)
 
-			response = {
-				"type" : "pieceRemove",
-				"data" : response_data
-			}
+				for piece in pieces:
+					enter_zone_response.append({
+						"piece" : piece.piece_id,
+						"user" : client.user_id,
+						"zone" : zone.zone_id
+					})
 
-			self.message_color(zoneData["color"], response, True)
+			if new_zone_response:
+				response = {
+					"type" : "addPrivateZone",
+					"data" : new_zone_response
+				}
+				self.message_all(response);
+
+			if enter_zone_response:
+				response = {
+					"type" : "enterPrivateZone",
+					"data" : enter_zone_response
+				}
+				self.message_all(response);
 
 		else:
 			self.send_error(client, "Only the host can use that command")
 
-	def remove_private_zone(self, client, zoneData):
-		if self.host.user_id == client.user_id:
-			color, pieces = self.board_state.remove_private_zone(zoneData["id"])
-			if color != WHITE:
-				if len(pieces) > 0:
-					response_data = []
+	def remove_private_zone(self, client, zones):
+		if client is None or self.host.user_id == client.user_id:
+			remove_zone_response = []
+			leave_zone_response = []
+			piece_transform_response = []
+
+			for zoneData in zones:
+				zone_id = zoneData["id"]
+				pieces = self.board_state.remove_private_zone(zone_id)
+
+				if pieces:
+					remove_zone_response.append({
+						"user" : client.user_id,
+						"id" : zone_id
+					})
 
 					for piece in pieces:
-						data_entry = piece.get_json_obj()
-						data_entry["user"] = client.user_id
-						response_data.append(data_entry)
+						leave_zone_response.append({
+							"piece" : piece.piece_id,
+							"zone" : zone_id,
+							"user" : client.user_id,
+							"changes" : {} #TODO
+						})
 
-					if len(response_data) > 0:
-						response = {
-							"type" : "pieceAdd",
-							"data" : response_data
-						}
-						self.message_color(color, response, True)
+						#TODO: MAINTAIN ORDER
+						transform_data = piece.get_transform_json()
+						transform_data["user"] = client.user_id
+						piece_transform_response.append(transform_data)
 
+			if piece_transform_response:
+				response = {
+					"type" : "pieceTransform",
+					"data" : piece_transform_response
+				}
+				self.message_all(response)
+
+			#in theory we don't need this since if a zone is removed we know all the pieces in it are leaving
+			if leave_zone_response:
+				response = {
+					"type" : "leavePrivateZone",
+					"data" : leave_zone_response
+				}
+				self.message_all(response)
+
+			if remove_zone_response:
 				response = {
 					"type" : "removePrivateZone",
-					"data" : {
-						"id" : zoneData["id"]
-					}
+					"data" : remove_zone_response
 				}
 				self.message_all(response)
 		else:
@@ -322,24 +368,31 @@ class Game:
 				"icon" : boardData["background"]
 			})
 
+			zones = boardData["privateZones"]
+			self.add_private_zone(client, zones)
+
 			#load pieces
 			pieces = boardData["pieces"]
 			self.pieceAdd(self.host, pieces)
-
-			#TODO: private zones
 		else:
 			self.send_error(client, "Only the host can use that command")
 
 	def clearBoard(self, client):
 		if client is None or self.host.user_id == client.user_id:
-			return
-			#TODO
-			#note that movebuffer needs to be cleared too
+			for user_id, user in self.clients.iteritems():
+				self.movebuffer.flush(user_id)
+
+			self.board_state.clear_board()
+
+			response = {
+				"type" : "clearBoard"
+			}
+			self.message_all(response)
 
 	def closeServer(self, client):
 		if client is None or self.host.user_id == client.user_id:
-			return
-			#TODO
+			for user_id, user in self.clients.iteritems():
+				self.kickUser(None, user_id, "Server is closing")
 		else:
 			self.send_error(client, "Only the host can use that command")
 
@@ -389,49 +442,122 @@ class Game:
 
 	def pieceTransform(self, client, pieces):
 		client.spam_amount += 0.1 + 0.1*len(pieces)
-		response_data = []
-		colored_response = dict()
-		remove_response = dict()
-		add_response = dict()
-		response_empty = True
-		move_only = True
 
 		for pieceData in pieces:
-			piece = self.board_state.get_piece(pieceData["piece"])
-			if piece.color == WHITE or piece.color == client.color:
-				was_in_private_zone = piece.in_private_zone
-				old_color = piece.color
-				if self.board_state.transform_piece(client, pieceData):
-					piece = self.board_state.get_piece(pieceData["piece"])
+			piece_id = pieceData["piece"]
+			piece = self.board_state.get_piece(piece_id)
+
+			if piece and self.client_can_interact(client, piece):
+				#was_in_private_zone = piece.in_private_zone
+				#old_color = piece.color
+
+				old_private_colors = piece.get_private_colors()
+				result = self.board_state.transform_piece(pieceData)
+
+				if result is not None:
+					#print("TRANSFORM RESULT: " + str(result));
+
+					#step 1: update private zones
+					enter_zone_response = []
+					leave_zone_response = []
+
+					for zone_id in result["zones_entered"]:
+						enter_zone_response.append({
+							"piece" : piece_id,
+							"zone" : zone_id,
+							"user" : client.user_id
+						})
+
+					for zone_id in result["zones_left"]:
+						leave_zone_response.append({
+							"piece" : piece_id,
+							"zone" : zone_id,
+							"user" : client.user_id,
+							"changes" : {} #TODO
+						})
+
+					if enter_zone_response:
+						enter_response = {
+							"type" : "enterPrivateZone",
+							"data" : enter_zone_response
+						}
+						self.message_all(enter_response)
+
+					if leave_zone_response:
+						leave_response = {
+							"type" : "leavePrivateZone",
+							"data" : leave_zone_response
+						}
+						self.message_all(leave_response)
+
+					#step 2: check to see if this piece needs a full transform
+
+					#technically this can be done more efficiently, but it's still linear runtime
+					new_private_colors = piece.get_private_colors()
+					removed_colors = old_private_colors - new_private_colors
+
+					if removed_colors:
+						#print("REMOVED COLORS: " + str(removed_colors))
+						#this is potentially inefficient, but the simplest way to maintain ordering
+						transform_message = piece.get_transform_json()
+						transform_message["user"] = client.user_id
+
+						response = {
+							"type" : "pt",
+							"data" : [
+								transform_message
+							]
+						}
+						self.message_all(response)
+
+						#since we are doing a full update, we can forget about the current move buffer
+						self.movebuffer.remove(piece_id)
+						continue
 
 					data_entry = {
 						"u" : client.user_id,
-						"p" : piece.piece_id
+						"p" : piece_id
 					}
+					has_entries = False
 
 					if "pos" in pieceData:
-						data_entry["pos"] = piece.pos
+						#data_entry["pos"] = piece.pos
+						self.movebuffer.add(piece_id, piece.pos, client.user_id)
+
+						if self.movebuffer.flush_timeout is None:
+							self.movebuffer.flush_timeout = tornado.ioloop.IOLoop.instance().add_callback(self.end_move_timeout)
 
 					if "r" in pieceData:
 						data_entry["r"] = piece.rotation
-						move_only = False
+						has_entries = True
 
 					if "s" in pieceData:
 						data_entry["s"] = piece.size
-						move_only = False
+						has_entries = True
 
 					if "static" in pieceData:
 						data_entry["static"] = 1 if piece.static else 0
-						move_only = False
+						has_entries = True
 
 					if "color" in pieceData:
 						data_entry["color"] = piece.color
-						move_only = False
+						has_entries = True
 
 					if "icon" in pieceData:
 						data_entry["icon"] = piece.icon
-						move_only = False
+						has_entries = True
 
+					if has_entries:
+						response = {
+							"type" : "pt",
+							"data" : data_entry
+						}
+
+						if new_private_colors:
+							self.message_color(response, new_private_color)
+						else:
+							self.message_all(response)
+					'''
 					# If the piece is in a private zone we need to tell all clients other
 					# than the zone's owner that it is removed
 					if piece.in_private_zone:
@@ -458,9 +584,12 @@ class Game:
 
 						response_data.append(data_entry)
 						response_empty = False
+					'''
 				else:
-					self.send_error(client, "invalid piece id " + str(id))
-
+					self.send_error(client, "invalid action")
+			else:
+				self.send_error(client, "invalid piece id " + str(pieceData["piece"]))
+	'''
 		if response_empty:
 			return
 
@@ -501,6 +630,7 @@ class Game:
 				"data" : add_response_data
 			}
 			self.message_color(eval(color), response, True)
+	'''
 
 	#this function must run on the main thread
 	def end_move_timeout(self):
@@ -512,13 +642,18 @@ class Game:
 		if self.movebuffer.has_entries():
 			for user_id, client in self.clients.iteritems():
 				if self.movebuffer.has_entries(user_id):
-					piece_data = self.movebuffer.flush(user_id)
+					piece_data_raw = self.movebuffer.flush(user_id)
+					piece_data = []
 
-					data = {
-						"type" : "pt",
-						"data" : piece_data
-					}
-					client.write_message(json.dumps(data))
+					for item in piece_data_raw:
+						if self.board_state.color_can_interact(client.color, item["p"]):
+							piece_data.append(item)
+					if piece_data:
+						data = {
+							"type" : "pt",
+							"data" : piece_data
+						}
+						client.write_message(json.dumps(data))
 			self.movebuffer.flush_timeout = instance.add_timeout(datetime.timedelta(seconds=MOVE_TICK_DURATION), self.end_move_timeout)
 		else:
 			#server is not very lively, we can just sit around
@@ -541,7 +676,8 @@ class Game:
 			"type" : "pieceAdd",
 			"data" : response_data
 		}
-		self.message_color(piece.color, response)
+		#self.message_color(piece.color, response)
+		self.message_all(response)
 
 	def pieceRemove(self, client, pieces):
 		client.spam_amount += 0.5 + 0.1*len(pieces) #less spammable because it requires spam to already exist
@@ -578,7 +714,7 @@ class Game:
 		response_data = []
 		for pieceData in pieces:
 			piece_id = pieceData["piece"]
-			result = self.board_state.roll_dice(client, piece_id)
+			result = self.board_state.roll_dice(piece_id)
 			if result is not None:
 				response_data.append({
 					"user" : client.user_id,
@@ -611,7 +747,7 @@ class Game:
 				rotation = piece["cameraRotation"]
 			else:
 				rotation = None
-			response = self.board_state.draw_card(client, piece_id, rotation)
+			response = self.board_state.draw_card(piece_id, rotation)
 
 			if response is not None:
 				data = response["new_piece"].get_json_obj()
@@ -667,15 +803,43 @@ class Game:
 
 	def flipCard(self, client, pieces):
 		client.spam_amount += 0.5 + 0.25*len(pieces)
-		colored_response_data = {}
-		response_data = []
+		#colored_response_data = {}
+		#response_data = []
 		for pieceData in pieces:
 			piece_id = pieceData["piece"]
-			result = self.board_state.flip_card(client, piece_id)
+			piece = self.board_state.get_piece(piece_id)
 
-			if result is None:
-				self.send_error(client, "invalid deck: " + str(piece_id))
+			if piece and self.client_can_interact(client, piece):
+				result = self.board_state.flip_card(piece_id)
+
+				if result is not None:
+					response = {
+						"type" : "flipCard",
+						"data" : [
+							{
+								"user" : client.user_id,
+								"piece" : piece_id,
+								"icon" : result
+							}
+						]
+					}
+
+					private_colors = piece.get_private_colors()
+
+					if private_colors:
+						self.message_colors(response, private_colors)
+					else:
+						self.message_all(response)
+				else:
+					self.send_error(client, "invalid move")
+
 			else:
+				self.send_error(client, "invalid deck: " + str(piece_id))
+	'''
+
+
+
+
 				color = self.board_state.get_piece(piece_id).color
 				if color == WHITE:
 					response_data.append({
@@ -707,6 +871,7 @@ class Game:
 					"data" : response_data
 				}
 				self.message_color(eval(color), response)
+	'''
 
 	def addCardToDeck(self, client, pieces):
 		#TODO: spam protection needs to be more advanced here
@@ -719,16 +884,20 @@ class Game:
 			deck_id = entry["deck"]
 			card_id = entry["card"]
 
-			result = self.board_state.add_card_to_deck(client, card_id, deck_id)
+			if self.board_state.color_can_interact(client.color, card_id) and self.board_state.color_can_interact(client.color, deck_id):
 
-			if result is not None:
-				deck_results[deck_id] = result
-				piece_remove_data.append({
-					"user" : client.user_id,
-					"piece" : card_id
-				})
+				result = self.board_state.add_card_to_deck(card_id, deck_id)
+
+				if result is not None:
+					deck_results[deck_id] = result
+					piece_remove_data.append({
+						"user" : client.user_id,
+						"piece" : card_id
+					})
+				else:
+					self.send_error(client, "Invalid card and/or deck: " + str(card_id) + " " + str(deck_id))
 			else:
-				self.send_error(client, "Invalid card and/or deck: " + str(card_id) + " " + str(deck_id))
+				self.send_error(client, "You do not have permission to do this.")
 
 		if len(piece_remove_data) == 0:
 			return
@@ -774,7 +943,7 @@ class Game:
 		response_data = []
 		for piece in pieces:
 			piece_id = piece["piece"]
-			new_icon = self.board_state.shuffle_deck(client, piece_id)
+			new_icon = self.board_state.shuffle_deck(piece_id)
 
 			if new_icon is not None:
 				response_data.append({
@@ -809,36 +978,57 @@ class Game:
 	#someone can give themselves a rainbow color by spamming this
 	#whatever it probably looks sweet
 	def changeColor(self, client, colorData):
-		client.spam_amount += 0.25
-		client.color = colorData["color"]
+		client.spam_amount += 10
+		old_color = client.color
+		client.color = tuple(colorData["color"])
+
+		#TODO: this can potentially cause ordering desyncs, needs fix
+		piece_updates = []
+
+		for piece in self.board_state.pieces:
+			piece_colors = piece.get_private_colors()
+
+			if client.color in piece_colors and old_color not in piece_colors:
+				transform_data = piece.get_transform_json()
+				transform_data["user"] = client.user_id
+
+				piece_updates.append(transform_data)
+
+		if piece_updates:
+			response = {
+				"type" : "pt",
+				"data" : piece_updates
+			}
+			client.write_message(json.dumps(response))
 
 		response = {
 			"type" : "changeColor",
 			"data" : [
 				{
 					"user" : client.user_id,
-					"color" : client.color
+					"color" : colorData["color"]
 				}
 			]
 		}
 		self.message_all(response)
 
 	def prepareToSave(self, client):
-		if not self.save_in_process:
-			self.save_in_process = True
-			self.save_key = random.randint(0, KEY_MAX)
+		#if not self.save_in_process:
+			#self.save_in_process = True
+			#self.save_key = random.randint(0, KEY_MAX)
+			#self.save_key = self.password
 
 			response = {
 				"type" : "savePrep",
 				"data" : {
 						"lobbyId" : self.game_id,
-						"key" : self.save_key
-					}
+						"key" : self.password
+				}
 			}
 			client.write_message(json.dumps(response))
-		else:
-			tornado.ioloop.IOLoop.instance().add_timeout(datetime.timedelta(seconds=SAVE_RETRY_TIME), self.prepareToSave, client)
-
+		#else:
+		#	tornado.ioloop.IOLoop.instance().add_timeout(datetime.timedelta(seconds=SAVE_RETRY_TIME), self.prepareToSave, client)
+'''
 	def prepareToLoad(self, client):
 		if client.user_id == self.host.user_id:
 			self.load_key = random.randint(0, KEY_MAX)
@@ -910,4 +1100,4 @@ class Game:
 				"data" : response_data
 			}
 			self.message_all(response)
-
+'''

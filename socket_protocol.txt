@@ -574,6 +574,29 @@
 	]
 }
 
+{
+	"enterPrivateZone",
+	"data" : [
+		{
+			"piece" : 5,
+			"user" : 4,
+			"zone" : 1
+		}
+	]
+}
+
+{
+	"leavePrivateZone",
+	"data" : [
+		{
+			"zone" : 1,
+			"piece" : 3,
+			"user" : 4,
+			"changes" : {} //not yet used
+		}
+	]
+}
+
 //REMOVED, INSTEAD JUST REMOVE AND CREATE NEW ZONE
 //{
 //	"type" : "transformPrivateZone",
@@ -1096,7 +1119,12 @@
 							"back" : "/static/img/cardback.png"
 						}
 					]
-				}
+				},
+
+				"private" : [
+					[255, 255, 0],
+					[255, 0, 127]
+				]
 			}
 		]
 	}

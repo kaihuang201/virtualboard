@@ -422,7 +422,12 @@
 							"back" : "/static/img/cardback.png"
 						}
 					]
-				}
+				},
+
+				"private" : [
+					[255, 255, 0],
+					[255, 0, 127]
+				]
 			}
 		]
 	}

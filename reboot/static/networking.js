@@ -635,12 +635,12 @@ var VBoard = VBoard || {};
 			this.send(data);
 		},
 
-		requestLoad: function () {
-			var data = {
-				"type" : "requestLoad"
-			}
-			this.send(data);
-		},
+		//requestLoad: function () {
+		//	var data = {
+		//		"type" : "requestLoad"
+		//	}
+		//	this.send(data);
+		//},
 
 		//host only commands
 
@@ -648,29 +648,28 @@ var VBoard = VBoard || {};
 			if(vb.users.getLocal().isHost) {
 				var data = {
 					"type" : "addPrivateZone",
-					"data" : {
-						"pos" : {
-							"x" : x,
-							"y" : y
-						},
-						"width" : width,
-						"height" : height,
-						"rotation" : Math.atan2(vb.camera.upVector.y, vb.camera.upVector.x) - Math.PI/2,
-						"color" : color
-					}
+					"data" : [
+						{
+							"pos" : [x, y],
+							"size" : [width, height],
+							"r" : Math.atan2(vb.camera.upVector.y, vb.camera.upVector.x) - Math.PI/2,
+							"color" : color
+						}
+					]
 				};
 				this.send(data);
 			}
 		},
 
-
 		removePrivateZone: function (id) {
 			if(vb.users.getLocal().isHost) {
 				var data = {
 					"type" : "removePrivateZone",
-					"data" : {
-						"id" : id
-					}
+					"data" : [
+						{
+							"id" : id
+						}
+					]
 				};
 				this.send(data);
 			}
@@ -867,7 +866,36 @@ var VBoard = VBoard || {};
 					var users = data["data"];
 
 					for(var index in users) {
-						vb.users.changeUserColor(users[index]["user"], users[index]["color"]);
+						var user_id = users[index]["user"]
+						vb.users.changeUserColor(user_id, users[index]["color"]);
+
+						if(user_id == vb.users.getLocal().id) {
+							//we need to re-evaluate all pieces in private zones
+							var mycolor = vb.users.getLocal().color;
+
+							for(var pindex in vb.board.pieces) {
+								var piece = vb.board.pieces[pindex];
+								var inzone = false;
+								var inMyZone = false;
+
+								for(var zone_id in piece.zones) {
+									if(piece.zones.hasOwnProperty(zone_id)) {
+										inzone = true;
+										zcolor = vb.board.privateZones[zone_id].material.emissiveColor;
+
+										if(zcolor.r == mycolor.r && zcolor.g == mycolor.g && zcolor.b == mycolor.b) {
+											vb.board.showPiece(piece);
+											inMyZone = true;
+											break;
+										}
+									}
+								}
+
+								if(inzone && !inMyZone) {
+									vb.board.hidePiece(piece);
+								}
+							}
+						}
 					}
 					break;
 				case "addPrivateZone":
@@ -875,19 +903,47 @@ var VBoard = VBoard || {};
 
 					for (var index in zones) {
 						zoneData = zones[index];
-						vb.board.addPrivateZone(zoneData)
+						vb.board.addPrivateZone(zoneData);
 					}
 					break;
 				case "removePrivateZone":
-					var id = data["data"].id;
-					vb.board.removePrivateZone(id);
+					//var id = data["data"].id;
+					//vb.board.removePrivateZone(id);
+					//break;
+					var zones = data["data"];
+
+					for (var index in zones) {
+						zoneData = zones[index];
+						vb.board.removePrivateZone(zoneData);
+					}
+				case "enterPrivateZone":
+					var items = data["data"];
+
+					for(var index in items) {
+						item = items[index];
+						vb.board.enterPrivateZone(item["piece"], item["zone"]);
+					}
+					break;
+				case "leavePrivateZone":
+					var items = data["data"];
+
+					for(var index in items) {
+						item = items[index];
+						vb.board.leavePrivateZone(item["piece"], item["zone"]);
+					}
 					break;
 				case "changeHost":
 					vb.users.changeHost(data["data"]["user"]);
+
+					if(vb.users.getLocal().isHost) {
+						vb.menu.showHostOnlyButtons();
+					} else {
+						vb.menu.hideHostOnlyButtons();
+					}
 					break;
 				case "announcement":
 					// vb.interface.alertModal(data["data"][0]["msg"]);
-					vb.interface.chatIncomingMsg(data["data"][0]["msg"],false);
+					vb.interface.chatIncomingMsg(data["data"][0]["msg"], false);
 					break;
 				case "listClients":
 					vb.interface.showPlayerList(data["data"]);
@@ -931,18 +987,18 @@ var VBoard = VBoard || {};
 					var key = data["data"].key;
 					window.location = "/save?lobbyId=" + lobby + "&key=" + key;
 	                break;
-	            case "loadPrep":
-					var file_field = $("#fileField")[0];
-					var formData = new FormData();
-			        formData.append("upload", file_field.files[0]);
-			        formData.append("lobbyId", data["data"].lobbyId);
-			        formData.append("key", data["data"].key);
-			        var xhr = new XMLHttpRequest();
-			        xhr.open('POST', 'load', true);
-			        xhr.onload = function () {
-			        };
-			        xhr.send(formData);
-	            	break;
+//	            case "loadPrep":
+//					var file_field = $("#fileField")[0];
+//					var formData = new FormData();
+//			        formData.append("upload", file_field.files[0]);
+//			        formData.append("lobbyId", data["data"].lobbyId);
+//			        formData.append("key", data["data"].key);
+//			        var xhr = new XMLHttpRequest();
+//			        xhr.open('POST', 'load', true);
+//			        xhr.onload = function () {
+//			        };
+//			        xhr.send(formData);
+//	            	break;
 				default:
 					console.log("unhandled server message: " + data["type"]);
 			}

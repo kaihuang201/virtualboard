@@ -287,7 +287,7 @@
 
 //TODO: private zones
 {
-	"type" : "createPrivateZone",
+	"type" : "addPrivateZone",
 	"data" : [
 		{
 			"id" : 8,
@@ -316,6 +316,29 @@
 		{
 			"user" : 2,
 			"id" : 3 //id of private zone
+		}
+	]
+}
+
+{
+	"enterPrivateZone",
+	"data" : [
+		{
+			"piece" : 5,
+			"user" : 4,
+			"zone" : 1
+		}
+	]
+}
+
+{
+	"leavePrivateZone",
+	"data" : [
+		{
+			"zone" : 1,
+			"piece" : 3,
+			"user" : 4,
+			"changes" : {} //not yet used
 		}
 	]
 }

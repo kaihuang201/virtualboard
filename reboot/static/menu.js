@@ -172,8 +172,8 @@ var VBoard = VBoard || {};
 					return;
 				}
 
-				var selectedWidth = $("#add-private-zone-width").val();
-				var selectedHeight = $("#add-private-zone-height").val();
+				var selectedWidth = parseFloat($("#add-private-zone-width").val());
+				var selectedHeight = parseFloat($("#add-private-zone-height").val());
 
 				vb.inputs.prepAddPrivateZone(selectedWidth, selectedHeight, vb.menu.privateZoneColorSelected);
 				vb.menu.privateZoneColorSelected = null;
@@ -193,16 +193,16 @@ var VBoard = VBoard || {};
 			});
 
 			$("#submit-load-game").click(function () {
-				vb.sessionIO.requestLoad();
-				// var f = document.getElementById('fileUpload').files[0];
-				// var r = new FileReader();
-				// r.onload = function (e) {
-				// 	var contents = e.target.result;
-				// 	var boardData = JSON.parse(contents);
+				//vb.sessionIO.requestLoad();
+				var f = document.getElementById('fileUpload').files[0];
+				var r = new FileReader();
+				r.onload = function (e) {
+					var contents = e.target.result;
+					var boardData = JSON.parse(contents);
 
-				// 	vb.sessionIO.loadBoardState(boardData);
-				// };
-				// r.readAsText(f);
+					vb.sessionIO.loadBoardState(boardData);
+				};
+				r.readAsText(f);
 				$("#load-game-modal").modal("toggle");
 			});
 
@@ -232,6 +232,12 @@ var VBoard = VBoard || {};
 			$("#addPrivateZone").hide();
 			$("#removePrivateZone").hide();
 			$("#loadGame").hide();
+		},
+
+		showHostOnlyButtons: function () {
+			$("#addPrivateZone").show();
+			$("#removePrivateZone").show();
+			$("#loadGame").show();
 		},
 
 		//TODO: instead of hard coding the menu options

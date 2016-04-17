@@ -75,22 +75,22 @@ var VBoard = VBoard || {};
 		},
 
 		addPrivateZone: function (zoneData) {
-			var size = zoneData["height"];
-			var ratio = zoneData["width"] / zoneData["height"];
+			//var ratio = zoneData["width"] / zoneData["height"];
 			var c = zoneData["color"];
 
-			var plane = BABYLON.Mesh.CreatePlane("plane", size, vb.scene);
+			var plane = BABYLON.Mesh.CreatePlane("plane", 1.0, vb.scene);
 			var material = new BABYLON.StandardMaterial("std", vb.scene);
 
 			material.emissiveColor = new BABYLON.Color3(c[0]/255, c[1]/255, c[2]/255);
-			material.diffuseColor = new BABYLON.Color3(c[0]/255, c[1]/255, c[2]/255);
+			//material.diffuseColor = new BABYLON.Color3(c[0]/255, c[1]/255, c[2]/255);
 			material.disableLighting = true;
 			plane.material = material;
-			plane.position.x = zoneData["pos"].x;
-			plane.position.y = zoneData["pos"].y;
+			plane.position.x = zoneData["pos"][0];
+			plane.position.y = zoneData["pos"][1];
 			plane.position.z = 12; // Higher z-index than any piece will have, max for pieces is 11
-			plane.scaling.x = ratio;
-			plane.rotation.z = zoneData["rotation"];
+			plane.scaling.x = zoneData["size"][0];
+			plane.scaling.y = zoneData["size"][1];
+			plane.rotation.z = zoneData["r"];
 			plane.zone = zoneData["id"];
 
 			this.privateZones[zoneData["id"]] = plane;
@@ -101,6 +101,85 @@ var VBoard = VBoard || {};
 		removePrivateZone: function (id) {
 			this.privateZones[id].dispose();
 			delete this.privateZones[id];
+		},
+
+		//TODO: The whole "always private" thing is not implemented yet
+		enterPrivateZone: function (piece_id, zone_id) {
+			var piece = this.getFromID(piece_id);
+			piece.zones[zone_id] = true;
+			var zone = this.privateZones[zone_id];
+			var zcolor = zone.material.emissiveColor;
+			var mycolor = vb.users.getLocal().color;
+
+			if(zcolor.r == mycolor.r && zcolor.g == mycolor.g && zcolor.b == mycolor.b) {
+				this.showPiece(piece);
+				return;
+			}
+
+			if(Object.keys(piece.zones).length > 1) {
+				return;
+			}
+			this.hidePiece(piece);
+		},
+
+		leavePrivateZone: function (piece_id, zone_id) {
+			var piece = this.getFromID(piece_id);
+			delete piece.zones[zone_id];
+
+			//if the object is no longer in a private zone we always show it
+			if(Object.keys(piece.zones).length == 0) {
+				this.showPiece(piece);
+				return;
+			}
+			mycolor = vb.users.getLocal().color;
+
+			for(zid in piece.zones) {
+				if(piece.zones.hasOwnProperty(zid)) {
+					var zone = this.privateZones[zid]
+					var zcolor = zone.material.emissiveColor;
+
+					if(zcolor.r == mycolor.r && zcolor.g == mycolor.g && zcolor.b == mycolor.b) {
+						this.showPiece(piece);
+						return;
+					}
+				}
+			}
+			this.hidePiece(piece);
+		},
+
+		showPiece: function (piece) {
+			//TODO: register/unregister event action
+			piece.mesh._isEnabled = true;
+		},
+
+		hidePiece: function (piece) {
+			piece.mesh._isEnabled = false;
+		},
+
+		privateZoneContains: function (zone, x, y) {
+
+			ax = zone.position.x + ((zone.scaling.y / 2.0) * -Math.sin(zone.rotation.z) - (zone.scaling.x / 2.0) * Math.cos(zone.rotation.z));
+			ay = zone.position.y + ((zone.scaling.y / 2.0) * Math.cos(zone.rotation.z) - (zone.scaling.x / 2.0) * Math.sin(zone.rotation.z));
+			bx = ax + zone.scaling.x * Math.cos(zone.rotation.z);
+			dx = ax + zone.scaling.y * Math.sin(zone.rotation.z);
+			by = ay + zone.scaling.x * Math.sin(zone.rotation.z);
+			dy = ay - zone.scaling.y * Math.cos(zone.rotation.z);
+
+			bax = bx - ax;
+			bay = by - ay;
+			dax = dx - ax;
+			day = dy - ay;
+
+			if ((x - ax) * bax + (y - ay) * bay < 0.0)
+				return false;
+			if ((x - bx) * bax + (y - by) * bay > 0.0)
+				return false;
+			if ((x - ax) * dax + (y - ay) * day < 0.0)
+				return false;
+			if ((x - dx) * dax + (y - dy) * day > 0.0)
+				return false;
+
+			return true;
 		},
 
 		registerStaticMesh: function (mesh) {
@@ -489,7 +568,8 @@ var VBoard = VBoard || {};
 			piece.isCard = false;
 			piece.isDie = false;
 			piece.lastTrigger = 0;
-			piece.private = pieceData["private"] == 1;
+			piece.zones = {};
+			//piece.private = pieceData["private"] == 1;
 			this.setIcon(piece, pieceData["icon"]);
 			this.setInfo(piece, "");
 
@@ -559,6 +639,17 @@ var VBoard = VBoard || {};
 			if(pieceData.hasOwnProperty("user")) {
 				var user = vb.users.userList[pieceData["user"]];
 				this.highlightPiece(piece, user.color, vb.addHighlightDuration);
+			}
+
+			//check to see if piece is created in a private zone
+			for(var zone_id in this.privateZones) {
+				if(this.privateZones.hasOwnProperty(zone_id)) {
+					var zone = this.privateZones[zone_id];
+
+					if(this.privateZoneContains(zone, piece.position.x, piece.position.y)) {
+						this.enterPrivateZone(piece.id, zone_id);
+					}
+				}
 			}
 			return piece;
 		},
@@ -643,15 +734,15 @@ var VBoard = VBoard || {};
 			var pieces = boardData["pieces"];
 			var privateZones = boardData["privateZones"];
 
+			for (var index in privateZones) {
+				var zoneData = privateZones[index];
+				this.addPrivateZone(zoneData);
+			}
+
 			//TODO: it turns out for ... in does not guarantee any particular order, so this should be rewritten
 			for(var index in pieces) {
 				var pieceData = pieces[index];
 				this.generateNewPiece(pieceData);
-			}
-
-			for (var index in privateZones) {
-				var zoneData = privateZones[index];
-				this.addPrivateZone(zoneData);
 			}
 		},
 
