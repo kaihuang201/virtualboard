@@ -550,7 +550,9 @@ class Game:
 					if has_entries:
 						response = {
 							"type" : "pt",
-							"data" : data_entry
+							"data" : [
+								data_entry
+							]
 						}
 
 						if new_private_colors:
