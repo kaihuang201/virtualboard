@@ -614,7 +614,7 @@ var VBoard = VBoard || {};
 				piece.mesh.material.mainMaterial.emissiveColor = new BABYLON.Color3(1,1,1);
 				piece.mesh.material.mainMaterial.diffuseTexture = null;
 				piece.mesh.scaling.y = 0.35*piece.size;
-				this.setTimer(piece, piece.time);
+				this.setTimer(piece, piece.time, false);
 			}
 
 			plane.actionManager = new BABYLON.ActionManager(vb.scene);
@@ -1030,6 +1030,15 @@ var VBoard = VBoard || {};
 
 			if(piece.isDie) {
 				vb.sessionIO.rollDice(piece.id);
+			}
+
+			if(piece.isTimer && piece.isRunning){
+
+				vb.sessionIO.stopTimer(piece.id);
+			}
+
+			if(piece.isTimer && !piece.isRunning){
+				vb.sessionIO.startTimer(piece.id);
 			}
 		}
 	};

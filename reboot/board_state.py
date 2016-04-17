@@ -103,7 +103,8 @@ class Piece:
 
 		if self.isTimer:
 			data["timerData"] = {
-				"time" : self.time
+				"time" : self.time,
+				"running" : self.isRunning
 			}
 
 		if complete:
