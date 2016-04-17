@@ -52,6 +52,10 @@ var VBoard = VBoard || {};
 				vb.inputs.prepRemovePrivateZone();
 			});
 
+			$("#addTimer").on("click", function () {
+				$("#add-timer-modal").modal();
+			});
+
 			$('#private-zone-color-picker').empty().addColorPicker({
 				clickCallback: function(c) {
 					$("#private-zone-selected-color").velocity({ color: vb.interface.strRGB2HexRGB(c) },{duration: 200});
@@ -113,6 +117,24 @@ var VBoard = VBoard || {};
 				};
 				vb.sessionIO.addPiece(data);
 				$("#add-piece-modal").modal("toggle");
+			});
+
+			$("#submit-add-timer").click(function () {
+				var minutes = parseInt($("#timer-minutes").val());
+				var seconds = parseInt($("#timer-seconds").val());
+				minutes = minutes * 60;
+				var time = minutes + seconds;
+				var user = null;
+
+				var data = {
+					"timerData" :
+					{
+						"time" : time,
+					},
+					"s" : 7
+				};
+				vb.sessionIO.addPiece(data);
+				$("#add-timer-modal").modal("toggle");
 			});
 
 			$("#submit-upload-piece").click(function () {
@@ -251,6 +273,8 @@ var VBoard = VBoard || {};
 			$("#context-back").off("click");
 			$("#context-front").off("click");
 			$("#context-static").off("click");
+			$("#context-start-timer").off("click");
+			$("#context-stop-timer").off("click");
 			$("#context-flip").off("click");
 			$("#context-roll").off("click");
 			$("#context-draw-card").off("click");
@@ -282,6 +306,19 @@ var VBoard = VBoard || {};
 				$("#context-roll").hide();
 			}
 
+			if(piece.isTimer && piece.isRunning){
+				$("#context-stop-timer").show();
+			}
+			else{
+				$("#context-stop-timer").hide();
+			}
+			if(piece.isTimer && !piece.isRunning){
+				$("#context-start-timer").show();
+			}
+			else{				
+				$("#context-start-timer").hide();
+			}
+
 			//set new onclick function bindings
 			$("#context-delete").on("click", function(){
 				//vb.board.remove(piece);
@@ -303,6 +340,14 @@ var VBoard = VBoard || {};
 			$("#context-static").on("click" , function(){
 				//vb.board.toggleStatic(piece);
 				vb.sessionIO.toggleStatic(piece.id);
+				$("#context-menu").css("visibility", "hidden");
+			});
+			$("#context-start-timer").on("click", function(){
+				vb.sessionIO.startTimer(piece.id);
+				$("#context-menu").css("visibility", "hidden");
+			});
+			$("#context-stop-timer").on("click", function(){
+				vb.sessionIO.stopTimer(piece.id);
 				$("#context-menu").css("visibility", "hidden");
 			});
 			$("#context-flip").on("click" , function(){

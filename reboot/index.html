@@ -79,6 +79,7 @@
 				<button id="addDeck" class="btn btn-success btn-menu" type="button">Add Deck of Cards</button>
 				<button id="addPrivateZone" class="btn btn-success btn-menu" type="button">Add Private Zone</button>
 				<button id="removePrivateZone" class="btn btn-success btn-menu" type="button">Remove Private Zone</button>
+				<button id="addTimer" class="btn btn-success btn-menu" type="button">Add Timer</button>
 				<button id="addChessBoard" class="btn btn-success btn-menu" type="button">Add ChessBoard</button>
 				<button id="penTool" class="btn btn-success btn-menu" type="button">Pen Tool</button>
 				<button id="changeBackground" class="btn btn-success btn-menu" type="button">Change Background</button>
@@ -93,6 +94,8 @@
 				<div id="context-back" class="context-item">Push to Back</div>
 				<div id="context-front" class="context-item">Bring to Front</div>
 				<div id="context-static" class="context-item">Static Toggle</div>
+				<div id="context-start-timer" class="context-item">Start Timer</div>
+				<div id="context-stop-timer" class="context-item">Stop Timer</div>
 				<div id="context-flip" class="context-item">Flip</div>
 				<div id="context-roll" class="context-item">Roll</div>
 				<div id="context-draw-card" class="context-item">Draw Card</div>
@@ -195,6 +198,25 @@
 						Height: <input id="add-private-zone-height" type="number" value="2" min="0.1" step="0.1"/>
 
 				  		<button type="submit" value="Add Die" id="submit-add-private-zone">Add</button>
+				  		<button class="close-modal" type="button" data-dismiss="modal">Cancel</button>
+					</div>
+					<div class="modal-footer"></div>
+				</div>
+			</div>
+		</div>
+
+		<div class="modal fade" id="add-timer-modal" role="dialog">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button class="close-modal" type="button" class="close" data-dismiss="modal">&times;</button>
+						<h4 id="confirmJoinModalTitle"style="color:red;">Add Timer</h4>
+					</div>
+					<div class="modal-body">
+						Input Time (0-59 minutes): <input id="timer-minutes" type="number" name="timer-minutes" min="0" max="59" value="0"/> : 
+						<input id="timer-seconds" type="number" name="timer-seconds" min="0" max="59" value="0"/>
+
+				  		<button type="submit" value="Add Timer" id="submit-add-timer">Add</button>
 				  		<button class="close-modal" type="button" data-dismiss="modal">Cancel</button>
 					</div>
 					<div class="modal-footer"></div>
