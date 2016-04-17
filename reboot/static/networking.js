@@ -473,14 +473,14 @@ var VBoard = VBoard || {};
 				for(var i=0; i<id.length; i++) {
 					pieceData.push({
 						"piece" : id[i],
-						"static" : vb.board.getFromID(id[i]).static ? 1 : 0
+						"static" : vb.board.getFromID(id[i]).static ? 0 : 1
 					});
 				}
 			} else {
 				var pieceData = [
 					{
 						"piece" : id,
-						"static" : vb.board.getFromID(id).static ? 1 : 0
+						"static" : vb.board.getFromID(id).static ? 0 : 1
 					}
 				];
 			}
