@@ -393,7 +393,7 @@ var VBoard = VBoard || {};
 			if(id.constructor === Array) {
 				var pieceData = [];
 
-				for(var i=0; i<ids.length; i++) {
+				for(var i=0; i<id.length; i++) {
 					pieceData.push({
 						"piece" : id[i],
 						"r" : angle[i]
@@ -418,7 +418,7 @@ var VBoard = VBoard || {};
 			if(id.constructor === Array) {
 				var pieceData = [];
 
-				for(var i=0; i<ids.length; i++) {
+				for(var i=0; i<id.length; i++) {
 					pieceData.push({
 						"piece" : id[i],
 						"s" : size[i]

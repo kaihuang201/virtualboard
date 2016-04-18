@@ -279,6 +279,8 @@ var VBoard = VBoard || {};
 			$("#context-roll").off("click");
 			$("#context-draw-card").off("click");
 			$("#context-shuffle-deck").off("click");
+			//$("#context-resize").off("click");
+			//$("#context-rotate").off("click");
 
 			//only show flip option if piece is a card
 			if (piece.isCard) {
@@ -366,6 +368,12 @@ var VBoard = VBoard || {};
 				vb.sessionIO.shuffleDeck(piece.id);
 				$("#context-menu").css("visibility", "hidden");
 			});
+			//$("#context-resize").on("click", function(){
+			//	$("#context-menu").css("visibility", "hidden");
+			//});
+			//$("#context-resize").on("click", function(){
+			//	$("#context-menu").css("visibility", "hidden");
+			//});
 		}
 	};
 

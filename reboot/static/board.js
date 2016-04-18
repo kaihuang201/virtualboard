@@ -417,6 +417,7 @@ var VBoard = VBoard || {};
 			}
 
 			if(pieceData.hasOwnProperty("s")) {
+				piece.size = pieceData["s"];
 				piece.mesh.scaling.y = pieceData["s"];
 				this.adjustPieceWidth(piece);
 			}

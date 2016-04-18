@@ -24,6 +24,12 @@ var VBoard = VBoard || {};
 	//should probably be tied to vb.board but whatever
 	vb.staticMeshCount = 0;
 
+	//how much to increase/decrease piece size by when resizing
+	vb.scalingFactor = 1.25
+
+	//how much to rotate pieces by
+	vb.rotationAmount = Math.PI / 6;
+
 	vb.quickStart = function () {
 		vb.limboIO.hostGame("bill", [0, 0, 255], "chess deathmatch", "12345");
 		vb.quickStarted = true;

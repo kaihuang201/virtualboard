@@ -95,6 +95,90 @@ var VBoard = VBoard || {};
 				vb.size = 10; //may need to be updated in the future
 				vb.setCameraPerspective();
 				vb.inputs.onMouseMove();
+			},
+
+			biggify: function () {
+				if(vb.selection.isEmpty()) {
+					var piece = vb.inputs.getPieceUnderMouse(false, true);
+
+					if(piece !== null) {
+						var newSize = piece.size * vb.scalingFactor;
+						vb.sessionIO.resizePiece(piece.id, newSize);
+					}
+				} else {
+					var ids = [];
+					var sizes = [];
+
+					for(var i=0; i<vb.selection.pieces.length; i++) {
+						var piece = vb.selection.pieces[i];
+						sizes.push(piece.size * vb.scalingFactor);
+						ids.push(piece.id);
+					}
+					vb.sessionIO.resizePiece(ids, sizes);
+				}
+			},
+
+			smallify: function () {
+				if(vb.selection.isEmpty()) {
+					var piece = vb.inputs.getPieceUnderMouse(false, true);
+
+					if(piece !== null) {
+						var newSize = piece.size / vb.scalingFactor;
+						vb.sessionIO.resizePiece(piece.id, newSize);
+					}
+				} else {
+					var ids = [];
+					var sizes = [];
+
+					for(var i=0; i<vb.selection.pieces.length; i++) {
+						var piece = vb.selection.pieces[i];
+						sizes.push(piece.size / vb.scalingFactor);
+						ids.push(piece.id);
+					}
+					vb.sessionIO.resizePiece(ids, sizes);
+				}
+			},
+
+			rotatePieceCCW: function () {
+				if(vb.selection.isEmpty()) {
+					var piece = vb.inputs.getPieceUnderMouse(false, true);
+
+					if(piece !== null) {
+						var newRotation = piece.mesh.rotation.z + vb.rotationAmount;
+						vb.sessionIO.rotatePiece(piece.id, newRotation);
+					}
+				} else {
+					var ids = [];
+					var sizes = [];
+
+					for(var i=0; i<vb.selection.pieces.length; i++) {
+						var piece = vb.selection.pieces[i];
+						sizes.push(piece.mesh.rotation.z + vb.rotationAmount);
+						ids.push(piece.id);
+					}
+					vb.sessionIO.rotatePiece(ids, sizes);
+				}
+			},
+
+			rotatePieceCW: function () {
+				if(vb.selection.isEmpty()) {
+					var piece = vb.inputs.getPieceUnderMouse(false, true);
+
+					if(piece !== null) {
+						var newRotation = piece.mesh.rotation.z - vb.rotationAmount;
+						vb.sessionIO.rotatePiece(piece.id, newRotation);
+					}
+				} else {
+					var ids = [];
+					var sizes = [];
+
+					for(var i=0; i<vb.selection.pieces.length; i++) {
+						var piece = vb.selection.pieces[i];
+						sizes.push(piece.mesh.rotation.z - vb.rotationAmount);
+						ids.push(piece.id);
+					}
+					vb.sessionIO.rotatePiece(ids, sizes);
+				}
 			}
 		},
 
@@ -386,50 +470,81 @@ var VBoard = VBoard || {};
 
 	//this needs to be done after, since we can't actually refer to vb.inputs otherwise
 	vb.inputs.keyMap = {
+		//w
 		87 : {
 			"poll" : vb.inputs.handlers.up
 		},
+		//up
 		38 : {
 			"poll" : vb.inputs.handlers.up
 		},
+		//s
 		83 : {
 			"poll" : vb.inputs.handlers.down
 		},
+		//down
 		40 : {
 			"poll" : vb.inputs.handlers.down
 		},
+		//d
 		68 : {
 			"poll" : vb.inputs.handlers.right
 		},
+		//right
 		39 : {
 			"poll" : vb.inputs.handlers.right
 		},
+		//a
 		65 : {
 			"poll" : vb.inputs.handlers.left
 		},
+		//left
 		37 : {
 			"poll" : vb.inputs.handlers.left
 		},
+		//q
 		81 : {
 			"poll" : vb.inputs.handlers.rotateCCW
 		},
+		//e
 		69 : {
 			"poll" : vb.inputs.handlers.rotateCW
 		},
+		//f
 		70 : {
 			"press" : vb.inputs.handlers.flipPiece
 		},
+		//delete
 		46 : {
 			"release" : vb.inputs.handlers.removePiece
 		},
+		//escape
 		27 : {
 			"release" : vb.inputs.handlers.cancel
 		},
+		//backspace
 		8 : {
 			"press" : vb.inputs.handlers.resetCamera
 		},
+		//space
 		32 : {
 			"press" : vb.inputs.handlers.resetCamera
+		},
+		//equals sign/plus sign
+		187 : {
+			"press" : vb.inputs.handlers.biggify
+		},
+		//minus sign/underscore
+		189 : {
+			"press" : vb.inputs.handlers.smallify
+		},
+		//r
+		82: {
+			"press" : vb.inputs.handlers.rotatePieceCCW
+		},
+		//t
+		84: {
+			"press" : vb.inputs.handlers.rotatePieceCW
 		}
 	};
 })(VBoard);
