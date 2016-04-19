@@ -1,5 +1,5 @@
 var VBoard = VBoard || {};
-(ifunction (vb) {
+(function (vb) {
 
 	vb.board = {
 		//members
@@ -580,6 +580,7 @@ var VBoard = VBoard || {};
 			piece.predictTimeout = null;
 			piece.isCard = false;
 			piece.isDie = false;
+			piece.isUserPicker = false;
 			piece.isTimer = false;
 			piece.isRunning = false;
 			piece.time = 0;
@@ -606,6 +607,7 @@ var VBoard = VBoard || {};
 				piece.isDie = true;
 				piece.max = pieceData["diceData"]["max"];
 				piece.faces = pieceData["diceData"]["faces"];
+				piece.isUserPicker = pieceData["diceData"]["isUserPicker"];
 			}
 
 			if(pieceData.hasOwnProperty("timerData")){
@@ -786,8 +788,8 @@ var VBoard = VBoard || {};
 			var material = new BABYLON.StandardMaterial("std", vb.scene);
 			material.emissiveColor = color;
 			material.disableLighting = true;
-			plane.material = material;
-        }
+			piece.mesh.material = material;
+        },
 
 		//TODO: maybe a toggle for auto resizing
 		setIcon: function (piece, icon) {
@@ -903,17 +905,22 @@ var VBoard = VBoard || {};
 			}
 			var icon = "";
 
-			if(value < piece.faces.length) {
-				icon = piece.faces[value];
+			if (piece.isUserPicker) {
+				var color = new BABYLON.Color3(1, 0 , 0);
+				this.setColor(piece, color);
 			} else {
-				//A six sided die will return 0-5 inclusive
-				if(piece.max < 7) {
-					icon = "/static/img/die_face/small_die_face_" + (value+1) + ".png"
+				if(value < piece.faces.length) {
+					icon = piece.faces[value];
 				} else {
-					icon = "/static/img/die_face/big_die_face_" + (value+1) + ".png"
+					//A six sided die will return 0-5 inclusive
+					if(piece.max < 7) {
+						icon = "/static/img/die_face/small_die_face_" + (value+1) + ".png"
+					} else {
+						icon = "/static/img/die_face/big_die_face_" + (value+1) + ".png"
+					}
 				}
+				this.setIcon(piece, icon);				
 			}
-			this.setIcon(piece, icon);
 		},
 
 		//handles data from socket handler

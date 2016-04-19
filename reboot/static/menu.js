@@ -174,12 +174,38 @@ var VBoard = VBoard || {};
 					"icon" : icon,
 					"diceData" : {
 						"max" : selectedMax,
-						"faces" : []
+						"faces" : [],
+						"isUserPicker" : false
 					},
 					"s" : 2
 				};
 				vb.sessionIO.addPiece(data);
 				$("#add-die-modal").modal("toggle");
+			});
+
+			$("#addUserPicker").click(function () {
+				var selectedMax = 6;
+				//TODO: use vb.camera.position.x/y instead of board center
+				//var pos = {x:0, y:0};
+
+				//TODO: replace with actual method
+				//vb.board.generateNewPiece(selectedName, user, pos);
+				var icon = "/static/img/die_face/small_die_face_1.png";
+
+				if(selectedMax > 6) {
+					icon = "/static/img/die_face/big_die_face_1.png";
+				}
+
+				var data = {
+					"icon" : icon,
+					"diceData" : {
+						"max" : selectedMax,
+						"faces" : [],
+						"isUserPicker" : true
+					},
+					"s" : 2
+				};
+				vb.sessionIO.addPiece(data);
 			});
 
 			$("#submit-add-private-zone").click(function () {
