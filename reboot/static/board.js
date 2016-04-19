@@ -113,6 +113,7 @@ var VBoard = VBoard || {};
 		removePrivateZone: function (id) {
 			this.privateZones[id].dispose();
 			delete this.privateZones[id];
+			vb.backStaticMeshCount--;
 		},
 
 		//TODO: The whole "always private" thing is not implemented yet
@@ -194,15 +195,27 @@ var VBoard = VBoard || {};
 			return true;
 		},
 
-		registerStaticMesh: function (mesh) {
+		registerStaticMesh: function (mesh, front) {
+			if(front === void(0)) {
+				front = false;
+			}
+
 			for(var index = vb.scene.meshes.length-1; index >= 0; index--) {
 				if(vb.scene.meshes[index].uniqueId == mesh.uniqueId) {
-					var i;
-					for(i = index; i > vb.staticMeshCount; i--) {
-						vb.scene.meshes[i] = vb.scene.meshes[i-1];
+					if(front) {
+						for(var i = index; i < vb.scene.meshes.length-1; i++) {
+							vb.scene.meshes[i] = vb.scene.meshes[i+1];
+						}
+						vb.scene.meshes[vb.scene.meshes.length-1] = mesh;
+						vb.frontStaticMeshCount++;
+					} else {
+						var i;
+						for(i = index; i > vb.staticMeshCount; i--) {
+							vb.scene.meshes[i] = vb.scene.meshes[i-1];
+						}
+						vb.scene.meshes[i] = mesh;
+						vb.backStaticMeshCount++;
 					}
-					vb.scene.meshes[i] = mesh;
-					vb.staticMeshCount++;
 					return;
 				}
 			}
@@ -273,7 +286,7 @@ var VBoard = VBoard || {};
 
 		verifySceneIndex: function (index, piece) {
 			var meshes = vb.scene.meshes;
-			index += vb.staticMeshCount;
+			index += vb.backStaticMeshCount;
 
 			if(index < meshes.length) {
 				var mesh = meshes[index];
@@ -282,6 +295,7 @@ var VBoard = VBoard || {};
 					return index;
 				}
 			}
+			console.log("missed index for piece: " + piece.id);
 
 			for(var i=0; i<meshes.length; i++) {
 				var mesh = meshes[i];
@@ -544,6 +558,12 @@ var VBoard = VBoard || {};
 			piece.color = new BABYLON.Color3(c[0]/255, c[1]/255, c[2]/255);
 
 			var plane = BABYLON.Mesh.CreatePlane("plane", 1.0, vb.scene);
+
+			//we need to move this piece behind static meshes being rendered in the front
+			for(var i=vb.scene.meshes.length-1; i >= vb.scene.meshes.length-vb.frontStaticMeshCount; i--) {
+				vb.scene.meshes[i] = vb.scene.meshes[i-1];
+				vb.scene.meshes[i-1] = plane;
+			}
 			plane.scaling.y = piece.size;
 			plane.scaling.x = piece.size;
 			var subMaterial = new BABYLON.StandardMaterial("std", vb.scene);
@@ -552,7 +572,7 @@ var VBoard = VBoard || {};
 			infoTexture.hasAlpha = true;
 			infoMaterial.diffuseTexture = infoTexture;
 			infoMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
-			infoMaterial.emissiveColor = new BABYLON.Color3(1, 1, 1);
+			infoMaterial.emissiveColor = piece.color;
 			var material = new BABYLON.MultiMaterial("multi", vb.scene);
 			material.subMaterials.push(subMaterial);
 			material.subMaterials.push(infoMaterial);

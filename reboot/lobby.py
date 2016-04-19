@@ -556,7 +556,7 @@ class Game:
 						}
 
 						if new_private_colors:
-							self.message_color(response, new_private_color)
+							self.message_colors(response, new_private_colors)
 						else:
 							self.message_all(response)
 					'''
