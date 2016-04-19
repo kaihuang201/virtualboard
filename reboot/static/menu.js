@@ -184,7 +184,7 @@ var VBoard = VBoard || {};
 			});
 
 			$("#addUserPicker").click(function () {
-				var selectedMax = vb.users.userList.length;
+				var selectedMax = Object.keys(vb.users.userList).length;
 				//TODO: use vb.camera.position.x/y instead of board center
 				//var pos = {x:0, y:0};
 
