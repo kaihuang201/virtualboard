@@ -1,5 +1,5 @@
 var VBoard = VBoard || {};
-(function (vb) {
+(ifunction (vb) {
 
 	vb.board = {
 		//members
@@ -776,6 +776,18 @@ var VBoard = VBoard || {};
 				this.generateNewPiece(pieceData);
 			}
 		},
+
+        /**
+         * Set a piece to a solid color
+         * @piece a piece object
+         * @color BABYLON.Color3
+         */
+        setColor: function (piece, color) {
+			var material = new BABYLON.StandardMaterial("std", vb.scene);
+			material.emissiveColor = color;
+			material.disableLighting = true;
+			plane.material = material;
+        }
 
 		//TODO: maybe a toggle for auto resizing
 		setIcon: function (piece, icon) {
