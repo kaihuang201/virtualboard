@@ -906,7 +906,7 @@ var VBoard = VBoard || {};
 			var icon = "";
 
 			if (piece.isUserPicker) {
-				var color = new BABYLON.Color3(1, 0 , 0);
+				var color = vb.users.userList[value].color;
 				this.setColor(piece, color);
 			} else {
 				if(value < piece.faces.length) {
