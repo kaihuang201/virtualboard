@@ -184,17 +184,13 @@ var VBoard = VBoard || {};
 			});
 
 			$("#addUserPicker").click(function () {
-				var selectedMax = 6;
+				var selectedMax = vb.users.userList.length;
 				//TODO: use vb.camera.position.x/y instead of board center
 				//var pos = {x:0, y:0};
 
 				//TODO: replace with actual method
 				//vb.board.generateNewPiece(selectedName, user, pos);
 				var icon = "/static/img/die_face/small_die_face_1.png";
-
-				if(selectedMax > 6) {
-					icon = "/static/img/die_face/big_die_face_1.png";
-				}
 
 				var data = {
 					"icon" : icon,
