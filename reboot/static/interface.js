@@ -66,6 +66,19 @@ var VBoard = VBoard || {};
 		fadeTimeout: null,
 
 
+		
+		init_welcome:function () {
+			$("#skip-welcome-btn").click(function(){
+				$("#main-page-container2").hide();
+				$("#welcome-page-content").slideUp("fast");
+				$("#main-page-container").slideDown("fast");
+				$("#change-username").slideDown("fast");
+				vb.interface.init();
+			});
+
+
+		},
+
 		// interface initializer
 		init: function () {
 			if (vb.cookie.hasActiveCookie()) {
@@ -87,6 +100,8 @@ var VBoard = VBoard || {};
 				vb.interface.userNamePrompt();
 			}
 
+
+			
 
 			$("#create-lobby").on("click", function() {
 				VBoard.interface.createLobbyRequest();
