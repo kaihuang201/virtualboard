@@ -1,14 +1,27 @@
 html, body
 {
 	font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; 
-	overflow: hidden;
+	overflow: scroll;
 	width: 100%;
 	height: 100%;
-	padding: 0px;
-	margin: 0px;
+/*	padding: 0px;
+	margin: 0px;*/
 }
 
 html, body { 
+
+}
+
+#main-page {
+	/*position: absolute;*/
+	/*background-color: rgba(255,255,255,0.65); */
+	top: 0%;
+	left: 0%;
+	padding: 20px;
+	height: 100%;
+	width: 100%;
+	position: relative;
+
 	background: url(/static/img/bg.jpg) no-repeat center center fixed; 
 	-webkit-background-size: cover;
 	-moz-background-size: cover;
@@ -20,16 +33,6 @@ html, body {
 	-ms-user-select:none; 
 	user-select: none;
 	-o-user-select: none;
-}
-
-#main-page {
-	/*position: absolute;*/
-	/*background-color: rgba(255,255,255,0.65); */
-	top: 0%;
-	left: 0%;
-	padding: 20px;
-	height: 100%;
-	width: 100%;
 
 	
 }
