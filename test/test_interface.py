@@ -502,6 +502,20 @@ class InterfaceTest(unittest.TestCase):
 		wait = InterfaceTest.wait
 		self.assertFalse(self.check_upload_piece_alert("http://i.imgur.com/8kvHaqH.png"))
 
+	#Tests that the piece added by clicling the Add User Picker is indeed a user picker die
+	def test_user_picker1(self):
+		driver = InterfaceTest.driver
+		wait = InterfaceTest.wait
+		canvas = self.create_lobby()
+		driver = InterfaceTest.driver
+		wait = InterfaceTest.wait
+
+		side_hover = driver.find_element_by_id("viewMenuHover")
+		ActionChains(InterfaceTest.driver).move_to_element(side_hover).perform()
+		userPicker_button = wait.until(ec.element_to_be_clickable((by.XPATH, "//*[contains(text(), 'Add User Picker')]")))
+		userPicker_button.click()
+		wait.until(InterfaceTest.javascript_to_be("return VBoard.board.pieces[0].isUserPicker;", True))
+
 
 if __name__ == '__main__':
         unittest.main()

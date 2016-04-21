@@ -185,11 +185,9 @@ var VBoard = VBoard || {};
 
 			$("#addUserPicker").click(function () {
 				var selectedMax = Object.keys(vb.users.userList).length;
-				//TODO: use vb.camera.position.x/y instead of board center
-				//var pos = {x:0, y:0};
 
-				//TODO: replace with actual method
-				//vb.board.generateNewPiece(selectedName, user, pos);
+				//TODO: Need to change the initial icon
+				//TODO: if a user joins after the user picker is added then the user picker does not update to include that user
 				var icon = "/static/img/die_face/small_die_face_1.png";
 
 				var data = {

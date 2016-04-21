@@ -906,6 +906,7 @@ var VBoard = VBoard || {};
 			var icon = "";
 
 			if (piece.isUserPicker) {
+				piece.max = Object.keys(vb.users.userList).length;
 				var color = vb.users.userList[value].color;
 				this.setColor(piece, color);
 			} else {
