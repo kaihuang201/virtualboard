@@ -42,7 +42,7 @@ In-Game/General
 Feature Ideas
 ==========
    - Readable and editable notepads/counters
-   - actaully implementing scribbles for real this time
+   - actually implementing scribbles for real this time
    - piece momentum when thrown, shake dice to roll
  x - hitting tab or something to bring up the current player list
    - saving/loading

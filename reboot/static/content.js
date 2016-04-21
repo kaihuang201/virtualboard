@@ -106,10 +106,10 @@ var VBoard = VBoard || {};
 		// below are test functions 
 		createChessBoard: function() {
 			// Parameters
-		    var xmin = -3;
-		    var zmin = -3;
-		    var xmax =  3;
-		    var zmax =  3;
+		    var xmin = -12;
+		    var zmin = -12;
+		    var xmax =  12;
+		    var zmax =  12;
 		    var precision = {
 		        "w" : 2,
 		        "h" : 2

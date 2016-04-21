@@ -60,7 +60,7 @@ var VBoard = VBoard || {};
 		vb.simTime = Date.now();
 		vb.inputs.initialize();
 
-		vb.renderInit();
+		vb.renderInit_3d();
 
 		$("#menu").css("visibility", "visible");
 
@@ -114,6 +114,98 @@ var VBoard = VBoard || {};
 			vb.board.selectionBox.position.z = 100;
 			vb.board.selectionBox.subMeshes = [];
 			vb.staticMeshCount++;
+
+			scene.onPointerDown = function(evt,pickResult) {
+				if (pickResult.hit) {
+					console.log("mousedown at (" + (pickResult.pickedPoint.x).toString() +',' +(pickResult.pickedPoint.y).toString() +")");
+					vb.inputs.onMouseDown(evt, pickResult);	
+				}
+			};
+				
+			scene.onPointerMove = function (evt,pickResult) {
+				vb.inputs.onMouseMove(evt, pickResult);
+			};
+			scene.onPointerUp = function (evt,pickResult) {
+				vb.inputs.onMouseUp(evt, pickResult);
+			};
+			scene.onPointerPick = function (evt,pickResult) {
+				// vb.inputs.onMousePick(evt, pickResult);
+			};
+
+			return scene;
+		})();
+		vb.engine.runRenderLoop(vb.renderLoop);
+	};
+
+	vb.renderInit_3d = function () {
+		vb.frame = 0;
+		vb.canvas = document.getElementById("canvas");
+		var canvas = vb.canvas;
+		vb.engine = new BABYLON.Engine(canvas, true);
+		vb.scene = (function () {
+			var scene = new BABYLON.Scene(vb.engine);
+			var camera = new BABYLON.ArcRotateCamera("Camera", 3 * Math.PI / 2, Math.PI / 8, 50, BABYLON.Vector3.Zero(), scene);
+			vb.camera = camera;
+
+			vb.setCameraPerspective();
+			camera.setTarget(new BABYLON.Vector3.Zero());
+
+			
+
+			camera.attachControl(canvas, false);
+			//camera.keysUp.push(87); // W
+			//camera.keysLeft.push(65); // A
+			//camera.keysDown.push(83); // S
+			//camera.keysRight.push(68); // D
+			camera.keysUp = [];
+			camera.keysLeft = [];
+			camera.keysDown = [];
+			camera.keysRight = [];
+			//camera.inertia = 0.6;
+			//camera.angularSensibility = Infinity;
+			//camera.maxCameraSpeed = 80;
+			//camera.cameraAcceleration = 0.1;
+			//camera.rotation = new BABYLON.Vector3(Math.PI/2, 0, 0);
+
+			scene.activeCamera = camera;
+
+
+
+			vb.light = new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0, 1, 0), scene);
+			// vb.light.groundColor = new BABYLON.Color3(1, 1, 1);
+			// vb.light.specular = new BABYLON.Color3(0, 0, 0);
+			vb.light.intensity = .8;
+
+
+			// vb.board.background = BABYLON.Mesh.CreatePlane("background", 50, scene);
+			// vb.board.background.position = new BABYLON.Vector3(0, 0, 100);
+			// vb.board.background.isPickable = false;
+			// vb.staticMeshCount++;
+
+			// vb.board.selectionBox = BABYLON.Mesh.CreatePlane("selection box", 1, scene);
+			// vb.board.selectionBox.position.z = 100;
+			// vb.board.selectionBox.subMeshes = [];
+			// vb.staticMeshCount++;
+
+			// LOAD MODELS
+
+
+			BABYLON.SceneLoader.Load("/static/models_3d/", "king.stl", scene, function (){});
+			// var loader = new BABYLON.AssetsManager(scene);
+			// var king = loader.addMeshTask("king", "", "/static/models_3d/", "king.stl");
+		    // bane.onSuccess = pos;
+			// loader.onFinish = function() {
+		 //        engine.runRenderLoop(function () {
+		 //            scene.render();
+		 //        });
+		 //    };
+		    // loader.load();
+
+
+
+
+
+
 
 			scene.onPointerDown = function(evt,pickResult) {
 				if (pickResult.hit) {

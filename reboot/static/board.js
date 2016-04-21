@@ -565,10 +565,10 @@ var VBoard = VBoard || {};
 
 		setBackground: function (icon) {
 			//TODO: set background
-			var backgroundMaterial = new BABYLON.StandardMaterial("backgroundMat", vb.scene);
-			backgroundMaterial.diffuseTexture = new BABYLON.Texture(icon, vb.scene);
-			vb.board.background.material = backgroundMaterial;
-			vb.board.background.name = icon;
+			// var backgroundMaterial = new BABYLON.StandardMaterial("backgroundMat", vb.scene);
+			// backgroundMaterial.diffuseTexture = new BABYLON.Texture(icon, vb.scene);
+			// vb.board.background.material = backgroundMaterial;
+			// vb.board.background.name = icon;
 		},
 
 		loadBoardData: function (boardData) {
