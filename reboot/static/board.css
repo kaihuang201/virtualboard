@@ -46,10 +46,18 @@ html, body {
 #game-title {
 	color: white;
 	text-align: center;
+	top: 10%;
+    position: relative;
 }
 
 #skip-welcome-btn {
 	margin: auto;
+	position: relative;
+    left: 50%;
+    top: 50%;
+    margin-bottom: 50%;
+    margin-right: -50%;
+    transform: translate(-50%, 60%);
 }
 
 #main-page #user-profile {
