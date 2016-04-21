@@ -34,13 +34,22 @@ html, body {
 	
 }
 
-#main-page #main-page-container {
+#main-page #main-page-container, #main-page #main-page-container2 {
 	position: absolute;
 	width: 100%;
 	height: 40%;
 	top: 30%;
 	left: 0px;
 	background-color: rgba(50,50,50,0.65);
+}
+
+#game-title {
+	color: white;
+	text-align: center;
+}
+
+#skip-welcome-btn {
+	margin: auto;
 }
 
 #main-page #user-profile {

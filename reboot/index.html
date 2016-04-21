@@ -52,7 +52,7 @@
 				</button>
 			</div>
 
-			<div id="main-page-container" class="container-fluid">
+			<div id="main-page-container" class="container-fluid" style="display: none">
 				<div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups" id="main-page-toolbar">
 					<div class="btn-group-vertical btn-group-lg" role="group" aria-label="First group">
 						<button class="btn btn-success UI-main lobby-list" id="resume-game" style="display:none"><span class="glyphicon glyphicon-play" aria-hidden="true"></span> Resume</button>
@@ -60,14 +60,18 @@
 						<button class="btn btn-primary UI-main lobby-list" id="create-lobby"><span class="glyphicon glyphicon-knight" aria-hidden="true"></span> Create</button>
 						
 					</div>
-
-					
 				</div>
 				<div id="lobby-list">
 					<div id="inner" class="list-group">
 					</div>
 				</div>
 			</div>
+
+			<div id="main-page-container2" class="container-fluid">
+				<h1 id="game-title"> Welcome to Virtual Board</h1>
+				<button class="btn btn-default" id="skip-welcome-btn">Enter Game</button>
+			</div>
+
 		</div>
 
 		<!-- game GUI -->
