@@ -40,6 +40,10 @@ var VBoard = VBoard || {};
 				$("#add-piece-modal").modal();
 			});
 
+			$("#addNote").on("click", function () {
+				$("#add-note-modal").modal();
+			});
+
 			$("#addDie").on("click", function () {
 				$("#add-die-modal").modal();
 			});
@@ -117,6 +121,20 @@ var VBoard = VBoard || {};
 				};
 				vb.sessionIO.addPiece(data);
 				$("#add-piece-modal").modal("toggle");
+			});
+
+			$("#submit-add-note").click(function () {
+				var text = $("#add-note").val();
+				
+				var data = {
+					"text" : text,
+					"s" : 2
+				};
+
+				console.log(text);
+
+				//vb.sessionIO.addPiece(data);
+				$("#add-note-modal").modal("toggle");
 			});
 
 			$("#submit-add-timer").click(function () {

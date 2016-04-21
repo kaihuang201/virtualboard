@@ -75,6 +75,7 @@
 
 			<div id="menu" style="visibility: hidden">
 				<button id="addPiece" class="btn btn-success btn-menu" type="button">Add Piece</button>
+				<button id="addNote" class="btn btn-success btn-menu" type="button">Add Note</button>
 				<button id="addDie" class="btn btn-success btn-menu" type="button">Add Die</button>
 				<button id="addDeck" class="btn btn-success btn-menu" type="button">Add Deck of Cards</button>
 				<button id="addPrivateZone" class="btn btn-success btn-menu" type="button">Add Private Zone</button>
@@ -184,6 +185,24 @@
 					</div>
 					<div class="modal-footer"></div>
 			  	</div>
+			</div>
+		</div>
+
+		<div class="modal fade" id="add-note-modal" role="dialog"> <!-- id="add-die-modal" to id="add-note-modal" -->
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button class="close-modal" type="button" class="close" data-dismiss="modal">&times;</button>
+						<h4 id="confirmJoinModalTitle"style="color:red;">Add Note</h4> <!-- Add Die to Add Note -->
+					</div>
+					<div class="modal-body">
+						Text to display: <input id="add-note" type="text"/> <!-- Number of Faces to Number of Faces --> <!-- id="add-die-max" to id="add-note" -->
+
+				  		<button type="submit" value="Add Note" id="submit-add-note">Add</button> <!-- value="Add Die" to value="Add Note" --> <!-- id="submit-add-die" to id="submit-add-note" -->
+				  		<button class="close-modal" type="button" data-dismiss="modal">Cancel</button>
+					</div>
+					<div class="modal-footer"></div>
+				</div>
 			</div>
 		</div>
 
