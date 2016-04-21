@@ -32,6 +32,7 @@ class Piece:
 		self.private_changes = {}
 
 		self.isTimer = False
+		self.isNote = False
 		self.isCard = False
 		self.isDie = False
 		self.isRunning = False
@@ -49,12 +50,17 @@ class Piece:
 			self.isRunning = False
 			self.timeout = None
 
+		if "noteData" in pieceData:
+			self.isNote = True
+			self.noteText = pieceData["noteData"]["text"]
+			self.noteTextSize = pieceData["noteData"]["size"]
+
 		if "cardData" in pieceData:
 			self.isCard = True
 
 			#cards are just a special case of decks where there is only one card
 			self.cardData = Deck(pieceData["cardData"], self.icon)
-			self.icon = self.cardData.get_icon()
+			self.icon = self.cardData.get_icon()		
 
 		#I know dice is plural but "isDie" sounds awkward here, but still, it's proper english
 		if "diceData" in pieceData:
@@ -99,6 +105,12 @@ class Piece:
 			data["diceData"] = {
 				"max" : self.max,
 				"faces" : self.faces
+			}
+
+		if self.isNote:
+			data["noteData"] = {
+				"text" : self.noteText,
+				"size" : self.noteTextSize
 			}
 
 		if self.isTimer:

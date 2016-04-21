@@ -581,6 +581,7 @@ var VBoard = VBoard || {};
 			piece.isCard = false;
 			piece.isDie = false;
 			piece.isTimer = false;
+			piece.isNote = false;
 			piece.isRunning = false;
 			piece.time = 0;
 			piece.lastTrigger = 0;
@@ -590,6 +591,21 @@ var VBoard = VBoard || {};
 			if(!pieceData.hasOwnProperty("timerData")){
 				this.setIcon(piece, pieceData["icon"]);
 				this.setInfo(piece, "");
+			}
+
+			if(pieceData.hasOwnProperty("noteData")){
+				piece.isNote = true;
+				piece.noteText = pieceData["noteData"]["text"];
+				piece.noteTextSize = pieceData["noteData"]["size"];
+				var dynamicTexture = new BABYLON.DynamicTexture("DynamicTexture", piece.noteText.length*50, vb.scene, true);
+				dynamicTexture.hasAlpha = true;
+				dynamicTexture.drawText(piece.noteText, 5, 40, "bold 36px Arial", "red" , "transparent", true);
+				var xChar = new BABYLON.Mesh.CreatePlane("TextPlane", piece.noteTextSize, vb.scene, true);
+				xChar.material = new BABYLON.StandardMaterial("TextPlaneMaterial", vb.scene);
+				xChar.material.backFaceCulling = false;
+				xChar.material.specularColor = new BABYLON.Color3(0, 0, 0);
+				xChar.material.diffuseTexture = dynamicTexture;
+				xChar.position = new BABYLON.Vector3(vb.camera.position.x, vb.camera.position.y, 70);
 			}
 
 			if(pieceData.hasOwnProperty("cardData")) {

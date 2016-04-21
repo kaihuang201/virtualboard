@@ -125,13 +125,12 @@ var VBoard = VBoard || {};
 
 			$("#submit-add-note").click(function () {
 				var text = $("#add-note").val();
-				var icon = "/static/img/die_face/small_die_face_1.png";
+				var size = parseInt($("#add-note-size").val());
 				var data = {
-					"icon" : icon,
 					"noteData" : {
-						"text" : text
-					},
-					"s" : 2					
+						"text" : text,
+						"size" : size
+					},				
 				};
 
 				vb.sessionIO.addPiece(data);
