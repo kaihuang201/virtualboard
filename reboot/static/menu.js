@@ -125,15 +125,16 @@ var VBoard = VBoard || {};
 
 			$("#submit-add-note").click(function () {
 				var text = $("#add-note").val();
-				
+				var icon = "/static/img/die_face/small_die_face_1.png";
 				var data = {
-					"text" : text,
-					"s" : 2
+					"icon" : icon,
+					"noteData" : {
+						"text" : text
+					},
+					"s" : 2					
 				};
 
-				console.log(text);
-
-				//vb.sessionIO.addPiece(data);
+				vb.sessionIO.addPiece(data);
 				$("#add-note-modal").modal("toggle");
 			});
 
@@ -157,7 +158,9 @@ var VBoard = VBoard || {};
 
 			$("#submit-upload-piece").click(function () {
 				var imageUrl = $("#image-url").val();
+				var imageSize = parseInt($("#image-size").val());
 				console.log(imageUrl);
+				console.log(imageSize);
 
 				var img = new Image();
 				img.onerror = img.onabort = function() {
@@ -166,6 +169,7 @@ var VBoard = VBoard || {};
 				img.onload = function() {
 					var data = {
 						"icon" : imageUrl,
+						"s" : imageSize
 					};
 					vb.sessionIO.addPiece(data);
 				};
