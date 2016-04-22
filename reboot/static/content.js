@@ -180,8 +180,8 @@ var VBoard = VBoard || {};
 						"color" : [255, 255, 255],
 						"static" : 0,
 						"cardData" : {
-							"count" : 100,
-							"shuffle" : tiles.length,
+							"count" : tiles.length,
+							"shuffle" : 1,
 							"cards" : tiles
 						}
 					}
