@@ -73,8 +73,8 @@ var VBoard = VBoard || {};
 
 			for(var x = -7; x < 8; x += 2) {
 				for(var y = -7; y < 8; y += 2) {
-					//this is literally javascript having an incorrect implementation of modulus
-					if(((x + y)/2) % 2 == 1 || ((x + y)/2) % 2 == -1) {
+					//this is literally javascript having a correct implementation of modulus
+					if(((x + y)/2) % 2 != 0) {
 						if(y < -2) {
 							checkersData["pieces"].push(this.loadChessGameHelper("nwpawn", x, y));
 						} else if(y > 2) {
