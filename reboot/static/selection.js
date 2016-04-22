@@ -182,7 +182,7 @@ var VBoard = VBoard || {};
 
 				//TODO: hidden pieces should also be filtered
 
-				if(piece.static || this.hasPiece(piece.id)) {
+				if(piece.hidden || piece.static || this.hasPiece(piece.id)) {
 					continue;
 				}
 				var piecePos = vb.board.rotateToCameraSpace(piece.position);

@@ -946,6 +946,7 @@ var VBoard = VBoard || {};
 						zoneData = zones[index];
 						vb.board.removePrivateZone(zoneData);
 					}
+					break;
 				case "enterPrivateZone":
 					var items = data["data"];
 

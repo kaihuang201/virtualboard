@@ -257,7 +257,7 @@ class Game:
 				zone_id = zoneData["id"]
 				pieces = self.board_state.remove_private_zone(zone_id)
 
-				if pieces:
+				if pieces is not None:
 					remove_zone_response.append({
 						"user" : client.user_id,
 						"id" : zone_id
