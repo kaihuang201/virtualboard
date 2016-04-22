@@ -16,7 +16,6 @@ games = {}
 next_game_id = 0
 
 MOVE_TICK_DURATION = 0.05 #50 ms
-#KEY_MAX = 1000000000000000
 #SAVE_RETRY_TIME = 1
 
 #WHITE = [255, 255, 255]
@@ -363,13 +362,21 @@ class Game:
 
 	def loadBoardState(self, client, boardData):
 		if client is None or self.host.user_id == client.user_id:
+			self.board_state.clear_board();
+			clearResponse = {
+				"type" : "clearBoard"
+			}
+
+			self.message_all(clearResponse)
+
+
 			#set background
 			self.setBackground(self.host, {
 				"icon" : boardData["background"]
 			})
 
 			zones = boardData["privateZones"]
-			self.add_private_zone(client, zones)
+			self.add_private_zone(self.host, zones)
 
 			#load pieces
 			pieces = boardData["pieces"]
@@ -1107,15 +1114,14 @@ class Game:
 			client.write_message(json.dumps(response))
 		#else:
 		#	tornado.ioloop.IOLoop.instance().add_timeout(datetime.timedelta(seconds=SAVE_RETRY_TIME), self.prepareToSave, client)
-'''
+
 	def prepareToLoad(self, client):
 		if client.user_id == self.host.user_id:
-			self.load_key = random.randint(0, KEY_MAX)
 			response = {
 				"type" : "loadPrep",
 				"data" : {
 					"lobbyId" : self.game_id,
-					"key" : self.load_key
+					"key" : self.password
 				}
 			}
 			client.write_message(json.dumps(response))
@@ -1130,53 +1136,3 @@ class Game:
 			}
 			client.write_message(json.dumps(response))
 
-	def load(self, json_str):
-		for client in self.clients:
-			self.movebuffer.flush(client)
-		self.board_state.load_from_json(json.loads(json_str))
-
-		clearResponse = {
-			"type" : "clearBoard"
-		}
-
-		self.message_all(clearResponse)
-
-		#set background
-		self.setBackground(self.host, {
-			"icon" : self.board_state.background
-		})
-
-		colors = set()
-		for user_id, client in self.clients.iteritems():
-			colors.add(str(client.color))
-
-		for color in colors:
-			response_data = []
-
-			for piece in self.board_state.pieces:
-				data_entry = piece.get_json_obj()
-				data_entry["user"] = self.host.user_id
-				if data_entry["color"] == WHITE or data_entry["color"] == eval(color):
-					response_data.append(data_entry)
-
-			if len(response_data) > 0:
-				response = {
-					"type" : "pieceAdd",
-					"data" : response_data
-				}
-				self.message_color(eval(color), response)
-
-		response_data = []
-
-		for zone_id, zone in self.board_state.private_zones.iteritems():
-			zoneData = zone.get_json_obj()
-			zoneData["id"] = zone_id
-			response_data.append(zoneData)
-
-		if len(response_data) > 0:
-			response = {
-				"type" : "addPrivateZone",
-				"data" : response_data
-			}
-			self.message_all(response)
-'''

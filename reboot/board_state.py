@@ -464,20 +464,3 @@ class BoardState:
 			"pieces" : pieces_json
 		}
 
-'''
-	def load_from_json(self, json_obj):
-		self.background = json_obj["background"]
-		self.pieces = []
-		self.piecemap = {}
-		self.next_piece_id = 0
-		self.privateZones = {}
-		self.next_zone_id = 0
-
-		# make private zones first, so pieces know if they are in a private zone
-		for zone_json in json_obj["privateZones"]:
-			self.add_private_zone(zone_json["pos"]["x"], zone_json["pos"]["y"], zone_json["width"],
-				zone_json["height"], zone_json["rotation"], zone_json["color"])
-
-		for piece_json in json_obj["pieces"]:
-			self.generate_new_piece(piece_json)
-'''

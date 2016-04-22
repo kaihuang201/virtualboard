@@ -11,7 +11,7 @@ class DownloadStateHandler(tornado.web.RequestHandler):
         key = self.get_argument("key")
         if games.has_key(lobby_id):
             if games[lobby_id].password == key:
-                filename = str(datetime.datetime.now()) + ".json"
+                filename = str(datetime.datetime.now()) + ".vb"
                 self.set_header('Content-Type', 'application/json')
                 self.set_header('Content-Disposition', 'attachment; filename=' + filename)
                 self.write(json.dumps(games[lobby_id].board_state.get_json_obj(True)))
@@ -21,13 +21,12 @@ class DownloadStateHandler(tornado.web.RequestHandler):
 #        else:
 #            self.write("Lobby " + str(lobby_id) + " does not exist")
 
-'''
 class UploadStateHandler(tornado.web.RequestHandler):
     def post(self):
         lobby_id = int(self.get_argument("lobbyId"))
-        key = int(self.get_argument("key"))
+        key = self.get_argument("key")
         if games.has_key(lobby_id):
-            if games[lobby_id].load_key == key:
+            if games[lobby_id].password == key:
                 savefile = self.request.files['upload'][0]
                 filename = savefile['filename']
                 extn = os.path.splitext(filename)[1]
@@ -36,9 +35,8 @@ class UploadStateHandler(tornado.web.RequestHandler):
                     return
 
                 save = savefile['body']
-                games[lobby_id].load(save)
+                games[lobby_id].loadBoardState(None, json.loads(save))
             else:
                 self.write("Incorrect key, expected " + str(games[lobby_id].save_key) + " but got " + str(key))
         else:
             self.write("Lobby " + str(lobby_id) + " does not exist")
-'''
