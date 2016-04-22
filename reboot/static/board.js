@@ -111,9 +111,11 @@ var VBoard = VBoard || {};
 			this.registerStaticMesh(plane);
 		},
 
-		removePrivateZone: function (id) {
+		removePrivateZone: function (zoneData) {
+			var id = zoneData["id"];
 			this.privateZones[id].dispose();
 			delete this.privateZones[id];
+			vb.backStaticMeshCount--;
 		},
 
 		//TODO: The whole "always private" thing is not implemented yet
@@ -163,10 +165,14 @@ var VBoard = VBoard || {};
 		showPiece: function (piece) {
 			//TODO: register/unregister event action
 			piece.mesh._isEnabled = true;
+			piece.hidden = false;
+			this.addClickAction(piece);
 		},
 
 		hidePiece: function (piece) {
 			piece.mesh._isEnabled = false;
+			piece.hidden = true;
+			this.removeClickAction(piece);
 		},
 
 		privateZoneContains: function (zone, x, y) {
@@ -195,15 +201,27 @@ var VBoard = VBoard || {};
 			return true;
 		},
 
-		registerStaticMesh: function (mesh) {
+		registerStaticMesh: function (mesh, front) {
+			if(front === void(0)) {
+				front = false;
+			}
+
 			for(var index = vb.scene.meshes.length-1; index >= 0; index--) {
 				if(vb.scene.meshes[index].uniqueId == mesh.uniqueId) {
-					var i;
-					for(i = index; i > vb.staticMeshCount; i--) {
-						vb.scene.meshes[i] = vb.scene.meshes[i-1];
+					if(front) {
+						for(var i = index; i < vb.scene.meshes.length-1; i++) {
+							vb.scene.meshes[i] = vb.scene.meshes[i+1];
+						}
+						vb.scene.meshes[vb.scene.meshes.length-1] = mesh;
+						vb.frontStaticMeshCount++;
+					} else {
+						var i;
+						for(i = index; i > vb.staticMeshCount; i--) {
+							vb.scene.meshes[i] = vb.scene.meshes[i-1];
+						}
+						vb.scene.meshes[i] = mesh;
+						vb.backStaticMeshCount++;
 					}
-					vb.scene.meshes[i] = mesh;
-					vb.staticMeshCount++;
 					return;
 				}
 			}
@@ -274,7 +292,7 @@ var VBoard = VBoard || {};
 
 		verifySceneIndex: function (index, piece) {
 			var meshes = vb.scene.meshes;
-			index += vb.staticMeshCount;
+			index += vb.backStaticMeshCount;
 
 			if(index < meshes.length) {
 				var mesh = meshes[index];
@@ -283,6 +301,7 @@ var VBoard = VBoard || {};
 					return index;
 				}
 			}
+			console.log("missed index for piece: " + piece.id);
 
 			for(var i=0; i<meshes.length; i++) {
 				var mesh = meshes[i];
@@ -425,6 +444,12 @@ var VBoard = VBoard || {};
 
 			if(pieceData.hasOwnProperty("static")) {
 				piece.static = pieceData["static"] == 1;
+
+				if(piece.static) {
+					this.removeClickAction(piece);
+				} else {
+					this.addClickAction(piece);
+				}
 			}
 		},
 
@@ -545,6 +570,12 @@ var VBoard = VBoard || {};
 			piece.color = new BABYLON.Color3(c[0]/255, c[1]/255, c[2]/255);
 
 			var plane = BABYLON.Mesh.CreatePlane("plane", 1.0, vb.scene);
+
+			//we need to move this piece behind static meshes being rendered in the front
+			for(var i=vb.scene.meshes.length-1; i >= vb.scene.meshes.length-vb.frontStaticMeshCount; i--) {
+				vb.scene.meshes[i] = vb.scene.meshes[i-1];
+				vb.scene.meshes[i-1] = plane;
+			}
 			plane.scaling.y = piece.size;
 			plane.scaling.x = piece.size;
 			var subMaterial = new BABYLON.StandardMaterial("std", vb.scene);
@@ -553,7 +584,7 @@ var VBoard = VBoard || {};
 			infoTexture.hasAlpha = true;
 			infoMaterial.diffuseTexture = infoTexture;
 			infoMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
-			infoMaterial.emissiveColor = new BABYLON.Color3(1, 1, 1);
+			infoMaterial.emissiveColor = piece.color;
 			var material = new BABYLON.MultiMaterial("multi", vb.scene);
 			material.subMaterials.push(subMaterial);
 			material.subMaterials.push(infoMaterial);
@@ -586,6 +617,7 @@ var VBoard = VBoard || {};
 			piece.time = 0;
 			piece.lastTrigger = 0;
 			piece.zones = {};
+			piece.hidden = false;
 			//piece.private = pieceData["private"] == 1;
 
 			if(!pieceData.hasOwnProperty("timerData")){
@@ -621,18 +653,47 @@ var VBoard = VBoard || {};
 
 			plane.actionManager = new BABYLON.ActionManager(vb.scene);
 
+			if(!piece.static) {
+				this.addClickAction(piece);
+			}
+
+			this.add(piece);
+
+			if(pieceData.hasOwnProperty("user")) {
+				var user = vb.users.userList[pieceData["user"]];
+				this.highlightPiece(piece, user.color, vb.addHighlightDuration);
+			}
+
+			//check to see if piece is created in a private zone
+			for(var zone_id in this.privateZones) {
+				if(this.privateZones.hasOwnProperty(zone_id)) {
+					var zone = this.privateZones[zone_id];
+
+					if(this.privateZoneContains(zone, piece.position.x, piece.position.y)) {
+						this.enterPrivateZone(piece.id, zone_id);
+					}
+				}
+			}
+			return piece;
+		},
+
+		addClickAction: function (piece) {
+			if(piece.mesh.actionManager.actions.length > 0) {
+				return;
+			}
+
 			//TODO: instead of attaching a code action to each piece
 			//		we should just have a scene.pick trigger in a global event listener
 			//		We also should be able to right click anywhere to bring up a menu
 			//		that lets us add a piece at that location.
 
 			//TODO: do not register if static, make a register/unregister block in transformPiece
-			plane.actionManager.registerAction(
+			piece.mesh.actionManager.registerAction(
 				new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnLeftPickTrigger, function (evt) {
 					console.debug(evt);
 					console.log("click on: " + piece.id);
 
-					if(piece.static == false && !evt.sourceEvent.altKey) {
+					if(piece.hidden == false && piece.static == false && !evt.sourceEvent.altKey) {
 
 						//check that the shift key was pressed for the context menu
 						if(evt.sourceEvent.shiftKey) {
@@ -663,25 +724,10 @@ var VBoard = VBoard || {};
 					}
 				})
 			);
+		},
 
-			this.add(piece);
-
-			if(pieceData.hasOwnProperty("user")) {
-				var user = vb.users.userList[pieceData["user"]];
-				this.highlightPiece(piece, user.color, vb.addHighlightDuration);
-			}
-
-			//check to see if piece is created in a private zone
-			for(var zone_id in this.privateZones) {
-				if(this.privateZones.hasOwnProperty(zone_id)) {
-					var zone = this.privateZones[zone_id];
-
-					if(this.privateZoneContains(zone, piece.position.x, piece.position.y)) {
-						this.enterPrivateZone(piece.id, zone_id);
-					}
-				}
-			}
-			return piece;
+		removeClickAction: function (piece) {
+			piece.mesh.actionManager.actions = [];
 		},
 
 		undoPrediction: function (piece) {
@@ -839,7 +885,19 @@ var VBoard = VBoard || {};
 			var user_id = beaconData["user"];
 			var user = vb.users.userList[user_id];
 
-			//TODO
+			var beacon = new BABYLON.Mesh.CreatePlane("beacon", 2.0, vb.scene);
+			beacon.position.x = x;
+			beacon.position.y = y;
+			beacon.material = new BABYLON.StandardMaterial("beacon", vb.scene);
+			beacon.material.diffuseTexture = new BABYLON.Texture("/static/img/ping.png", vb.scene);
+			beacon.material.diffuseTexture.hasAlpha = true;
+			beacon.material.diffuseColor = user.color;
+			this.registerStaticMesh(beacon, true);
+
+			beacon.fadeTimeout = setTimeout(function () {
+				beacon.dispose();
+				vb.frontStaticMeshCount--;
+			}, 2000);
 		},
 
 		//special pieces

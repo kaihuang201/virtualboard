@@ -256,7 +256,7 @@ class Game:
 				zone_id = zoneData["id"]
 				pieces = self.board_state.remove_private_zone(zone_id)
 
-				if pieces:
+				if pieces is not None:
 					remove_zone_response.append({
 						"user" : client.user_id,
 						"id" : zone_id
@@ -563,7 +563,7 @@ class Game:
 						}
 
 						if new_private_colors:
-							self.message_color(response, new_private_color)
+							self.message_colors(response, new_private_colors)
 						else:
 							self.message_all(response)
 					'''

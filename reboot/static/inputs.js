@@ -391,6 +391,10 @@ var VBoard = VBoard || {};
 				if(mesh.piece) {
 					var piece = mesh.piece;
 
+					if(piece.hidden) {
+						return false;
+					}
+
 					if(ignoreSelection) {
 						if(vb.selection.hasPiece(piece)) {
 							return false;

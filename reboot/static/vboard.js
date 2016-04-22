@@ -22,7 +22,8 @@ var VBoard = VBoard || {};
 
 	//number of static meshes that are not pieces
 	//should probably be tied to vb.board but whatever
-	vb.staticMeshCount = 0;
+	vb.backStaticMeshCount = 0;
+	vb.frontStaticMeshCount = 0;
 
 	//how much to increase/decrease piece size by when resizing
 	vb.scalingFactor = 1.25
