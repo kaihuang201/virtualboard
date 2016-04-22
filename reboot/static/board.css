@@ -44,6 +44,10 @@ html, body {
 	top: 30%;
 	left: 0px;
 	background-color: rgba(50,50,50,0.65);
+	padding: 20px;
+}
+#main-page #main-page-container2 {
+	min-height: 40%;
 }
 
 #game-title {
@@ -107,14 +111,14 @@ html, body {
 }
 
 #lobby-list {
-	position: absolute;
+	position: relative;
 	height: 90%;
 	width: 70%;
 	right: 10px;
-	top: 5%;
 	overflow: hidden;
 	/*overflow-wrap: normal;*/
 	background: none;
+	margin: auto;
 }
 
 #lobby-list > #inner {

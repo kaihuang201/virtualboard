@@ -69,11 +69,16 @@ var VBoard = VBoard || {};
 		
 		init_welcome:function () {
 			$("#skip-welcome-btn").click(function(){
-				$("#main-page-container2").hide();
-				$("#welcome-page-content").slideUp("fast");
-				$("#main-page-container").slideDown("fast");
-				$("#change-username").slideDown("fast");
-				vb.interface.init();
+				$("#main-page-container2").fadeOut("fast",function(){
+					$("#main-page-container").fadeIn(function(){
+						vb.interface.init();
+						$("#change-username").show();
+					});
+				});
+				$("#welcome-page-content").slideUp("slow");
+				
+				
+				
 			});
 
 
