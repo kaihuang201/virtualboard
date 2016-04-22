@@ -15,6 +15,7 @@ var VBoard = VBoard || {};
 		pieceNameMap: {},
 		cardNameMap: {},
 		dieNameMap: {},
+		chipNameMap: {},
 		backgroundNameMap: {},
 
 		//key - a texture url that has been reqested
