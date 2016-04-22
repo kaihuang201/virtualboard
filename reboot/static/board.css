@@ -1,14 +1,27 @@
 html, body
 {
 	font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; 
-	overflow: hidden;
+	overflow: scroll;
 	width: 100%;
 	height: 100%;
-	padding: 0px;
-	margin: 0px;
+/*	padding: 0px;
+	margin: 0px;*/
 }
 
 html, body { 
+
+}
+
+#main-page {
+	/*position: absolute;*/
+	/*background-color: rgba(255,255,255,0.65); */
+	top: 0%;
+	left: 0%;
+	padding: 20px;
+	height: 100%;
+	width: 100%;
+	position: relative;
+
 	background: url(/static/img/bg.jpg) no-repeat center center fixed; 
 	-webkit-background-size: cover;
 	-moz-background-size: cover;
@@ -20,27 +33,38 @@ html, body {
 	-ms-user-select:none; 
 	user-select: none;
 	-o-user-select: none;
-}
-
-#main-page {
-	/*position: absolute;*/
-	/*background-color: rgba(255,255,255,0.65); */
-	top: 0%;
-	left: 0%;
-	padding: 20px;
-	height: 100%;
-	width: 100%;
 
 	
 }
 
-#main-page #main-page-container {
+#main-page #main-page-container, #main-page #main-page-container2 {
 	position: absolute;
 	width: 100%;
 	height: 40%;
 	top: 30%;
 	left: 0px;
 	background-color: rgba(50,50,50,0.65);
+	padding: 20px;
+}
+#main-page #main-page-container2 {
+	min-height: 40%;
+}
+
+#game-title {
+	color: white;
+	text-align: center;
+	top: 10%;
+    position: relative;
+}
+
+#skip-welcome-btn {
+	margin: auto;
+	position: relative;
+    left: 50%;
+    top: 50%;
+    margin-bottom: 50%;
+    margin-right: -50%;
+    transform: translate(-50%, 60%);
 }
 
 #main-page #user-profile {
@@ -87,14 +111,14 @@ html, body {
 }
 
 #lobby-list {
-	position: absolute;
+	position: relative;
 	height: 90%;
 	width: 70%;
 	right: 10px;
-	top: 5%;
 	overflow: hidden;
 	/*overflow-wrap: normal;*/
 	background: none;
+	margin: auto;
 }
 
 #lobby-list > #inner {
