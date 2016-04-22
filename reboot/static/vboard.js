@@ -159,6 +159,7 @@ var VBoard = VBoard || {};
 $(document).ready(function () {
 	console.log("document ready");
 	VBoard.javascriptInit();
-	VBoard.interface.init_welcome();
+	// VBoard.interface.init_welcome();
+	VBoard.interface.init();
 	VBoard.menu.init();
 });

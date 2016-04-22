@@ -1,7 +1,7 @@
 html, body
 {
 	font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; 
-	overflow: scroll;
+	overflow: hidden;
 	width: 100%;
 	height: 100%;
 /*	padding: 0px;
@@ -57,15 +57,7 @@ html, body {
     position: relative;
 }
 
-#skip-welcome-btn {
-	margin: auto;
-	position: relative;
-    left: 50%;
-    top: 50%;
-    margin-bottom: 50%;
-    margin-right: -50%;
-    transform: translate(-50%, 60%);
-}
+
 
 #main-page #user-profile {
 	position: absolute;

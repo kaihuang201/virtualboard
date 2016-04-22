@@ -213,6 +213,10 @@ class WebSocketGameHandler(tornado.websocket.WebSocketHandler):
 	def on_close(self):
 		if self.game is not None:
 			self.game.disconnect(self, "socket terminated")
+class WelcomeHandler(tornado.web.RequestHandler):
+	@tornado.web.asynchronous
+	def get(request):
+		request.render("welcome.html")
 
 class IndexHandler(tornado.web.RequestHandler):
 	@tornado.web.asynchronous

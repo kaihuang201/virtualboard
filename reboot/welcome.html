@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Virtual Board</title>
+	<script src="//code.jquery.com/jquery-1.12.1.min.js"></script>
+	<script type="text/javascript">window.jQuery || document.write('<script src="/static/lib/jquery-1.12.1.min.js"><\/script>')</script>
+	<script src="/static/lib/bootstrap-3.3.6-dist/js/bootstrap.min.js" type="text/javascript"></script>
+	
+	<link rel="stylesheet" href="/static/lib/bootstrap-3.3.6-dist/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/static/welcome.css">
+	<script>
+		$(document).ready(function () {
+			console.log("Welcome Page ready");
+			$("#enter-game-btn").click(function(){window.location.replace($(location).attr('href') + "game");});
+		});
+	</script>
+</head>
+<body>
+<div id="main-page" class="container-fluid">
+	<h1 id="game-title"> Welcome to Virtual Board</h1><br>
+	<button type="button" class="btn btn-primary" id="enter-game-btn">Enter Game</button>
+</div>
+</body>
+</html>

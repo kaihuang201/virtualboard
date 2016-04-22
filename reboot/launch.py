@@ -9,11 +9,11 @@ settings = {
 }
 
 app = tornado.web.Application([
-	(r"/socket", WebSocketGameHandler),
+	(r"/gamesocket", WebSocketGameHandler),
 	(r"/game", IndexHandler),
 	(r"/test", TestHandler),
 	(r"/testsocket", WebSocketGameHandler),
-	(r"/", IndexHandler),
+	(r"/", WelcomeHandler),
 	(r"/save", DownloadStateHandler),
 	(r"/load", UploadStateHandler),
 	(r"/static/(.*)", tornado.web.StaticFileHandler, {"path": os.path.join(os.path.dirname(__file__), "static")}),
