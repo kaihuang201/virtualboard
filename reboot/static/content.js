@@ -86,6 +86,25 @@ var VBoard = VBoard || {};
 			vb.sessionIO.loadBoardState(checkersData);
 		},
 
+		loadScrabbleGame: function () {
+			var scrabbleData = {
+				"background" : vb.board.background.name,
+				"privateZones" : [],
+				"pieces" : [
+					{
+						"pos" : [0, 0],
+						"icon" : "/static/img/scrabble/board.png",
+						"color" : [255, 255, 255],
+						"r" : 0,
+						"s" : 16,
+						"static" : 1,
+					}
+				]
+			};
+
+			vb.sessionIO.loadBoardState(scrabbleData);
+		},
+
 		createDefaultDeck: function () {
 			var properties = {
 				"pos" : [vb.camera.position.x, vb.camera.position.y],
