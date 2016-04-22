@@ -81,6 +81,7 @@
 				<button id="removePrivateZone" class="btn btn-success btn-menu" type="button">Remove Private Zone</button>
 				<button id="addTimer" class="btn btn-success btn-menu" type="button">Add Timer</button>
 				<button id="addChessBoard" class="btn btn-success btn-menu" type="button">Add ChessBoard</button>
+				<button id="addPokerChips" class="btn btn-success btn-menu" type="button">Add Poker Chips</button>
 				<button id="penTool" class="btn btn-success btn-menu" type="button">Pen Tool</button>
 				<button id="changeBackground" class="btn btn-success btn-menu" type="button">Change Background</button>
 				<button id="saveGame" class="btn btn-success btn-menu" type="button">Save Game</button>
@@ -237,6 +238,32 @@
 						Number of Faces: <input id="add-die-max" type="number" value="6" min="1"/>
 
 				  		<button type="submit" value="Add Die" id="submit-add-die">Add</button>
+				  		<button class="close-modal" type="button" data-dismiss="modal">Cancel</button>
+					</div>
+					<div class="modal-footer"></div>
+				</div>
+			</div>
+		</div>
+
+		<div class="modal fade" id="add-poker-chips-modal" role="dialog">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button class="close-modal" type="button" class="close" data-dismiss="modal">&times;</button>
+						<h4 id="confirmJoinModalTitle"style="color:red;">Add Poker Chips</h4>
+					</div>
+					<div class="modal-body">
+						Chip Amount: <select id="add-chip-amount" value="1">
+										<option value="pokerChip1">$1</option>
+										<option value="pokerChip5">$5</option>
+										<option value="pokerChip10">$10</option>
+										<option value="pokerChip25">$25</option>
+										<option value="pokerChip100">$100</option>
+										<option value="pokerChip500">$500</option>
+									</select>
+						Number of Chips: <input id="add-chip-num" type="number" value="1" min="1"/>
+
+				  		<button type="submit" value="Add Poker Chips" id="submit-add-poker-chips">Add</button>
 				  		<button class="close-modal" type="button" data-dismiss="modal">Cancel</button>
 					</div>
 					<div class="modal-footer"></div>
