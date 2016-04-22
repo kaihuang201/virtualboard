@@ -86,18 +86,104 @@ var VBoard = VBoard || {};
 			vb.sessionIO.loadBoardState(checkersData);
 		},
 
+		makeScrabbleTileArray: function (distribution) {
+			var tiles = [];
+
+			for (var key in distribution) {
+				if (distribution.hasOwnProperty(key)) {
+					for (var i = 0; i < distribution[key]; i++) {
+						tiles.push({
+							"icon" : "static/img/scrabble/" + key + "_tile.png",
+							"faceDown" : 1
+						});
+					}
+				}
+			}
+
+			return tiles;
+		},
+
 		loadScrabbleGame: function () {
+			var distribution = {
+				"wild" : 2,
+				"e" : 12,
+				"a" : 9,
+				"i" : 9,
+				"o" : 8,
+				"n" : 6,
+				"r" : 6,
+				"t" : 6,
+				"l" : 4,
+				"s" : 4,
+				"u" : 4,
+				"d" : 4,
+				"g" : 3,
+				"b" : 2,
+				"c" : 2,
+				"m" : 2,
+				"p" : 2,
+				"f" : 2,
+				"h" : 2,
+				"v" : 2,
+				"w" : 2,
+				"y" : 2,
+				"k" : 1,
+				"j" : 1,
+				"x" : 1,
+				"q" : 1,
+				"z" : 1
+			};
+			var tiles = this.makeScrabbleTileArray(distribution);
+
 			var scrabbleData = {
 				"background" : vb.board.background.name,
-				"privateZones" : [],
+				"privateZones" : [
+					{
+						"pos" : [0, 8.5],
+						"size" : [10, 2],
+						"r" : 0,
+						"color" : [255, 67, 81]
+					},
+					{
+						"pos" : [8.5, 0],
+						"size" : [2, 10],
+						"r" : 0,
+						"color" : [165, 222, 55]
+					},
+					{
+						"pos" : [0, -8.5],
+						"size" : [10, 2],
+						"r" : 0,
+						"color" : [27, 154, 247]
+					},
+					{
+						"pos" : [-8.5, 0],
+						"size" : [2, 10],
+						"r" : 0,
+						"color" : [254, 174, 27]
+					},
+				],
 				"pieces" : [
 					{
 						"pos" : [0, 0],
 						"icon" : "/static/img/scrabble/board.png",
 						"color" : [255, 255, 255],
 						"r" : 0,
-						"s" : 16,
+						"s" : 15,
 						"static" : 1,
+					},
+					{
+						"pos" : [-6.351, -1.87],
+						"icon" : "/static/img/scrabble/wild_tile.png",
+						"s" : 0.8,
+						"r" : 0,
+						"color" : [255, 255, 255],
+						"static" : 0,
+						"cardData" : {
+							"count" : 100,
+							"shuffle" : tiles.length,
+							"cards" : tiles
+						}
 					}
 				]
 			};

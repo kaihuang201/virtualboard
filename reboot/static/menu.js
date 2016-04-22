@@ -77,8 +77,8 @@ var VBoard = VBoard || {};
 				}
 			});
 
-			$("#addChessBoard").on("click", function () {
-				vb.content.loadChessGame();
+			$("#loadPreset").on("click", function () {
+				$("#add-game-modal").modal();
 			});
 
 			$("#changeBackground").on("click", function () {
@@ -90,6 +90,15 @@ var VBoard = VBoard || {};
 			});
 
 			$("#loadGame").on("click", function () {
+				if (vb.board.pieces.length > 0) {
+					var warning = "Loading a game will remove the current game, you may want to save first";
+					if (($("#template-modal").data('bs.modal') || {}).isShown) {
+						vb.interface.setTemplateModalAlert(warning);
+					}
+					else {
+						vb.interface.alertModal(warning,0);
+					}
+				}
 				$("#load-game-modal").modal();
 			})
 
@@ -109,7 +118,24 @@ var VBoard = VBoard || {};
 			//	var user = null;
 			//	var pos = {x:0, y:0};
 			//	vb.board.generateNewPiece("penTool", user, pos);
-			//});		
+			//});
+
+			$("#submit-add-game").click(function () {
+				var selectedName = $("#add-game-list").val();
+				
+				switch (selectedName) {
+					case "chess" : 
+						vb.content.loadChessGame();
+						break;
+					case "checkers" :
+						vb.content.loadCheckersGame();
+						break;
+					case "scrabble" :
+						vb.content.loadScrabbleGame();
+				}
+
+				$("#add-game-modal").modal("toggle");
+			});
 
 			$("#submit-add-piece").click(function () {
 				var selectedName = $("#add-piece-list").val();
