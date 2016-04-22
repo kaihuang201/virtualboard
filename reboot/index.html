@@ -80,7 +80,7 @@
 				<button id="addPrivateZone" class="btn btn-success btn-menu" type="button">Add Private Zone</button>
 				<button id="removePrivateZone" class="btn btn-success btn-menu" type="button">Remove Private Zone</button>
 				<button id="addTimer" class="btn btn-success btn-menu" type="button">Add Timer</button>
-				<button id="addChessBoard" class="btn btn-success btn-menu" type="button">Add ChessBoard</button>
+				<button id="loadPreset" class="btn btn-success btn-menu" type="button">Add Preset Game</button>
 				<button id="addPokerChips" class="btn btn-success btn-menu" type="button">Add Poker Chips</button>
 				<button id="penTool" class="btn btn-success btn-menu" type="button">Pen Tool</button>
 				<button id="changeBackground" class="btn btn-success btn-menu" type="button">Change Background</button>
@@ -238,6 +238,28 @@
 						Number of Faces: <input id="add-die-max" type="number" value="6" min="1"/>
 
 				  		<button type="submit" value="Add Die" id="submit-add-die">Add</button>
+				  		<button class="close-modal" type="button" data-dismiss="modal">Cancel</button>
+					</div>
+					<div class="modal-footer"></div>
+				</div>
+			</div>
+		</div>
+
+		<div class="modal fade" id="add-game-modal" role="dialog">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button class="close-modal" type="button" class="close" data-dismiss="modal">&times;</button>
+						<h4 id="confirmJoinModalTitle"style="color:red;">Load Game</h4>
+					</div>
+					<div class="modal-body">
+						<select id="add-game-list">
+							<option value="chess">Chess</option>
+							<option value="checkers">Checkers</option>
+							<option value="scrabble">Scrabble</option>
+						</select>
+
+				  		<button type="submit" value="Add Die" id="submit-add-game">Load</button>
 				  		<button class="close-modal" type="button" data-dismiss="modal">Cancel</button>
 					</div>
 					<div class="modal-footer"></div>
