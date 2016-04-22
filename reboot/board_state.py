@@ -340,7 +340,9 @@ class BoardState:
 				if value < len(piece.faces):
 					piece.icon = faces[value]
 				else:
-					if piece.max < 7:
+					if piece.max < 3:
+						piece.icon = "/static/img/die_face/tiny_die_face_" + str(value) + ".png"
+					elif piece.max < 7:
 						piece.icon = "/static/img/die_face/small_die_face_" + str(value) + ".png"
 					else:
 						piece.icon = "/static/img/die_face/big_die_face_" + str(value) + ".png"

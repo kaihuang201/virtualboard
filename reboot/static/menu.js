@@ -215,9 +215,12 @@ var VBoard = VBoard || {};
 
 				//TODO: replace with actual method
 				//vb.board.generateNewPiece(selectedName, user, pos);
-				var icon = "/static/img/die_face/small_die_face_1.png";
+				var icon = "/static/img/die_face/tiny_die_face_1.png";
 
-				if(selectedMax > 6) {
+				if(selectedMax > 2) {
+					icon = "/static/img/die_face/small_die_face_1.png";
+				}
+				else if(selectedMax > 6) {
 					icon = "/static/img/die_face/big_die_face_1.png";
 				}
 

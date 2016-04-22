@@ -954,10 +954,13 @@ var VBoard = VBoard || {};
 				icon = piece.faces[value];
 			} else {
 				//A six sided die will return 0-5 inclusive
-				if(piece.max < 7) {
-					icon = "/static/img/die_face/small_die_face_" + (value+1) + ".png"
+				if (piece.max < 3) {
+					icon = "/static/img/die_face/tiny_die_face_" + (value+1) + ".png";
+				}
+				else if(piece.max < 7) {
+					icon = "/static/img/die_face/small_die_face_" + (value+1) + ".png";
 				} else {
-					icon = "/static/img/die_face/big_die_face_" + (value+1) + ".png"
+					icon = "/static/img/die_face/big_die_face_" + (value+1) + ".png";
 				}
 			}
 			this.setIcon(piece, icon);
