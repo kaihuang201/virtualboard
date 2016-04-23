@@ -587,6 +587,7 @@ var VBoard = VBoard || {};
 
 				var word = words[w];
 				var lenWord = word.length;
+				var noNeedForSpace = false;
 
 				if (lineBuffer.length + lenWord + 1> lineSize) {
 					if (lineBuffer.length > 0){
@@ -599,9 +600,14 @@ var VBoard = VBoard || {};
 					var seg = word.slice(0, lineSize-1) + "-";
 					lines.push(seg);
 					word = word.slice(lineSize-1);
+					noNeedForSpace = true;
 				}
-
-				lineBuffer += " " + word;
+				if(w > 0 && !noNeedForSpace) { 
+					lineBuffer += " " + word;
+				} else {
+					lineBuffer += word;
+				}
+				
 			}
 			if (lineBuffer.length > 0) {
 				lines.push(lineBuffer);
