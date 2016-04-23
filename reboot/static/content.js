@@ -2,6 +2,77 @@ var VBoard = VBoard || {};
 (function (vb) {
 
 	vb.content = {
+		loadParcheesiGame: function() {
+			var parcheesiData = {
+				"background" : vb.board.background.name,
+				"privateZones" : [],
+				"pieces" : [
+					{
+						"pos" : [0, 0],
+						"icon" : "/static/img/parcheesi/parcheesi_board.png",
+						"color" : [255, 255, 255],
+						"r" : 0,
+						"s" : 16,
+						"static" : 1,
+					},
+					this.loadParcheesiPiece("red", -4, 4.5),
+					this.loadParcheesiPiece("red", -5, 4.5),
+					this.loadParcheesiPiece("red", -4, 5.5),
+					this.loadParcheesiPiece("red", -5, 5.5),
+					this.loadParcheesiPiece("green", 4, 4.5),
+					this.loadParcheesiPiece("green", 5, 4.5),
+					this.loadParcheesiPiece("green", 4, 5.5),
+					this.loadParcheesiPiece("green", 5, 5.5),
+					this.loadParcheesiPiece("blue", -4, -3.5),
+					this.loadParcheesiPiece("blue", -5, -3.5),
+					this.loadParcheesiPiece("blue", -4, -4.5),
+					this.loadParcheesiPiece("blue", -5, -4.5),
+					this.loadParcheesiPiece("yellow", 4, -3.5),
+					this.loadParcheesiPiece("yellow", 5, -3.5),
+					this.loadParcheesiPiece("yellow", 4, -4.5),
+					this.loadParcheesiPiece("yellow", 5, -4.5),
+					{
+						"icon" : "/static/img/die_face/small_die_face_1.png",
+						"pos" : [-1, 0],
+						"s" : 1.0,
+						"static" : 0,
+						"r" : 0.0,
+						"color" : [255, 255, 255],
+						"diceData" : {
+							"max" : 6,
+							"faces" : [],
+							"isUserPicker" : 0
+						}
+					},
+					{
+						"icon" : "/static/img/die_face/small_die_face_1.png",
+						"pos" : [1, 0],
+						"s" : 1.0,
+						"static" : 0,
+						"r" : 0.0,
+						"color" : [255, 255, 255],
+						"diceData" : {
+							"max" : 6,
+							"faces" : [],
+							"isUserPicker" : 0
+						}
+					}
+				]
+			};
+			vb.sessionIO.loadBoardState(parcheesiData);
+		},
+
+		loadParcheesiPiece: function(icon, x, y) {
+			return {
+				"icon" : "/static/img/parcheesi/" + icon + ".png",
+				"color" : [255, 255, 255],
+				"r" : 0,
+				"s" : 1.5,
+				"static" : 0,
+				"pos" : [x, y]
+			}
+		},
+
 		loadChessGame: function () {
 			var chessData = {
 				"background" : vb.board.background.name,
@@ -363,6 +434,40 @@ var VBoard = VBoard || {};
 				riskData.pieces.push(pieceData);
 			}
 			vb.sessionIO.loadBoardState(riskData);
+		},
+
+		loadTictactoeGame: function() {
+			var tictactoeData = {
+				"background" : vb.board.background.name,
+				"privateZones" : [],
+				"pieces" : [
+					{
+						"pos" : [0, 0],
+						"icon" : "/static/img/tictactoe/tictactoeBoard.png",
+						"color" : [255, 255, 255],
+						"r" : 0,
+						"s" : 16,
+						"static" : 1,
+					},
+				]
+			};
+
+			for(var y = -6; y <= 6; y += 3) {
+				tictactoeData["pieces"].push(this.loadTictactoeHelper("x", 10, y));
+				tictactoeData["pieces"].push(this.loadTictactoeHelper("o", -10, y));
+			}
+			vb.sessionIO.loadBoardState(tictactoeData);
+		},
+
+		loadTictactoeHelper: function (subicon, x, y) {
+			return {
+				"icon" : "/static/img/tictactoe/" + subicon + ".png",
+				"color" : [255, 255, 255],
+				"r" : 0,
+				"s" : 2,
+				"static" : 0,
+				"pos" : [x, y]
+			};
 		}
 	};
 })(VBoard);

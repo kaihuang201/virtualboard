@@ -38,7 +38,7 @@ class InterfaceTest(unittest.TestCase):
 		InterfaceTest.driver = webdriver.Chrome()
 		InterfaceTest.wait = WebDriverWait(InterfaceTest.driver, 5)
 		InterfaceTest.driver.implicitly_wait(2)
-		InterfaceTest.driver.get("http://localhost:8000")
+		InterfaceTest.driver.get("http://localhost:8000/game")
 
 		if InterfaceTest.driver:
 			print "LOOKS OK"
@@ -154,8 +154,15 @@ class InterfaceTest(unittest.TestCase):
 			canvas = driver.find_element_by_id("canvas")
 		side_hover = driver.find_element_by_id("viewMenuHover")
 		ActionChains(InterfaceTest.driver).move_to_element(side_hover).perform()
-		chess_button = wait.until(ec.element_to_be_clickable((by.XPATH, "//*[contains(text(), 'Add ChessBoard')]")))
-		chess_button.click()
+		#chess_button = wait.until(ec.element_to_be_clickable((by.XPATH, "//*[contains(text(), 'Add ChessBoard')]")))
+		preset_button = wait.until(ec.element_to_be_clickable((by.ID, "loadPreset")))
+		preset_button.click()
+		game_list = wait.until(ec.element_to_be_clickable((by.ID, "add-game-list")))
+		select = Select(game_list)
+		select.select_by_visible_text("Chess")
+
+		driver.find_element_by_id("submit-add-game").click()
+		InterfaceTest.wait.until(ec.invisibility_of_element_located((by.ID, "add-game-modal")))
 		wait.until(InterfaceTest.javascript_to_be("return VBoard.board.pieces.length;", 33))
 
 	def spawn_deck(self, canvas=None):
@@ -166,8 +173,8 @@ class InterfaceTest(unittest.TestCase):
 			canvas = driver.find_element_by_id("canvas")
 		side_hover = driver.find_element_by_id("viewMenuHover")
 		ActionChains(InterfaceTest.driver).move_to_element(side_hover).perform()
-		chess_button = wait.until(ec.element_to_be_clickable((by.XPATH, "//*[contains(text(), 'Add Deck')]")))
-		chess_button.click()
+		deck_button = wait.until(ec.element_to_be_clickable((by.XPATH, "//*[contains(text(), 'Add Deck')]")))
+		deck_button.click()
 		wait.until(InterfaceTest.javascript_to_be("return VBoard.board.pieces.length;", 1))
 
 	def test_create_basic(self):
@@ -392,12 +399,14 @@ class InterfaceTest(unittest.TestCase):
 		side_hover = driver.find_element_by_id("viewMenuHover")
 		ActionChains(InterfaceTest.driver).move_to_element(side_hover).perform()
 		background_button = wait.until(ec.element_to_be_clickable((by.XPATH, "//*[contains(text(), 'Change Background')]")))
+		wait.until(ec.invisibility_of_element_located((by.ID, "change-background-modal")))
 		background_button.click()
 		background_list = wait.until(ec.element_to_be_clickable((by.ID, "change-background-list")))
 		select = Select(background_list)
 		select.select_by_visible_text(background)
 		driver.find_element_by_id("submit-change-background").click()
 		wait.until(ec.invisibility_of_element_located((by.ID, "template-modal")))
+		wait.until(ec.invisibility_of_element_located((by.ID, "change-background-modal")))
 
 	def test_set_background(self):
 		driver = InterfaceTest.driver
@@ -409,6 +418,7 @@ class InterfaceTest(unittest.TestCase):
 		#set background
 		self.select_background("Noodles")
 		wait.until(InterfaceTest.javascript_to_be("return VBoard.board.background.material.diffuseTexture.url;", "/static/img/backgrounds/Noodles.jpg"))
+		wait.until(ec.invisibility_of_element_located((by.ID, "menu")))
 
 		#change again
 		self.select_background("Bacon")
@@ -502,20 +512,6 @@ class InterfaceTest(unittest.TestCase):
 		wait = InterfaceTest.wait
 		self.assertFalse(self.check_upload_piece_alert("http://i.imgur.com/8kvHaqH.png"))
 
-	#Tests that the piece added by clicling the Add User Picker is indeed a user picker die
-	def test_user_picker1(self):
-		driver = InterfaceTest.driver
-		wait = InterfaceTest.wait
-		canvas = self.create_lobby()
-		driver = InterfaceTest.driver
-		wait = InterfaceTest.wait
-
-		side_hover = driver.find_element_by_id("viewMenuHover")
-		ActionChains(InterfaceTest.driver).move_to_element(side_hover).perform()
-		userPicker_button = wait.until(ec.element_to_be_clickable((by.XPATH, "//*[contains(text(), 'Add User Picker')]")))
-		userPicker_button.click()
-		wait.until(InterfaceTest.javascript_to_be("return VBoard.board.pieces[0].isUserPicker;", True))
-
 	def test_beacon_basic(self):
 		driver = InterfaceTest.driver
 		wait = InterfaceTest.wait
@@ -527,9 +523,9 @@ class InterfaceTest(unittest.TestCase):
 		ActionChains(driver).key_down(keys.ALT).click().key_up(keys.ALT).perform()
 		wait.until(js("return VBoard.board.headBeacon == null;", False))
 		self.assertEquals(driver.execute_script("return VBoard.frontStaticMeshCount;"), 1)
-		wait.until(js("var a = VBoard.board.headBeacon.beacon.material.alpha;return (a < 0.9 && a > 0.1);", True))
+		wait.until(js("var a = VBoard.board.headBeacon.beacon.material.alpha;return (a > 0.1);", True))
 		wait.until(js("return VBoard.board.headBeacon.beacon.material.alpha;", 1.0))
-		wait.until(js("return VBoard.board.headBeacon.beacon.material.alpha < 1.0;", True))
+		#wait.until(js("return VBoard.board.headBeacon.beacon.material.alpha < 1.0;", True))
 		wait.until(js("return VBoard.board.headBeacon == null;", True))
 		self.assertEquals(driver.execute_script("return VBoard.frontStaticMeshCount;"), 0)
 
@@ -552,10 +548,72 @@ class InterfaceTest(unittest.TestCase):
 
 		self.move_to_canvas_position(1, 1, canvas)
 		ActionChains(driver).key_down(keys.ALT).click().key_up(keys.ALT).perform()
-
 		wait.until(js("return VBoard.frontStaticMeshCount;", 4))
+
+		self.move_to_canvas_position(2, 1, canvas)
+		ActionChains(driver).key_down(keys.ALT).click().key_up(keys.ALT).perform()
+		wait.until(js("return VBoard.frontStaticMeshCount;", 5))
+
+		self.move_to_canvas_position(1, 2, canvas)
+		ActionChains(driver).key_down(keys.ALT).click().key_up(keys.ALT).perform()
+		wait.until(js("return VBoard.frontStaticMeshCount;", 6))
+
+		self.move_to_canvas_position(2, 2, canvas)
+		ActionChains(driver).key_down(keys.ALT).click().key_up(keys.ALT).perform()
+		wait.until(js("return VBoard.frontStaticMeshCount;", 7))
 		wait.until(js("return VBoard.frontStaticMeshCount;", 0))
 		self.assertTrue(driver.execute_script("return VBoard.board.headBeacon == null;"))
+
+	#Tests that the piece added by clicling the Add User Picker is indeed a user picker die
+	def test_user_picker1(self):
+		driver = InterfaceTest.driver
+		wait = InterfaceTest.wait
+		canvas = self.create_lobby()
+		driver = InterfaceTest.driver
+		js = InterfaceTest.javascript_to_be
+
+		side_hover = driver.find_element_by_id("viewMenuHover")
+		ActionChains(InterfaceTest.driver).move_to_element(side_hover).perform()
+		userPicker_button = wait.until(ec.element_to_be_clickable((by.XPATH, "//*[contains(text(), 'Add User Picker')]")))
+		userPicker_button.click()
+		wait.until(js("return VBoard.board.pieces.length;", 1))
+		wait.until(js("return VBoard.board.pieces[0].isUserPicker;", True))
+
+	#For 1 user, rolling the user picker should change it's color to the user 1's color
+	def test_user_picker2(self):
+		driver = InterfaceTest.driver
+		wait = InterfaceTest.wait
+		canvas = self.create_lobby()
+		driver = InterfaceTest.driver
+		js = InterfaceTest.javascript_to_be
+
+		side_hover = driver.find_element_by_id("viewMenuHover")
+		ActionChains(InterfaceTest.driver).move_to_element(side_hover).perform()
+		userPicker_button = wait.until(ec.element_to_be_clickable((by.XPATH, "//*[contains(text(), 'Add User Picker')]")))
+		userPicker_button.click()
+		wait.until(js("return VBoard.board.pieces.length;", 1))
+		wait.until(js("VBoard.board.rollDice(VBoard.board.pieces[0],0);return VBoard.board.pieces[0].mesh.material.emissiveColor == VBoard.users.userList[0].color;", True))
+
+	#Tests that the piece added is a note with the desired text and text size
+	def test_note(self, canvas=None):
+		driver = InterfaceTest.driver
+		wait = InterfaceTest.wait
+		canvas = self.create_lobby()
+		driver = InterfaceTest.driver
+		js = InterfaceTest.javascript_to_be
+
+		text = "The Tragedy of Hamlet, Prince of Denmark, often shortened to Hamlet, is a tragedy written by William Shakespeare at an uncertain date between 1599 and 1602."
+
+		side_hover = driver.find_element_by_id("viewMenuHover")
+		ActionChains(InterfaceTest.driver).move_to_element(side_hover).perform()
+		userPicker_button = wait.until(ec.element_to_be_clickable((by.XPATH, "//*[contains(text(), 'Add Note')]")))
+		userPicker_button.click()
+		driver.find_element_by_id("add-note").send_keys(text)
+		driver.find_element_by_id("submit-add-note").click()
+		wait.until(js("return VBoard.board.pieces.length;", 1))
+		wait.until(js("return VBoard.board.pieces[0].isNote;", True))
+		wait.until(js("return VBoard.board.pieces[0].noteText;", text))
+		wait.until(js("return VBoard.board.pieces[0].noteTextSize;", 25))
 
 
 if __name__ == '__main__':
