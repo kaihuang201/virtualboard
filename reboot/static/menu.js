@@ -140,6 +140,9 @@ var VBoard = VBoard || {};
 					case "risk" :
 						vb.content.loadRiskGame();
 						break;
+					case "parcheesi":
+						vb.content.loadParcheesiGame();
+						break;
 				}
 
 				$("#add-game-modal").modal("toggle");
