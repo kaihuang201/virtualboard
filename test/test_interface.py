@@ -65,6 +65,7 @@ class InterfaceTest(unittest.TestCase):
 		element = InterfaceTest.driver.find_element_by_id("submit-btn-modal-template")
 		element.click()
 		InterfaceTest.wait.until(ec.invisibility_of_element_located((by.ID, "template-modal")))
+		InterfaceTest.wait.until(ec.invisibility_of_element_located((by.CLASS_NAME, "modal-backdrop")))
 
 	def move_to_canvas_position(self, x, y, canvas=None):
 		driver = InterfaceTest.driver

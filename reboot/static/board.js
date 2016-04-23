@@ -224,7 +224,7 @@ var VBoard = VBoard || {};
 						vb.frontStaticMeshCount++;
 					} else {
 						var i;
-						for(i = index; i > vb.staticMeshCount; i--) {
+						for(i = index; i > vb.backStaticMeshCount; i--) {
 							vb.scene.meshes[i] = vb.scene.meshes[i-1];
 						}
 						vb.scene.meshes[i] = mesh;
@@ -318,6 +318,7 @@ var VBoard = VBoard || {};
 					return i;
 				}
 			}
+			console.log("completely missed piece");
 			return -1;
 		},
 
