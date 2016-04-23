@@ -516,6 +516,47 @@ class InterfaceTest(unittest.TestCase):
 		userPicker_button.click()
 		wait.until(InterfaceTest.javascript_to_be("return VBoard.board.pieces[0].isUserPicker;", True))
 
+	def test_beacon_basic(self):
+		driver = InterfaceTest.driver
+		wait = InterfaceTest.wait
+		canvas = self.create_lobby()
+		driver = InterfaceTest.driver
+		js = InterfaceTest.javascript_to_be
+
+		self.move_to_canvas_position(0, 0, canvas)
+		ActionChains(driver).key_down(keys.ALT).click().key_up(keys.ALT).perform()
+		wait.until(js("return VBoard.board.headBeacon == null;", False))
+		self.assertEquals(driver.execute_script("return VBoard.frontStaticMeshCount;"), 1)
+		wait.until(js("var a = VBoard.board.headBeacon.beacon.material.alpha;return (a < 0.9 && a > 0.1);", True))
+		wait.until(js("return VBoard.board.headBeacon.beacon.material.alpha;", 1.0))
+		wait.until(js("return VBoard.board.headBeacon.beacon.material.alpha < 1.0;", True))
+		wait.until(js("return VBoard.board.headBeacon == null;", True))
+		self.assertEquals(driver.execute_script("return VBoard.frontStaticMeshCount;"), 0)
+
+	def test_beacon_multiple(self):
+		driver = InterfaceTest.driver
+		wait = InterfaceTest.wait
+		canvas = self.create_lobby()
+		driver = InterfaceTest.driver
+		js = InterfaceTest.javascript_to_be
+
+		self.move_to_canvas_position(0, 0, canvas)
+		ActionChains(driver).key_down(keys.ALT).click().key_up(keys.ALT).perform()
+
+		self.move_to_canvas_position(1, 0, canvas)
+		ActionChains(driver).key_down(keys.ALT).click().key_up(keys.ALT).perform()
+
+		self.move_to_canvas_position(0, 1, canvas)
+		ActionChains(driver).key_down(keys.ALT).click().key_up(keys.ALT).perform()
+		wait.until(js("return VBoard.frontStaticMeshCount;", 3))
+
+		self.move_to_canvas_position(1, 1, canvas)
+		ActionChains(driver).key_down(keys.ALT).click().key_up(keys.ALT).perform()
+
+		wait.until(js("return VBoard.frontStaticMeshCount;", 4))
+		wait.until(js("return VBoard.frontStaticMeshCount;", 0))
+		self.assertTrue(driver.execute_script("return VBoard.board.headBeacon == null;"))
+
 
 if __name__ == '__main__':
         unittest.main()
