@@ -434,6 +434,40 @@ var VBoard = VBoard || {};
 				riskData.pieces.push(pieceData);
 			}
 			vb.sessionIO.loadBoardState(riskData);
+		},
+
+		loadTictactoeGame: function() {
+			var tictactoeData = {
+				"background" : vb.board.background.name,
+				"privateZones" : [],
+				"pieces" : [
+					{
+						"pos" : [0, 0],
+						"icon" : "/static/img/tictactoe/tictactoeBoard.png",
+						"color" : [255, 255, 255],
+						"r" : 0,
+						"s" : 16,
+						"static" : 1,
+					},
+				]
+			};
+
+			for(var y = -6; y <= 6; y += 3) {
+				tictactoeData["pieces"].push(this.loadTictactoeHelper("x", 10, y));
+				tictactoeData["pieces"].push(this.loadTictactoeHelper("o", -10, y));
+			}
+			vb.sessionIO.loadBoardState(tictactoeData);
+		},
+
+		loadTictactoeHelper: function (subicon, x, y) {
+			return {
+				"icon" : "/static/img/tictactoe/" + subicon + ".png",
+				"color" : [255, 255, 255],
+				"r" : 0,
+				"s" : 2,
+				"static" : 0,
+				"pos" : [x, y]
+			};
 		}
 	};
 })(VBoard);
