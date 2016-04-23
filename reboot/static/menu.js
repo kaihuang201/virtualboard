@@ -182,7 +182,7 @@ var VBoard = VBoard || {};
 					{
 						"time" : time,
 					},
-					"s" : 7
+					"s" : 2.5
 				};
 				vb.sessionIO.addPiece(data);
 				$("#add-timer-modal").modal("toggle");
@@ -228,12 +228,32 @@ var VBoard = VBoard || {};
 					"icon" : icon,
 					"diceData" : {
 						"max" : selectedMax,
-						"faces" : []
+						"faces" : [],
+						"isUserPicker" : false
 					},
 					"s" : 2
 				};
 				vb.sessionIO.addPiece(data);
 				$("#add-die-modal").modal("toggle");
+			});
+
+			$("#addUserPicker").click(function () {
+				var selectedMax = Object.keys(vb.users.userList).length;
+
+				//TODO: Need to change the initial icon
+				//TODO: if a user joins after the user picker is added then the user picker does not update to include that user
+				var icon = "/static/img/die_face/small_die_face_1.png";
+
+				var data = {
+					"icon" : icon,
+					"diceData" : {
+						"max" : selectedMax,
+						"faces" : [],
+						"isUserPicker" : true
+					},
+					"s" : 2
+				};
+				vb.sessionIO.addPiece(data);
 			});
 
 			$("#submit-add-private-zone").click(function () {

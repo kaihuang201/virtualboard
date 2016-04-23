@@ -629,6 +629,7 @@ var VBoard = VBoard || {};
 			piece.predictTimeout = null;
 			piece.isCard = false;
 			piece.isDie = false;
+			piece.isUserPicker = false;
 			piece.isTimer = false;
 			piece.isRunning = false;
 			piece.time = 0;
@@ -656,6 +657,7 @@ var VBoard = VBoard || {};
 				piece.isDie = true;
 				piece.max = pieceData["diceData"]["max"];
 				piece.faces = pieceData["diceData"]["faces"];
+				piece.isUserPicker = pieceData["diceData"]["isUserPicker"];
 			}
 
 			if(pieceData.hasOwnProperty("timerData")){
@@ -664,7 +666,8 @@ var VBoard = VBoard || {};
 				piece.mesh.material.mainMaterial.diffuseColor = new BABYLON.Color3(1,1,1);
 				piece.mesh.material.mainMaterial.emissiveColor = new BABYLON.Color3(1,1,1);
 				piece.mesh.material.mainMaterial.diffuseTexture = null;
-				piece.mesh.scaling.y = 0.35*piece.size;
+				piece.mesh.scaling.y = piece.size;
+				piece.mesh.scaling.x = piece.size / 0.35;
 				this.setTimer(piece, piece.time, false);
 			}
 
@@ -841,6 +844,18 @@ var VBoard = VBoard || {};
 			}
 		},
 
+        /**
+         * Set a piece to a solid color
+         * @piece a piece object
+         * @color BABYLON.Color3
+         */
+        setColor: function (piece, color) {
+			var material = new BABYLON.StandardMaterial("std", vb.scene);
+			material.emissiveColor = color;
+			material.disableLighting = true;
+			piece.mesh.material = material;
+        },
+
 		//TODO: maybe a toggle for auto resizing
 		setIcon: function (piece, icon) {
 			//THEPIECE = piece;
@@ -890,10 +905,18 @@ var VBoard = VBoard || {};
 		},
 
 		adjustPieceWidth: function (piece) {
-			var t = piece.mesh.material.mainMaterial.diffuseTexture._texture;
-			//for some bizzare reason, not using the intermediate ratio variable makes this not work
-			ratio = piece.mesh.scaling.y * t._baseWidth / t._baseHeight;
-			piece.mesh.scaling.x = ratio;
+			if(piece.isTimer) {
+				piece.mesh.scaling.x = piece.size / 0.35;
+			} else {
+				if(piece.mesh.material.mainMaterial) {
+					var t = piece.mesh.material.mainMaterial.diffuseTexture._texture;
+					//for some bizzare reason, not using the intermediate ratio variable makes this not work
+					var ratio = piece.mesh.scaling.y * t._baseWidth / t._baseHeight;
+				} else {
+					var ratio = 1.0;
+				}
+				piece.mesh.scaling.x = ratio;
+			}
 		},
 
 		//beacons
@@ -1024,20 +1047,26 @@ var VBoard = VBoard || {};
 			}
 			var icon = "";
 
-			if(value < piece.faces.length) {
-				icon = piece.faces[value];
+			if (piece.isUserPicker) {
+				piece.max = Object.keys(vb.users.userList).length;
+				var color = vb.users.userList[value].color;
+				this.setColor(piece, color);
 			} else {
-				//A six sided die will return 0-5 inclusive
-				if (piece.max < 3) {
-					icon = "/static/img/die_face/tiny_die_face_" + (value+1) + ".png";
-				}
-				else if(piece.max < 7) {
-					icon = "/static/img/die_face/small_die_face_" + (value+1) + ".png";
+				if(value < piece.faces.length) {
+					icon = piece.faces[value];
 				} else {
-					icon = "/static/img/die_face/big_die_face_" + (value+1) + ".png";
+					//A six sided die will return 0-5 inclusive
+					if (piece.max < 3) {
+						icon = "/static/img/die_face/tiny_die_face_" + (value+1) + ".png";
+					}
+					else if(piece.max < 7) {
+						icon = "/static/img/die_face/small_die_face_" + (value+1) + ".png";
+					} else {
+						icon = "/static/img/die_face/big_die_face_" + (value+1) + ".png";
+					}
 				}
+				this.setIcon(piece, icon);				
 			}
-			this.setIcon(piece, icon);
 		},
 
 		//handles data from socket handler

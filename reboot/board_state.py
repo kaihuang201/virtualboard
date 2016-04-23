@@ -34,6 +34,7 @@ class Piece:
 		self.isTimer = False
 		self.isCard = False
 		self.isDie = False
+		self.isUserPicker = False
 		self.isRunning = False
 		self.timeout = None
 
@@ -59,6 +60,7 @@ class Piece:
 		#I know dice is plural but "isDie" sounds awkward here, but still, it's proper english
 		if "diceData" in pieceData:
 			self.isDie = True
+			self.isUserPicker = pieceData["diceData"]["isUserPicker"]
 			self.max = pieceData["diceData"]["max"]
 
 			#maybe also enforce positive integer here?
@@ -73,6 +75,7 @@ class Piece:
 				self.faces.append(pieceData["diceData"]["faces"][i])
 		else:
 			self.isDie = False
+			self.isUserPicker = False
 			self.icon = pieceData["icon"]
 
 			if "cards" in pieceData:
@@ -98,7 +101,8 @@ class Piece:
 		if self.isDie:
 			data["diceData"] = {
 				"max" : self.max,
-				"faces" : self.faces
+				"faces" : self.faces,
+				"isUserPicker" : self.isUserPicker
 			}
 
 		if self.isTimer:
