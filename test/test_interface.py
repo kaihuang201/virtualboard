@@ -516,6 +516,40 @@ class InterfaceTest(unittest.TestCase):
 		userPicker_button.click()
 		wait.until(InterfaceTest.javascript_to_be("return VBoard.board.pieces[0].isUserPicker;", True))
 
+	#For 1 user, rolling the user picker should change it's color to the user 1's color
+	def test_user_picker2(self):
+		driver = InterfaceTest.driver
+		wait = InterfaceTest.wait
+		canvas = self.create_lobby()
+		driver = InterfaceTest.driver
+		wait = InterfaceTest.wait
+
+		side_hover = driver.find_element_by_id("viewMenuHover")
+		ActionChains(InterfaceTest.driver).move_to_element(side_hover).perform()
+		userPicker_button = wait.until(ec.element_to_be_clickable((by.XPATH, "//*[contains(text(), 'Add User Picker')]")))
+		userPicker_button.click()
+		wait.until(InterfaceTest.javascript_to_be("VBoard.board.rollDice(VBoard.board.pieces[0],0);return VBoard.board.pieces[0].mesh.material.emissiveColor == VBoard.users.userList[0].color;", True))
+
+	#Tests that the piece added is a note with the desired text and text size
+	def test_note(self, canvas=None):
+		driver = InterfaceTest.driver
+		wait = InterfaceTest.wait
+		canvas = self.create_lobby()
+		driver = InterfaceTest.driver
+		wait = InterfaceTest.wait
+
+		text = "The Tragedy of Hamlet, Prince of Denmark, often shortened to Hamlet, is a tragedy written by William Shakespeare at an uncertain date between 1599 and 1602."
+
+		side_hover = driver.find_element_by_id("viewMenuHover")
+		ActionChains(InterfaceTest.driver).move_to_element(side_hover).perform()
+		userPicker_button = wait.until(ec.element_to_be_clickable((by.XPATH, "//*[contains(text(), 'Add Note')]")))
+		userPicker_button.click()
+		driver.find_element_by_id("add-note").send_keys(text)
+		driver.find_element_by_id("submit-add-note").click()
+		wait.until(InterfaceTest.javascript_to_be("return VBoard.board.pieces[0].isNote;", True))
+		wait.until(InterfaceTest.javascript_to_be("return VBoard.board.pieces[0].noteText;", text))
+		wait.until(InterfaceTest.javascript_to_be("return VBoard.board.pieces[0].noteTextSize;", 25))
+
 
 if __name__ == '__main__':
         unittest.main()
