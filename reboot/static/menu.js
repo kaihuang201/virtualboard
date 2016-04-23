@@ -22,11 +22,6 @@ var VBoard = VBoard || {};
 				});
 				vb.menu.loadBackgroundOptions();
 			});
-			$.getJSON("/static/json/chipmap.json", function (data) {
-				$.each(data, function(key, value) {
-					vb.board.chipNameMap[key] = value;
-				});
-			});
 
 			$("#viewMenuHover").mouseover(function () {
 				$("#menu").animate({
@@ -63,10 +58,6 @@ var VBoard = VBoard || {};
 
 			$("#addTimer").on("click", function () {
 				$("#add-timer-modal").modal();
-			});
-
-			$("#addPokerChips").on("click", function () {
-				$("#add-poker-chips-modal").modal();
 			});
 
 			$('#private-zone-color-picker').empty().addColorPicker({
@@ -155,6 +146,7 @@ var VBoard = VBoard || {};
 			$("#submit-add-piece").click(function () {
 				var selectedName = $("#add-piece-list").val();
 				var user = null;
+				var numPieces = $('#add-piece-num').val();
 				//TODO: use vb.camera.position.x/y instead of board center
 				//var pos = {x:0, y:0};
 
@@ -165,24 +157,10 @@ var VBoard = VBoard || {};
 					"icon" : mapEntry.icon,
 					"s" : mapEntry.size
 				};
-				vb.sessionIO.addPiece(data);
-				$("#add-piece-modal").modal("toggle");
-			});
-
-			$("#submit-add-poker-chips").click(function () {
-				var selectedAmount = $("#add-chip-amount").val();
-				var user = null;
-				var numChips = $('#add-chip-num').val();
-
-				var mapEntry = vb.board.chipNameMap[selectedAmount];
-				var data = {
-					"icon" : mapEntry.icon,
-					"s" : mapEntry.size
-				};
-				for(; numChips > 0; numChips--){
+				for(; numPieces > 0; numPieces --){
 					vb.sessionIO.addPiece(data);
 				}
-				$("#add-poker-chips-modal").modal("toggle");
+				$("#add-piece-modal").modal("toggle");
 			});
 
 			$("#submit-add-note").click(function () {

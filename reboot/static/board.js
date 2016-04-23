@@ -15,7 +15,6 @@ var VBoard = VBoard || {};
 		pieceNameMap: {},
 		cardNameMap: {},
 		dieNameMap: {},
-		chipNameMap: {},
 		backgroundNameMap: {},
 
 		//key - a texture url that has been reqested
@@ -718,9 +717,6 @@ var VBoard = VBoard || {};
 			if(pieceData.hasOwnProperty("timerData")){
 				piece.isTimer = true;
 				piece.time = pieceData["timerData"]["time"];
-				piece.mesh.material.mainMaterial.diffuseColor = new BABYLON.Color3(1,1,1);
-				piece.mesh.material.mainMaterial.emissiveColor = new BABYLON.Color3(1,1,1);
-				piece.mesh.material.mainMaterial.diffuseTexture = null;
 				piece.mesh.scaling.y = piece.size;
 				piece.mesh.scaling.x = piece.size / 0.35;
 				this.setTimer(piece, piece.time, false);
@@ -1228,6 +1224,9 @@ var VBoard = VBoard || {};
 				context.fillText(line, x, y);
 			}
 			var tex = piece.mesh.material.infoTexture;
+			tex.diffuseColor = new BABYLON.Color3(1,1,1);
+			tex.emissiveColor = new BABYLON.Color3(1,1,1);
+			tex.diffuseTexture = null;
 			var context = tex.getContext();
 			context.clearRect(0, 0, 512, 512);
 			context.font = "140px verdana";

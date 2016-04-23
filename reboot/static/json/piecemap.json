@@ -1,4 +1,24 @@
 {
+	"pokerChip1" : {
+        "size" : 2,
+        "icon" : "/static/img/pokerChips/pokerChip1.png"
+    },
+    "pokerChip5" : {
+        "size" : 2,
+        "icon" : "/static/img/pokerChips/pokerChip5.png"
+    },"pokerChip10" : {
+        "size" : 2,
+        "icon" : "/static/img/pokerChips/pokerChip10.png"
+    },"pokerChip25" : {
+        "size" : 2,
+        "icon" : "/static/img/pokerChips/pokerChip25.png"
+    },"pokerChip100" : {
+        "size" : 2,
+        "icon" : "/static/img/pokerChips/pokerChip100.png"
+    },"pokerChip500" : {
+        "size" : 2,
+        "icon" : "/static/img/pokerChips/pokerChip500.png"
+    },
 	"chessKingBlack" : {
 		"size" : 2,
 		"icon" : "/static/img/nbking.png"
