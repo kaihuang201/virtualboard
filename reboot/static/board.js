@@ -535,6 +535,37 @@ var VBoard = VBoard || {};
 			this.selectionBox.showBoundingBox = false;
 		},
 
+		splitLines: function (text, lineSize) {
+			var words = text.split(" ");
+			var lines = [];
+			var lineBuffer = "";
+			for (w in words) {
+
+				var word = words[w];
+				var lenWord = word.length;
+
+				if (lineBuffer.length + lenWord + 1> lineSize) {
+					if (lineBuffer.length > 0){
+						lines.push(lineBuffer);
+					}
+					lineBuffer = "";
+				}
+
+				while (word.length >= lineSize) {
+					var seg = word.slice(0, lineSize-1) + "-";
+					lines.push(seg);
+					word = word.slice(lineSize-1);
+				}
+
+				lineBuffer += " " + word;
+			}
+			if (lineBuffer.length > 0) {
+				lines.push(lineBuffer);
+			}
+
+			return lines;
+		},
+
 		//takes JSON formatted data from socket handler
 		generateNewPiece: function (pieceData) {
 			var piece = {};
@@ -597,15 +628,15 @@ var VBoard = VBoard || {};
 				piece.isNote = true;
 				piece.noteText = pieceData["noteData"]["text"];
 				piece.noteTextSize = pieceData["noteData"]["size"];
-				var dynamicTexture = new BABYLON.DynamicTexture("DynamicTexture", piece.noteText.length*50, vb.scene, true);
-				dynamicTexture.hasAlpha = true;
-				dynamicTexture.drawText(piece.noteText, 5, 40, "bold 36px Arial", "red" , "transparent", true);
-				var xChar = new BABYLON.Mesh.CreatePlane("TextPlane", piece.noteTextSize, vb.scene, true);
-				xChar.material = new BABYLON.StandardMaterial("TextPlaneMaterial", vb.scene);
-				xChar.material.backFaceCulling = false;
-				xChar.material.specularColor = new BABYLON.Color3(0, 0, 0);
-				xChar.material.diffuseTexture = dynamicTexture;
-				xChar.position = new BABYLON.Vector3(vb.camera.position.x, vb.camera.position.y, 70);
+				var lineSize = Math.floor(750.0/piece.noteTextSize);
+				var lines = this.splitLines(piece.noteText, lineSize);
+				var line;
+				var offset = piece.noteTextSize;
+				var textFormat = "" + piece.noteTextSize + "px Courier New";
+				for(line in lines) {
+					piece.mesh.material.infoTexture.drawText(lines[line], 0, offset, textFormat, "black" , "transparent", true);
+					offset += piece.noteTextSize*1.1;
+				}
 			}
 
 			if(pieceData.hasOwnProperty("cardData")) {

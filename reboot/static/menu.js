@@ -126,7 +126,10 @@ var VBoard = VBoard || {};
 			$("#submit-add-note").click(function () {
 				var text = $("#add-note").val();
 				var size = parseInt($("#add-note-size").val());
+
 				var data = {
+					"icon" : "/static/img/note.jpg",
+					"s" : 5,
 					"noteData" : {
 						"text" : text,
 						"size" : size
