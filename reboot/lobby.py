@@ -733,13 +733,12 @@ class Game:
 		if timer == None:
 			return
 
-		timer.time -= 1
-
 		if timer.time == 0:
 			tornado.ioloop.IOLoop.instance().remove_timeout(timer.timeout)
 			timer.timeout = None
 			timer.isRunning = False
 		else:
+			timer.time -= 1
 			timer.timeout = tornado.ioloop.IOLoop.instance().add_timeout(datetime.timedelta(seconds=1), self.updateTimer, timer_id)
 
 		response = {
