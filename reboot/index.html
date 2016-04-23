@@ -77,6 +77,7 @@
 
 			<div id="menu" style="visibility: hidden">
 				<button id="addPiece" class="btn btn-success btn-menu" type="button">Add Piece</button>
+				<button id="addNote" class="btn btn-success btn-menu" type="button">Add Note</button>
 				<button id="addDie" class="btn btn-success btn-menu" type="button">Add Die</button>
 				<button id="addUserPicker" class="btn btn-success btn-menu" type="button">Add User Picker</button>
 				<button id="addDeck" class="btn btn-success btn-menu" type="button">Add Deck of Cards</button>
@@ -182,11 +183,31 @@
                                                 <div id="upload-piece">
                                                   Image URL:
                                                   <input type="text" id="image-url">
+                                                  Size:
+                                                  <input type="number" id="image-size" value=5>
                                                 </div>
                                                 <button type="submit" value="Upload Piece" id="submit-upload-piece">Upload</button>
 					</div>
 					<div class="modal-footer"></div>
 			  	</div>
+			</div>
+		</div>
+
+		<div class="modal fade" id="add-note-modal" role="dialog"> 
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button class="close-modal" type="button" class="close" data-dismiss="modal">&times;</button>
+						<h4 id="confirmJoinModalTitle"style="color:red;">Add Note</h4> <!-- Add Die to Add Note -->
+					</div>
+					<div class="modal-body">
+						Text to display: <input id="add-note" type="text"> 
+						Size: <input id="add-note-size" type="number" value=25>
+				  		<button type="submit" value="Add Note" id="submit-add-note">Add</button> 
+				  		<button class="close-modal" type="button" data-dismiss="modal">Cancel</button>
+					</div>
+					<div class="modal-footer"></div>
+				</div>
 			</div>
 		</div>
 

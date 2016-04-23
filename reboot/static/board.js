@@ -578,6 +578,37 @@ var VBoard = VBoard || {};
 			this.selectionBox.showBoundingBox = false;
 		},
 
+		splitLines: function (text, lineSize) {
+			var words = text.split(" ");
+			var lines = [];
+			var lineBuffer = "";
+			for (w in words) {
+
+				var word = words[w];
+				var lenWord = word.length;
+
+				if (lineBuffer.length + lenWord + 1> lineSize) {
+					if (lineBuffer.length > 0){
+						lines.push(lineBuffer);
+					}
+					lineBuffer = "";
+				}
+
+				while (word.length >= lineSize) {
+					var seg = word.slice(0, lineSize-1) + "-";
+					lines.push(seg);
+					word = word.slice(lineSize-1);
+				}
+
+				lineBuffer += " " + word;
+			}
+			if (lineBuffer.length > 0) {
+				lines.push(lineBuffer);
+			}
+
+			return lines;
+		},
+
 		//takes JSON formatted data from socket handler
 		generateNewPiece: function (pieceData) {
 			var piece = {};
@@ -631,6 +662,7 @@ var VBoard = VBoard || {};
 			piece.isDie = false;
 			piece.isUserPicker = false;
 			piece.isTimer = false;
+			piece.isNote = false;
 			piece.isRunning = false;
 			piece.time = 0;
 			piece.lastTrigger = 0;
@@ -641,6 +673,21 @@ var VBoard = VBoard || {};
 			if(!pieceData.hasOwnProperty("timerData")){
 				this.setIcon(piece, pieceData["icon"]);
 				this.setInfo(piece, "");
+			}
+
+			if(pieceData.hasOwnProperty("noteData")){
+				piece.isNote = true;
+				piece.noteText = pieceData["noteData"]["text"];
+				piece.noteTextSize = pieceData["noteData"]["size"];
+				var lineSize = Math.floor(750.0/piece.noteTextSize);
+				var lines = this.splitLines(piece.noteText, lineSize);
+				var line;
+				var offset = piece.noteTextSize;
+				var textFormat = "" + piece.noteTextSize + "px Courier New";
+				for(line in lines) {
+					piece.mesh.material.infoTexture.drawText(lines[line], 0, offset, textFormat, "black" , "transparent", true);
+					offset += piece.noteTextSize*1.1;
+				}
 			}
 
 			if(pieceData.hasOwnProperty("cardData")) {
@@ -1191,7 +1238,11 @@ var VBoard = VBoard || {};
 			//TODO: I think a double click + drag on a deck should pick up the deck
 			//		a single click + drag simply draws the top card off the deck
 			if(piece.isCard) {
-				vb.sessionIO.flipCard(piece.id);
+				if(piece.numCards > 1) {
+					vb.sessionIO.drawCard(piece.id);
+				} else {
+					vb.sessionIO.flipCard(piece.id);
+				}
 			}
 
 			if(piece.isDie) {

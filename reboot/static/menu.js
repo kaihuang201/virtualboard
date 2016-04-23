@@ -45,6 +45,10 @@ var VBoard = VBoard || {};
 				$("#add-piece-modal").modal();
 			});
 
+			$("#addNote").on("click", function () {
+				$("#add-note-modal").modal();
+			});
+
 			$("#addDie").on("click", function () {
 				$("#add-die-modal").modal();
 			});
@@ -170,6 +174,23 @@ var VBoard = VBoard || {};
 				$("#add-poker-chips-modal").modal("toggle");
 			});
 
+			$("#submit-add-note").click(function () {
+				var text = $("#add-note").val();
+				var size = parseInt($("#add-note-size").val());
+
+				var data = {
+					"icon" : "/static/img/note.jpg",
+					"s" : 5,
+					"noteData" : {
+						"text" : text,
+						"size" : size
+					},				
+				};
+
+				vb.sessionIO.addPiece(data);
+				$("#add-note-modal").modal("toggle");
+			});
+
 			$("#submit-add-timer").click(function () {
 				var minutes = parseInt($("#timer-minutes").val());
 				var seconds = parseInt($("#timer-seconds").val());
@@ -190,7 +211,9 @@ var VBoard = VBoard || {};
 
 			$("#submit-upload-piece").click(function () {
 				var imageUrl = $("#image-url").val();
+				var imageSize = parseInt($("#image-size").val());
 				console.log(imageUrl);
+				console.log(imageSize);
 
 				var img = new Image();
 				img.onerror = img.onabort = function() {
@@ -199,6 +222,7 @@ var VBoard = VBoard || {};
 				img.onload = function() {
 					var data = {
 						"icon" : imageUrl,
+						"s" : imageSize
 					};
 					vb.sessionIO.addPiece(data);
 				};
