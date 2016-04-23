@@ -394,6 +394,7 @@ var VBoard = VBoard || {};
 				var c = pieceData["color"];
 				piece.color = new BABYLON.Color3(c[0]/255, c[1]/255, c[2]/255);
 				piece.mesh.material.mainMaterial.diffuseColor = piece.color;
+				//piece.mesh.material.infoMaterial.emissiveColor = piece.color;
 			}
 
 			if(pieceData.hasOwnProperty("pos")) {
@@ -638,6 +639,7 @@ var VBoard = VBoard || {};
 			material.subMaterials.push(infoMaterial);
 			material.mainMaterial = subMaterial;
 			material.infoTexture = infoTexture;
+			material.mainMaterial.diffuseColor = piece.color;
 
 			plane.position = new BABYLON.Vector3(pieceData["pos"][0], pieceData["pos"][1], 0);
 			plane.rotation.z = pieceData["r"];

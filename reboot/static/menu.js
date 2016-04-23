@@ -136,6 +136,10 @@ var VBoard = VBoard || {};
 						break;
 					case "scrabble" :
 						vb.content.loadScrabbleGame();
+						break;
+					case "risk" :
+						vb.content.loadRiskGame();
+						break;
 				}
 
 				$("#add-game-modal").modal("toggle");

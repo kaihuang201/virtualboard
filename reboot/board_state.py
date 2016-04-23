@@ -11,7 +11,7 @@ from private_zone import *
 class Piece:
 	def __init__(self, pieceData, id):
 		#TODO: check for reasonable values
-		print pieceData
+		#print pieceData
 		self.pos = pieceData["pos"]
 		self.icon = pieceData["icon"]
 		self.piece_id = id
@@ -288,7 +288,7 @@ class BoardState:
 			if "static" in pieceData:
 				piece.static = pieceData["static"] == 1
 
-			if "color" in pieceData and not piece.in_private_zone:
+			if "color" in pieceData:
 				piece.color = pieceData["color"]
 				piece.always_private = True
 
