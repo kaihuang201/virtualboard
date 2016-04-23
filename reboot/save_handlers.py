@@ -20,7 +20,7 @@ class DownloadStateHandler(tornado.web.RequestHandler):
 #                self.write("Incorrect key, expected " + str(games[lobby_id].save_key) + " but got " + str(key))
 #        else:
 #            self.write("Lobby " + str(lobby_id) + " does not exist")
-
+'''
 class UploadStateHandler(tornado.web.RequestHandler):
     def post(self):
         lobby_id = int(self.get_argument("lobbyId"))
@@ -40,3 +40,4 @@ class UploadStateHandler(tornado.web.RequestHandler):
                 self.write("Incorrect key, expected " + str(games[lobby_id].save_key) + " but got " + str(key))
         else:
             self.write("Lobby " + str(lobby_id) + " does not exist")
+'''

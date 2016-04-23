@@ -218,16 +218,26 @@ class Game:
 				zone = self.board_state.add_private_zone(zoneData)
 				pieces = zone.pieces
 				zone_response = zone.get_json_obj()
-				zone_response["user"] = client.user_id
+
+				if client:
+					zone_response["user"] = client.user_id
+				else:
+					#technically this should be left out if the client is None
+					zone_response["user"] = self.host.user_id
 
 				new_zone_response.append(zone_response)
 
 				for piece in pieces:
-					enter_zone_response.append({
+					entry = {
 						"piece" : piece.piece_id,
-						"user" : client.user_id,
 						"zone" : zone.zone_id
-					})
+					}
+
+					if client:
+						entry["user"] = client.user_id
+					else:
+						entry["user"] = self.host.user_id
+					enter_zone_response.append(entry)
 
 			if new_zone_response:
 				response = {
@@ -362,12 +372,12 @@ class Game:
 
 	def loadBoardState(self, client, boardData):
 		if client is None or self.host.user_id == client.user_id:
-			self.board_state.clear_board();
-			clearResponse = {
-				"type" : "clearBoard"
-			}
+			#self.board_state.clear_board();
+			#clearResponse = {
+			#	"type" : "clearBoard"
+			#}
 
-			self.message_all(clearResponse)
+			#self.message_all(clearResponse)
 
 
 			#set background
@@ -1114,7 +1124,7 @@ class Game:
 			client.write_message(json.dumps(response))
 		#else:
 		#	tornado.ioloop.IOLoop.instance().add_timeout(datetime.timedelta(seconds=SAVE_RETRY_TIME), self.prepareToSave, client)
-
+'''
 	def prepareToLoad(self, client):
 		if client.user_id == self.host.user_id:
 			response = {
@@ -1135,4 +1145,4 @@ class Game:
 				]
 			}
 			client.write_message(json.dumps(response))
-
+'''

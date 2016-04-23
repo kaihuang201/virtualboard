@@ -15,7 +15,7 @@ app = tornado.web.Application([
 	(r"/testsocket", WebSocketGameHandler),
 	(r"/", WelcomeHandler),
 	(r"/save", DownloadStateHandler),
-	(r"/load", UploadStateHandler),
+	#(r"/load", UploadStateHandler),
 	(r"/static/(.*)", tornado.web.StaticFileHandler, {"path": os.path.join(os.path.dirname(__file__), "static")}),
 	(r"/icon-proxy/(.*)", IconProxyHandler)
 ], settings)

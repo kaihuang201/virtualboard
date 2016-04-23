@@ -113,6 +113,10 @@ var VBoard = VBoard || {};
 
 		removePrivateZone: function (zoneData) {
 			var id = zoneData["id"];
+			this.removePrivateZoneID(id);
+		},
+
+		removePrivateZoneID: function (id) {
 			this.privateZones[id].dispose();
 			delete this.privateZones[id];
 			vb.backStaticMeshCount--;
@@ -173,6 +177,11 @@ var VBoard = VBoard || {};
 			piece.mesh._isEnabled = false;
 			piece.hidden = true;
 			this.removeClickAction(piece);
+
+			vb.selection.removePiece(piece);
+			//vb.selection.resetBoxSelection();
+			vb.sessionIO.moveBuffer.remove(piece.id);
+			vb.selection.computeBoxSelection();
 		},
 
 		privateZoneContains: function (zone, x, y) {
@@ -400,7 +409,15 @@ var VBoard = VBoard || {};
 					//if we have no expectation for this piece's position
 					//then we should update the mesh's position immediately, regardless of who moved it
 
-					this.smoothTransition(piece); //, pieceData["pos"][0], pieceData["pos"][1]);
+					if(piece.hidden) {
+						if(this.smoothedPieces.hasOwnProperty(piece.id)) {
+							delete this.smoothedPieces[piece.id];
+						}
+						piece.mesh.position.x = pieceData["pos"][0];
+						piece.mesh.position.y = pieceData["pos"][1];
+					} else {
+						this.smoothTransition(piece); //, pieceData["pos"][0], pieceData["pos"][1]);
+					}
 				} else {
 					clearTimeout(piece.predictTimeout);
 
@@ -744,7 +761,7 @@ var VBoard = VBoard || {};
 
 			for (var id in this.privateZones) {
 				if (this.privateZones.hasOwnProperty(id)) {
-					this.removePrivateZone(id);
+					this.removePrivateZoneID(id);
 				}
 			}
 			//bad practice, probably leaks memory, oh well
@@ -879,25 +896,82 @@ var VBoard = VBoard || {};
 			piece.mesh.scaling.x = ratio;
 		},
 
+		//beacons
+		//linked list because meh
+		headBeacon: null,
+
 		beacon: function (beaconData) {
 			var x = beaconData["pos"][0];
 			var y = beaconData["pos"][1];
 			var user_id = beaconData["user"];
 			var user = vb.users.userList[user_id];
 
-			var beacon = new BABYLON.Mesh.CreatePlane("beacon", 2.0, vb.scene);
+			var beacon = new BABYLON.Mesh.CreatePlane("beacon", 1.0, vb.scene);
 			beacon.position.x = x;
 			beacon.position.y = y;
 			beacon.material = new BABYLON.StandardMaterial("beacon", vb.scene);
 			beacon.material.diffuseTexture = new BABYLON.Texture("/static/img/ping.png", vb.scene);
 			beacon.material.diffuseTexture.hasAlpha = true;
+			beacon.material.useAlphaFromDiffuseTexture = true;
 			beacon.material.diffuseColor = user.color;
+			beacon.material.alpha = 1.0;
 			this.registerStaticMesh(beacon, true);
+			var beaconEntry =  {
+				"beacon" : beacon,
+				"startTime" : vb.simTime,
+				"next" : this.headBeacon
+			};
+			this.headBeacon = beaconEntry;
 
-			beacon.fadeTimeout = setTimeout(function () {
-				beacon.dispose();
-				vb.frontStaticMeshCount--;
-			}, 2000);
+			//beacon.fadeTimeout = setTimeout(function () {
+			//	beacon.dispose();
+			//	vb.frontStaticMeshCount--;
+			//}, 2000);
+		},
+
+		updateBeacons: function (dt) {
+			var prev = null;
+			var beacon = this.headBeacon;
+			var FADETIME = 250;
+			var CYCLETIME = 1000;
+			var CYCLES = 2;
+
+			while(beacon !== null) {
+				var delta = vb.simTime - beacon.startTime;
+
+				if(delta > CYCLES*CYCLETIME) {
+					beacon.beacon.dispose();
+					vb.frontStaticMeshCount--;
+
+					if(prev === null) {
+						this.headBeacon = beacon.next;
+					} else {
+						prev.next = beacon.next;
+					}
+				} else {
+					if(delta < FADETIME) {
+						beacon.beacon.material.alpha = delta / FADETIME;
+					} else if(CYCLES * CYCLETIME - delta < FADETIME) {
+						beacon.beacon.material.alpha = (CYCLES * CYCLETIME - delta) / FADETIME;
+					} else {
+						beacon.beacon.material.alpha = 1.0;
+					}
+
+					var currCycleDelta = delta % CYCLETIME;
+
+					if(currCycleDelta < CYCLETIME/2) {
+						var scaling = 1.0 + currCycleDelta / (CYCLETIME/2);
+						beacon.beacon.scaling.x = scaling;
+						beacon.beacon.scaling.y = scaling;
+					} else {
+						var scaling = 3.0 - currCycleDelta / (CYCLETIME/2);
+						beacon.beacon.scaling.x = scaling;
+						beacon.beacon.scaling.y = scaling;
+					}
+				}
+				prev = beacon;
+				beacon = beacon.next;
+			}
 		},
 
 		//special pieces

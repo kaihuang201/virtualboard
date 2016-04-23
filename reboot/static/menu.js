@@ -267,16 +267,17 @@ var VBoard = VBoard || {};
 			});
 
 			$("#submit-load-game").click(function () {
-				vb.sessionIO.requestLoad();
-				// var f = document.getElementById('fileUpload').files[0];
-				// var r = new FileReader();
-				// r.onload = function (e) {
-				// 	var contents = e.target.result;
-				// 	var boardData = JSON.parse(contents);
+				//vb.sessionIO.requestLoad();
+				var f = document.getElementById('fileField').files[0];
+				var r = new FileReader();
+				r.onload = function (e) {
+					var contents = e.target.result;
+					var boardData = JSON.parse(contents);
 
-				// 	vb.sessionIO.loadBoardState(boardData);
-				// };
-				// r.readAsText(f);
+					vb.sessionIO.clearBoard();
+					vb.sessionIO.loadBoardState(boardData);
+				};
+				r.readAsText(f);
 				$("#load-game-modal").modal("toggle");
 			});
 

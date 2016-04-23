@@ -175,5 +175,6 @@ class Deck:
 						"icon" : card_entry["icon"],
 						"back" : card_entry["back"]
 					})
+			data["cards"] = card_data
 		return data
 
