@@ -680,7 +680,7 @@ var VBoard = VBoard || {};
 
 			if(!pieceData.hasOwnProperty("timerData")){
 				this.setIcon(piece, pieceData["icon"]);
-				this.setInfo(piece, "");
+				this.setInfo(piece, "", 256, 128, 512, 512);
 			}
 
 			if(pieceData.hasOwnProperty("noteData")){
@@ -1076,7 +1076,7 @@ var VBoard = VBoard || {};
 			}
 			timer.time = time;
 			timer.isRunning = (running == 0) ? false : true;
-			this.setClockInfo(timer, minutesString + ":" + secondsString);
+			this.setInfo(timer, minutesString + ":" + secondsString, 40, 300, 512, 1024);
 		},
 
 		//TODO: the naming doesn't make a ton of sense here, needs some updating
@@ -1163,15 +1163,15 @@ var VBoard = VBoard || {};
 			piece.numCards = newCount;
 
 			if(newCount > 1) {
-				this.setInfo(piece, newCount.toString());
+				this.setInfo(piece, newCount.toString(), 256, 128, 512, 512);
 			} else {
-				this.setInfo(piece, "");
+				this.setInfo(piece, "", 256, 128, 512, 512);
 			}
 			//this.mesh.material.diffuseTexture.drawText(this.numCards, null, 50 * this.size, "bold 128px Arial", "rgba(255,255,255,1.0)", "black");
 		},
 
 		//TODO: BARELY WORKS, NEEDS OVERHAUL
-		setInfo: function (piece, info) {
+		setInfo: function (piece, info, X, Y, width, height) {
 			//http://www.html5gamedevs.com/topic/8958-dynamic-texure-drawtext-attributes-get-text-to-wrap/?do=findComment&comment=62014
 			function wrapText(context, text, x, y, maxWidth, lineHeight) {
 				var words = text.split(' ');
@@ -1199,44 +1199,7 @@ var VBoard = VBoard || {};
 			context.shadowColor = "white";
 			context.shadowOffsetY = 5;
 			context.shadowOffsetX = 5;
-			wrapText(context, info, 256, 128, 512, 512);
-			context.restore();
-			tex.update();
-			//tex.drawText(info, 0, 300, "140px verdana", "black", "transparent");
-		},
-
-		setClockInfo: function (piece, info) {
-			//http://www.html5gamedevs.com/topic/8958-dynamic-texure-drawtext-attributes-get-text-to-wrap/?do=findComment&comment=62014
-			function wrapText(context, text, x, y, maxWidth, lineHeight) {
-				var words = text.split(' ');
-				var line = '';
-				for(var n = 0; n < words.length; n++) {
-					var testLine = line + words[n] + ' ';
-					var metrics = context.measureText(testLine);
-					var testWidth = metrics.width;
-					if (testWidth > maxWidth && n > 0) {
-						context.fillText(line, x, y);
-						line = words[n] + ' ';
-						y += lineHeight;
-					} else {
-						line = testLine;
-					}
-				}
-				context.fillText(line, x, y);
-			}
-			var tex = piece.mesh.material.infoTexture;
-			tex.diffuseColor = new BABYLON.Color3(1,1,1);
-			tex.emissiveColor = new BABYLON.Color3(1,1,1);
-			tex.diffuseTexture = null;
-			var context = tex.getContext();
-			context.clearRect(0, 0, 512, 512);
-			context.font = "140px verdana";
-			context.save();
-			context.textAlign = "start";
-			context.shadowColor = "white";
-			context.shadowOffsetY = 5;
-			context.shadowOffsetX = 5;
-			wrapText(context, info, 40, 300, 512, 1024);
+			wrapText(context, info, X, Y, width, height);
 			context.restore();
 			tex.update();
 			//tex.drawText(info, 0, 300, "140px verdana", "black", "transparent");
