@@ -275,12 +275,13 @@ var VBoard = VBoard || {};
 				}
 				else {
 					this.mouseDown = true;
+					//console.debug(event);
 					console.log("mouseDown: " + event.handled);
 
 					this.lastDragX = pos.x;
 					this.lastDragY = pos.y;
 
-					if(!event.handled) {
+					if(!event.handled && !vb.internet_explorer_support_event_handled) {
 						if (!event.shiftKey) {
 							vb.selection.clear();
 						}
@@ -290,6 +291,7 @@ var VBoard = VBoard || {};
 					}
 				}
 			}
+			vb.internet_explorer_support_event_handled = false;
 		},
 
 		onMouseMove: function (event) {

@@ -792,7 +792,10 @@ var VBoard = VBoard || {};
 							}
 							piece.lastTrigger = time;
 						}
+						console.log("HANDLED");
 						evt.sourceEvent.handled = true;
+
+						vb.internet_explorer_support_event_handled = true;
 					}
 				})
 			);

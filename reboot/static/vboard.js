@@ -31,6 +31,9 @@ var VBoard = VBoard || {};
 	//how much to rotate pieces by
 	vb.rotationAmount = Math.PI / 6;
 
+	//turns out IE needs some hand holding
+	vb.internet_explorer_support_event_handled = false;
+
 	vb.quickStart = function () {
 		vb.limboIO.hostGame("bill", [0, 0, 255], "chess deathmatch", "12345");
 		vb.quickStarted = true;
