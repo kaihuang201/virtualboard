@@ -681,6 +681,11 @@ var VBoard = VBoard || {};
 			if(!pieceData.hasOwnProperty("timerData")){
 				this.setIcon(piece, pieceData["icon"]);
 				this.setInfo(piece, "", 256, 128, 512, 512);
+				piece.isTimer = true;
+				piece.time = pieceData["timerData"]["time"];
+				piece.mesh.scaling.y = piece.size;
+				piece.mesh.scaling.x = piece.size / 0.35;
+				this.setTimer(piece, piece.time, false);
 			}
 
 			if(pieceData.hasOwnProperty("noteData")){
@@ -713,14 +718,6 @@ var VBoard = VBoard || {};
 				piece.max = pieceData["diceData"]["max"];
 				piece.faces = pieceData["diceData"]["faces"];
 				piece.isUserPicker = pieceData["diceData"]["isUserPicker"];
-			}
-
-			if(pieceData.hasOwnProperty("timerData")){
-				piece.isTimer = true;
-				piece.time = pieceData["timerData"]["time"];
-				piece.mesh.scaling.y = piece.size;
-				piece.mesh.scaling.x = piece.size / 0.35;
-				this.setTimer(piece, piece.time, false);
 			}
 
 			plane.actionManager = new BABYLON.ActionManager(vb.scene);
