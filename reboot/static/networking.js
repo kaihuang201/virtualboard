@@ -547,6 +547,37 @@ var VBoard = VBoard || {};
 			this.send(data);
 		},
 
+		setNoteData: function(id, text, size) {
+			if(id.constructor === Array) {
+				var responseData = [];
+
+				for(var i=0; i<id.length; i++) {
+					responseData.push({
+						"piece" : id[i],
+						"noteData" : {
+							"text" : text[i],
+							"size" : size[i]
+						},
+					});
+				}
+			} else {
+				var responseData = [
+					{
+						"piece" : id,
+						"noteData" : {
+							"text" : text,
+							"size" : size
+						},
+					}
+				];
+			}
+			var data = {
+				"type" : "setNoteData",
+				"data" : responseData
+			};
+			this.send(data);
+		},
+
 		flipCard: function (id) {
 			if(id.constructor === Array) {
 				var pieceData = [];
@@ -988,6 +1019,17 @@ var VBoard = VBoard || {};
 
 					vb.board.setTimer(timer, time, running);
 					break;
+				case "setNoteData":
+					var pieces = data["data"];
+
+					for(var i=0; i<pieces.length; i++) {
+						var pieceData = pieces[i];
+						var piece = vb.board.getFromID(pieceData["piece"]);
+						var text = pieceData["noteData"]["text"];
+						var size = pieceData["noteData"]["size"];
+						vb.board.setNoteData(piece, text, size);
+					}
+					break;
 				case "rollDice":
 					var dice = data["data"];
 
@@ -1027,18 +1069,6 @@ var VBoard = VBoard || {};
 					var key = data["data"].key;
 					window.location = "/save?lobbyId=" + lobby + "&key=" + key;
 	                break;
-//	            case "loadPrep":
-//					var file_field = $("#fileField")[0];
-//					var formData = new FormData();
-//			        formData.append("upload", file_field.files[0]);
-//			        formData.append("lobbyId", data["data"].lobbyId);
-//			        formData.append("key", data["data"].key);
-//			        var xhr = new XMLHttpRequest();
-//			        xhr.open('POST', 'load', true);
-//			        xhr.onload = function () {
-//			        };
-//			        xhr.send(formData);
-//	            	break;
 				default:
 					console.log("unhandled server message: " + data["type"]);
 			}

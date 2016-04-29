@@ -6,12 +6,10 @@ from copy import copy
 from deck import *
 from private_zone import *
 
-#WHITE = [255, 255, 255]
-
 class Piece:
-	def __init__(self, pieceData, id):
+	#this host_id should really be handled differently
+	def __init__(self, pieceData, id, host_id):
 		#TODO: check for reasonable values
-		#print pieceData
 		self.pos = pieceData["pos"]
 		self.icon = pieceData["icon"]
 		self.piece_id = id
@@ -41,7 +39,6 @@ class Piece:
 
 		#TODO: NOT YET IMPLEMENTED ON FRONT END
 		if "private" in pieceData:
-			#self.always_private = pieceData["private"] == 1
 			for color in pieceData["private"]:
 				self.private_colors.add(tuple(color))
 
@@ -61,12 +58,14 @@ class Piece:
 
 			#cards are just a special case of decks where there is only one card
 			self.cardData = Deck(pieceData["cardData"], self.icon)
-			self.icon = self.cardData.get_icon()		
+			self.icon = self.cardData.get_icon()
 
-		#I know dice is plural but "isDie" sounds awkward here, but still, it's proper english
 		if "diceData" in pieceData:
 			self.isDie = True
-			self.isUserPicker = pieceData["diceData"]["isUserPicker"]
+
+			if "isUserPicker" in pieceData["diceData"]:
+				self.isUserPicker = pieceData["diceData"]["isUserPicker"]
+				self.icon = host_id
 			self.max = pieceData["diceData"]["max"]
 
 			#maybe also enforce positive integer here?
@@ -144,7 +143,7 @@ class Piece:
 		return data
 
 class BoardState:
-	def __init__(self):
+	def __init__(self, lobby):
 		#ordered list of pieces on board, with first element on bottom and last element on top
 		self.pieces = []
 
@@ -156,6 +155,7 @@ class BoardState:
 		self.private_zones = {}
 		self.next_zone_id = 0
 		self.background = ""
+		self.lobby = lobby
 
 	#Game has a similar function
 	#should probably be rewritten to avoid duplicaton, oh well
@@ -175,7 +175,7 @@ class BoardState:
 	#returns the newly generated piece
 	#color is an array, but if you define an array as a default parameter it is static to the class, not the object
 	def generate_new_piece(self, pieceData):
-		piece = Piece(pieceData, self.next_piece_id)
+		piece = Piece(pieceData, self.next_piece_id, self.lobby.host.user_id)
 		self.piecemap[self.next_piece_id] = len(self.pieces)
 		self.pieces.append(piece)
 		self.next_piece_id += 1
@@ -201,7 +201,8 @@ class BoardState:
 			index = self.piecemap[piece_id]
 			piece = self.pieces[index]
 
-			for zone in piece.zones:
+			#we need to iterate over a copy of the set to avoid errors
+			for zone in copy(piece.zones):
 				zone.remove_piece(piece)
 
 			self.bring_to_front(piece_id)
@@ -262,22 +263,10 @@ class BoardState:
 							zone.add_piece(piece)
 							zones_entered.append(zone.zone_id)
 
-				#piece.in_private_zone = False
-
-				# Typically we will reset the piece's color to white until we determine if it is
-				# stil in a private zone, however if it is a permanently private piece, we do not
-				# reset the color 
-				#if piece.zone != None:
-				#	piece.zone.remove_piece(piece)
-
-				#for zone in self.private_zones.itervalues():
-				#	if zone.contains(piece.pos[0], piece.pos[1]):
-				#		zone.add_piece(piece)
-
 				#only for positional changes do we bring the piece to the front
 				#note that this also invalidates the index variable we have
-				#if not self.bring_to_front(piece.piece_id):
-				#	raise Exception("error bringing transformed piece to front")
+				if not self.bring_to_front(piece.piece_id):
+					raise Exception("error bringing transformed piece to front")
 
 			if "r" in pieceData:
 				piece.rotation = pieceData["r"]
@@ -350,19 +339,24 @@ class BoardState:
 			index = self.piecemap[piece_id]
 			piece = self.pieces[index]
 
-			if piece.isDie: # and (piece.color == WHITE or piece.color == client.color):
-				value = random.randint(0, piece.max-1)
-
-				if value < len(piece.faces):
-					piece.icon = faces[value]
+			if piece.isDie:
+				if piece.isUserPicker:
+					user_id = random.sample(self.lobby.clients, 1)[0]
+					piece.icon = user_id
+					return user_id
 				else:
-					if piece.max < 3:
-						piece.icon = "/static/img/die_face/tiny_die_face_" + str(value+1) + ".png"
-					elif piece.max < 7:
-						piece.icon = "/static/img/die_face/small_die_face_" + str(value+1) + ".png"
+					value = random.randint(0, piece.max-1)
+
+					if value < len(piece.faces):
+						piece.icon = faces[value]
 					else:
-						piece.icon = "/static/img/die_face/big_die_face_" + str(value+1) + ".png"
-				return value
+						if piece.max < 3:
+							piece.icon = "/static/img/die_face/tiny_die_face_" + str(value+1) + ".png"
+						elif piece.max < 7:
+							piece.icon = "/static/img/die_face/small_die_face_" + str(value+1) + ".png"
+						else:
+							piece.icon = "/static/img/die_face/big_die_face_" + str(value+1) + ".png"
+					return value
 		return None
 
 	#returns the revealed icon on success, None otherwise
@@ -371,7 +365,7 @@ class BoardState:
 			index = self.piecemap[piece_id]
 			piece = self.pieces[index]
 
-			if piece.isCard: # and (piece.color == WHITE or piece.color == client.color):
+			if piece.isCard:
 				piece.cardData.flip()
 				piece.icon = piece.cardData.get_icon()
 				return piece.icon
@@ -384,7 +378,7 @@ class BoardState:
 			index = self.piecemap[piece_id]
 			piece = self.pieces[index]
 
-			if piece.isCard: # and (piece.color == WHITE or piece.color == client.color):
+			if piece.isCard:
 				data = piece.cardData.draw()
 
 				if data is not None:
@@ -432,7 +426,7 @@ class BoardState:
 			index = self.piecemap[piece_id]
 			piece = self.pieces[index]
 
-			if piece.isCard: # and (piece.color == WHITE or piece.color == client.color):
+			if piece.isCard:
 				piece.cardData.shuffle()
 				piece.icon = piece.cardData.get_icon()
 				return piece.icon
@@ -448,8 +442,6 @@ class BoardState:
 			deck = self.pieces[deck_index]
 
 			if card.isCard and deck.isCard and card_id != deck_id:
-				#and (card.color == WHITE or card.color == client.color)
-				#and (deck.color == WHITE or deck.color == client.color)):
 				deck.cardData.absorb(card.cardData)
 				deck.icon = deck.cardData.get_icon()
 
@@ -460,6 +452,18 @@ class BoardState:
 					"count" : deck.cardData.get_size()
 				}
 		return None
+
+	#return True on success, False otherwise
+	def set_note_data(self, note_id, note_data):
+		if note_id in self.piecemap:
+			note_index = self.piecemap[note_id]
+			note = self.pieces[note_index]
+
+			if note.isNote:
+				note.noteText = note_data["text"]
+				note.noteTextSize = note_data["size"]
+				return True
+		return False
 
 	#complete is set to true when the board state is being saved
 	def get_json_obj(self, complete=False):

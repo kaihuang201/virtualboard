@@ -16,9 +16,6 @@ games = {}
 next_game_id = 0
 
 MOVE_TICK_DURATION = 0.05 #50 ms
-#SAVE_RETRY_TIME = 1
-
-#WHITE = [255, 255, 255]
 
 #maximum allowed "spammable" actions per timeout
 SPAM_FILTER_TIMEOUT = 1
@@ -33,12 +30,9 @@ class Game:
 		self.next_user_id = 0
 		self.host = host
 		self.game_id = id
-		self.board_state = BoardState()
+		self.board_state = BoardState(self)
 		self.movebuffer = MoveBuffer()
 		self.spam_timeout = None
-		#self.save_key = 0
-		#self.load_key = 0
-		#self.save_in_process = False
 
 		#this is just to get the loop going
 		tornado.ioloop.IOLoop.instance().add_callback(self.check_spam)
@@ -244,14 +238,14 @@ class Game:
 					"type" : "addPrivateZone",
 					"data" : new_zone_response
 				}
-				self.message_all(response);
+				self.message_all(response)
 
 			if enter_zone_response:
 				response = {
 					"type" : "enterPrivateZone",
 					"data" : enter_zone_response
 				}
-				self.message_all(response);
+				self.message_all(response)
 
 		else:
 			self.send_error(client, "Only the host can use that command")
@@ -372,13 +366,6 @@ class Game:
 
 	def loadBoardState(self, client, boardData):
 		if client is None or self.host.user_id == client.user_id:
-			#self.board_state.clear_board();
-			#clearResponse = {
-			#	"type" : "clearBoard"
-			#}
-
-			#self.message_all(clearResponse)
-
 
 			#set background
 			self.setBackground(self.host, {
@@ -465,14 +452,11 @@ class Game:
 			piece = self.board_state.get_piece(piece_id)
 
 			if piece and self.client_can_interact(client, piece):
-				#was_in_private_zone = piece.in_private_zone
-				#old_color = piece.color
 
 				old_private_colors = piece.get_private_colors()
 				result = self.board_state.transform_piece(pieceData)
 
 				if result is not None:
-					#print("TRANSFORM RESULT: " + str(result));
 
 					#step 1: update private zones
 					enter_zone_response = []
@@ -514,7 +498,6 @@ class Game:
 					removed_colors = old_private_colors - new_private_colors
 
 					if removed_colors:
-						#print("REMOVED COLORS: " + str(removed_colors))
 						#this is potentially inefficient, but the simplest way to maintain ordering
 						transform_message = piece.get_transform_json()
 						transform_message["user"] = client.user_id
@@ -576,80 +559,10 @@ class Game:
 							self.message_colors(response, new_private_colors)
 						else:
 							self.message_all(response)
-					'''
-					# If the piece is in a private zone we need to tell all clients other
-					# than the zone's owner that it is removed
-					if piece.in_private_zone:
-						if not remove_response.has_key(str(piece.color)):
-							remove_response[str(piece.color)] = []
-
-						if not colored_response.has_key(str(piece.color)):
-							colored_response[str(piece.color)] = []
-
-						remove_response[str(piece.color)].append({
-							"user" : client.user_id,
-							"piece" : piece.piece_id
-						})
-						colored_response[str(piece.color)].append(data_entry)
-						response_empty = False
-					else:
-						if was_in_private_zone:
-							if not add_response.has_key(str(old_color)):
-								add_response[str(old_color)] = []
-
-							add_data_entry = piece.get_json_obj()
-							add_data_entry["user"] = client.user_id
-							add_response[str(old_color)].append(add_data_entry)
-
-						response_data.append(data_entry)
-						response_empty = False
-					'''
 				else:
 					self.send_error(client, "invalid action")
 			else:
 				self.send_error(client, "invalid piece id " + str(pieceData["piece"]))
-	'''
-		if response_empty:
-			return
-
-		if move_only:
-			#buffer magic
-			for pieceData in pieces:
-				piece = self.board_state.get_piece(pieceData["piece"])
-				if piece.color == WHITE or piece.color == client.color:
-					self.movebuffer.add(pieceData["piece"], pieceData["pos"], client.user_id)
-
-			if self.movebuffer.flush_timeout is None:
-				self.movebuffer.flush_timeout = tornado.ioloop.IOLoop.instance().add_callback(self.end_move_timeout)
-		else:
-			client.spam_amount += 0.4 + 0.4*len(pieces)
-			response = {
-				"type" : "pt",
-				"data" : response_data
-			}
-			self.message_all(response)
-
-			for color, colored_response_data in colored_response.iteritems():
-				response = {
-					"type" : "pt",
-					"data" : colored_response_data
-				}
-				self.message_color(eval(color), response)
-
-		for color, remove_response_data in remove_response.iteritems():
-			response = {
-				"type" : "pieceRemove",
-				"data" : remove_response_data
-			}
-			self.message_color(eval(color), response, True)
-
-		for color, add_response_data in add_response.iteritems():
-			response = {
-				"type" : "pieceAdd",
-				"data" : add_response_data
-			}
-			self.message_color(eval(color), response, True)
-	'''
 
 	#this function must run on the main thread
 	def end_move_timeout(self):
@@ -728,23 +641,25 @@ class Game:
 	# special pieces
 	#==========
 
-	def updateTimer(self, timer_id):
-		timer = self.board_state.get_piece(timer_id)
+	def updateTimer(self, timer, current_time):
+		#timer = self.board_state.get_piece(timer_id)
+
 		if timer == None:
 			return
+		if timer.timeout is not None:
+			tornado.ioloop.IOLoop.instance().remove_timeout(timer.timeout)
 
 		if timer.time == 0:
-			tornado.ioloop.IOLoop.instance().remove_timeout(timer.timeout)
 			timer.timeout = None
 			timer.isRunning = False
 		else:
 			timer.time -= 1
-			timer.timeout = tornado.ioloop.IOLoop.instance().add_timeout(datetime.timedelta(seconds=1), self.updateTimer, timer_id)
+			timer.timeout = tornado.ioloop.IOLoop.instance().add_timeout(current_time + 1.0, self.updateTimer, timer, current_time + 1.0)
 
 		response = {
 			"type" : "setTimer",
 			"data" : {
-				"id" : timer_id,
+				"id" : timer.piece_id,
 				"time" : timer.time,
 				"running" : 1 if timer.isRunning else 0
 			}
@@ -757,8 +672,14 @@ class Game:
 			self.send_error(client, "Timer does not exist")
 			return
 
+		if timer.timeout is not None:
+			tornado.ioloop.IOLoop.instance().remove_timeout(timer.timeout)
+
 		timer.isRunning = True
-		timer.timeout = tornado.ioloop.IOLoop.instance().add_timeout(datetime.timedelta(seconds=1), self.updateTimer, timer_id)
+		tornado.ioloop.IOLoop.instance().add_callback(self.initializeTimer, timer, time.time())
+
+	def initializeTimer(self, timer, start_time):
+		timer.timeout = tornado.ioloop.IOLoop.instance().add_timeout(start_time + 1.0, self.updateTimer, timer, start_time + 1.0)
 
 	def stopTimer(self, client, timer_id):
 		timer = self.board_state.get_piece(timer_id)
@@ -766,7 +687,8 @@ class Game:
 			self.send_error(client, "Timer does not exist")
 			return
 
-		tornado.ioloop.IOLoop.instance().remove_timeout(timer.timeout)
+		if timer.timeout is not None:
+			tornado.ioloop.IOLoop.instance().remove_timeout(timer.timeout)
 		timer.timeout = None
 		timer.isRunning = False
 
@@ -804,9 +726,36 @@ class Game:
 
 		self.message_all(response_data)
 
+	def setNoteData(self, client, pieces):
+		client.spam_amount += 2 + 2*len(pieces)
+		response_data = []
+
+		for pieceData in pieces:
+			piece_id = pieceData["piece"]
+
+			if self.board_state.set_note_data(piece_id, pieceData["noteData"]):
+				response_data.append({
+					"user" : client.user_id,
+					"piece" : piece_id,
+					"noteData" : {
+						"text" : pieceData["noteData"]["text"],
+						"size" : pieceData["noteData"]["size"]
+					}
+				})
+
+		if not response_data:
+			return
+
+		response = {
+			"type" : "setNoteData",
+			"data" : response_data
+		}
+		self.message_all(response)
+
 	def rollDice(self, client, pieces):
 		client.spam_amount += 0.5 + 0.25*len(pieces)
 		response_data = []
+
 		for pieceData in pieces:
 			piece_id = pieceData["piece"]
 			result = self.board_state.roll_dice(piece_id)
@@ -898,8 +847,7 @@ class Game:
 
 	def flipCard(self, client, pieces):
 		client.spam_amount += 0.5 + 0.25*len(pieces)
-		#colored_response_data = {}
-		#response_data = []
+
 		for pieceData in pieces:
 			piece_id = pieceData["piece"]
 			piece = self.board_state.get_piece(piece_id)
@@ -930,43 +878,6 @@ class Game:
 
 			else:
 				self.send_error(client, "invalid deck: " + str(piece_id))
-	'''
-
-
-
-
-				color = self.board_state.get_piece(piece_id).color
-				if color == WHITE:
-					response_data.append({
-						"user" : client.user_id,
-						"piece" : piece_id,
-						"icon" : result
-					})
-				else:
-					if not colored_response_data.has_key(str(color)):
-						colored_response_data[str(color)] = []
-
-					colored_response_data[str(color)].append({
-						"user" : client.user_id,
-						"piece" : piece_id,
-						"icon" : result
-					})
-
-		if len(response_data) > 0:
-			response = {
-				"type" : "flipCard",
-				"data" : response_data
-			}
-			self.message_all(response)
-
-		if len(colored_response_data) > 0:
-			for color, response_data in colored_response_data:
-				response = {
-					"type" : "flipCard",
-					"data" : response_data
-				}
-				self.message_color(eval(color), response)
-	'''
 
 	def addCardToDeck(self, client, pieces):
 		#TODO: spam protection needs to be more advanced here
@@ -1108,11 +1019,6 @@ class Game:
 		self.message_all(response)
 
 	def prepareToSave(self, client):
-		#if not self.save_in_process:
-			#self.save_in_process = True
-			#self.save_key = random.randint(0, KEY_MAX)
-			#self.save_key = self.password
-
 			response = {
 				"type" : "savePrep",
 				"data" : {
@@ -1121,27 +1027,4 @@ class Game:
 				}
 			}
 			client.write_message(json.dumps(response))
-		#else:
-		#	tornado.ioloop.IOLoop.instance().add_timeout(datetime.timedelta(seconds=SAVE_RETRY_TIME), self.prepareToSave, client)
-'''
-	def prepareToLoad(self, client):
-		if client.user_id == self.host.user_id:
-			response = {
-				"type" : "loadPrep",
-				"data" : {
-					"lobbyId" : self.game_id,
-					"key" : self.password
-				}
-			}
-			client.write_message(json.dumps(response))
-		else:
-			response = {
-				"type" : "error",
-				"data" : [
-					{
-						"msg": "Only host can load a game"
-					}
-				]
-			}
-			client.write_message(json.dumps(response))
-'''
+

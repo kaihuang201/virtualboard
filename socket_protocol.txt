@@ -539,6 +539,20 @@
 	]
 }
 
+{
+	"type" : "setNoteData",
+	"data" : [
+		{
+			"piece" : 8,
+			"user" : 4,
+			"noteData" : {
+				"text" : "important update beep boop",
+				"size" : 72
+			}
+		}
+	]
+}
+
 //TODO: private zones
 {
 	"type" : "createPrivateZone",
@@ -920,6 +934,19 @@
 	"data" : [
 		{
 			"piece" : 7
+		}
+	]
+}
+
+{
+	"type" : "setNoteData",
+	"data" : [
+		{
+			"piece" : 8,
+			"noteData" : {
+				"text" : "important update beep boop",
+				"size" : 72
+			}
 		}
 	]
 }

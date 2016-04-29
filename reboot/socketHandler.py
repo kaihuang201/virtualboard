@@ -167,6 +167,8 @@ class WebSocketGameHandler(tornado.websocket.WebSocketHandler):
 				game.stopTimer(self, data["data"]["id"])
 			elif data["type"] == "setTimer":
 				game.setTimer(self, data["data"])
+			elif data["type"] == "setNoteData":
+				game.setNoteData(self, data["data"])
 
 			#save and load related commands
 			elif data["type"] == "requestSave":
@@ -213,6 +215,7 @@ class WebSocketGameHandler(tornado.websocket.WebSocketHandler):
 	def on_close(self):
 		if self.game is not None:
 			self.game.disconnect(self, "socket terminated")
+
 class WelcomeHandler(tornado.web.RequestHandler):
 	@tornado.web.asynchronous
 	def get(request):
@@ -232,3 +235,4 @@ class TestHandler(tornado.web.RequestHandler):
 	@tornado.web.asynchronous
 	def get(request):
 		request.render("static/test/runalltests.html")
+

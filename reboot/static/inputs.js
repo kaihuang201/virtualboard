@@ -83,6 +83,11 @@ var VBoard = VBoard || {};
 			//need to make sure this plays nicely with box selection too
 			cancel: function () {
 				vb.selection.clear();
+
+				if(this.addPrivateZoneNextClick) {
+					this.addPrivateZoneNextClick = false;
+					document.body.style.cursor = "";
+				}
 			},
 
 			resetCamera: function () {
@@ -98,41 +103,23 @@ var VBoard = VBoard || {};
 			},
 
 			biggify: function () {
-				if(vb.selection.isEmpty()) {
-					var piece = vb.inputs.getPieceUnderMouse(false, true);
-
-					if(piece !== null) {
-						var newSize = piece.size * vb.scalingFactor;
-						vb.sessionIO.resizePiece(piece.id, newSize);
-					}
-				} else {
-					var ids = [];
-					var sizes = [];
-
-					for(var i=0; i<vb.selection.pieces.length; i++) {
-						var piece = vb.selection.pieces[i];
-						sizes.push(piece.size * vb.scalingFactor);
-						ids.push(piece.id);
-					}
-					vb.sessionIO.resizePiece(ids, sizes);
-				}
+				vb.inputs.handlers.resizePieces(vb.scalingFactor);
 			},
 
 			smallify: function () {
-				if(vb.selection.isEmpty()) {
-					var piece = vb.inputs.getPieceUnderMouse(false, true);
+				vb.inputs.handlers.resizePieces(1.0 / vb.scalingFactor);
+			},
 
-					if(piece !== null) {
-						var newSize = piece.size / vb.scalingFactor;
-						vb.sessionIO.resizePiece(piece.id, newSize);
-					}
-				} else {
+			resizePieces: function (factor) {
+				var pieces = vb.inputs.getTargetedPieces(true);
+
+				if(pieces.length > 0) {
 					var ids = [];
 					var sizes = [];
 
-					for(var i=0; i<vb.selection.pieces.length; i++) {
-						var piece = vb.selection.pieces[i];
-						sizes.push(piece.size / vb.scalingFactor);
+					for(var i=0; i<pieces.length; i++) {
+						var piece = pieces[i];
+						sizes.push(piece.size * factor);
 						ids.push(piece.id);
 					}
 					vb.sessionIO.resizePiece(ids, sizes);
@@ -140,44 +127,26 @@ var VBoard = VBoard || {};
 			},
 
 			rotatePieceCCW: function () {
-				if(vb.selection.isEmpty()) {
-					var piece = vb.inputs.getPieceUnderMouse(false, true);
-
-					if(piece !== null) {
-						var newRotation = piece.mesh.rotation.z + vb.rotationAmount;
-						vb.sessionIO.rotatePiece(piece.id, newRotation);
-					}
-				} else {
-					var ids = [];
-					var sizes = [];
-
-					for(var i=0; i<vb.selection.pieces.length; i++) {
-						var piece = vb.selection.pieces[i];
-						sizes.push(piece.mesh.rotation.z + vb.rotationAmount);
-						ids.push(piece.id);
-					}
-					vb.sessionIO.rotatePiece(ids, sizes);
-				}
+				vb.inputs.handlers.rotatePieces(vb.rotationAmount);
 			},
 
 			rotatePieceCW: function () {
-				if(vb.selection.isEmpty()) {
-					var piece = vb.inputs.getPieceUnderMouse(false, true);
+				vb.inputs.handlers.rotatePieces(-vb.rotationAmount);
+			},
 
-					if(piece !== null) {
-						var newRotation = piece.mesh.rotation.z - vb.rotationAmount;
-						vb.sessionIO.rotatePiece(piece.id, newRotation);
-					}
-				} else {
+			rotatePieces: function (rotation) {
+				var pieces = vb.inputs.getTargetedPieces(true);
+
+				if(pieces.length > 0) {
 					var ids = [];
-					var sizes = [];
+					var angles = [];
 
-					for(var i=0; i<vb.selection.pieces.length; i++) {
-						var piece = vb.selection.pieces[i];
-						sizes.push(piece.mesh.rotation.z - vb.rotationAmount);
+					for(var i=0; i<pieces.length; i++) {
+						var piece = pieces[i];
+						angles.push(piece.mesh.rotation.z + rotation);
 						ids.push(piece.id);
 					}
-					vb.sessionIO.rotatePiece(ids, sizes);
+					vb.sessionIO.rotatePiece(ids, angles);
 				}
 			}
 		},
@@ -189,15 +158,13 @@ var VBoard = VBoard || {};
 
 			window.addEventListener("keydown", function (evt) {
 				vb.inputs.onKeyDown(evt.keyCode);
-				//if(!evt.metaKey) {
-				//	evt.preventDefault();
-				// }
 			});
 
 			//hide context menu when clicking on the canvas
 			//ideally this would work through our inputs system rather than jquery but whatever
-			$("#canvas").click(function(){
+			$("#canvas").click(function () {
 				$("#context-menu").css("visibility", "hidden");
+				vb.inputs.setEnabled(true);
 			});
 
 			window.addEventListener("keyup", function (evt) {
@@ -263,8 +230,7 @@ var VBoard = VBoard || {};
 						this.privateZoneHeight, this.privateZoneColor);
 					this.addPrivateZoneNextClick = false;
 					document.body.style.cursor = "";
-				}
-				else if (this.removePrivateZoneNextClick) {
+				} else if (this.removePrivateZoneNextClick) {
 					zoneId = this.getZoneUnderMouse();
 					console.log(zoneId);
 					if (zoneId != null) {
@@ -272,11 +238,8 @@ var VBoard = VBoard || {};
 					}
 					this.removePrivateZoneNextClick = false;
 					document.body.style.cursor = "";
-				}
-				else {
+				} else {
 					this.mouseDown = true;
-					//console.debug(event);
-					console.log("mouseDown: " + event.handled);
 
 					this.lastDragX = pos.x;
 					this.lastDragY = pos.y;
@@ -375,6 +338,20 @@ var VBoard = VBoard || {};
 			}
 			else if(vb.selection.pieces.length > 0) {
 				vb.selection.drag(dx, dy);
+			}
+		},
+
+		getTargetedPieces: function (ignoreStatic) {
+			if(vb.selection.isEmpty()) {
+				var piece = vb.inputs.getPieceUnderMouse(false, ignoreStatic);
+
+				if(piece !== null) {
+					return [piece];
+				} else {
+					return [];
+				}
+			} else {
+				return vb.selection.pieces;
 			}
 		},
 

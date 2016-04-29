@@ -589,8 +589,8 @@ var VBoard = VBoard || {};
 				var lenWord = word.length;
 				var noNeedForSpace = false;
 
-				if (lineBuffer.length + lenWord + 1> lineSize) {
-					if (lineBuffer.length > 0){
+				if (lineBuffer.length + lenWord + 1 > lineSize) {
+					if (lineBuffer.length > 0) {
 						lines.push(lineBuffer);
 					}
 					lineBuffer = "";
@@ -602,12 +602,12 @@ var VBoard = VBoard || {};
 					word = word.slice(lineSize-1);
 					noNeedForSpace = true;
 				}
-				if(w > 0 && !noNeedForSpace) { 
+
+				if(lineBuffer.length > 0 && !noNeedForSpace) { 
 					lineBuffer += " " + word;
 				} else {
 					lineBuffer += word;
 				}
-				
 			}
 			if (lineBuffer.length > 0) {
 				lines.push(lineBuffer);
@@ -676,31 +676,30 @@ var VBoard = VBoard || {};
 			piece.lastTrigger = 0;
 			piece.zones = {};
 			piece.hidden = false;
-			//piece.private = pieceData["private"] == 1;
+			piece.icon = pieceData["icon"];
 
-			if(!pieceData.hasOwnProperty("timerData")){
-				this.setIcon(piece, pieceData["icon"]);
-				this.setInfo(piece, "", 256, 128, 512, 512);
-				piece.isTimer = true;
-				piece.time = pieceData["timerData"]["time"];
-				piece.mesh.scaling.y = piece.size;
-				piece.mesh.scaling.x = piece.size / 0.35;
-				this.setTimer(piece, piece.time, false);
+			if(pieceData.hasOwnProperty("diceData")) {
+				piece.isDie = true;
+				piece.max = pieceData["diceData"]["max"];
+				piece.faces = pieceData["diceData"]["faces"];
+
+				if(pieceData["diceData"].hasOwnProperty("isUserPicker")) {
+					piece.isUserPicker = pieceData["diceData"]["isUserPicker"];
+				} else {
+					piece.isUserPicker = false;
+				}
 			}
 
-			if(pieceData.hasOwnProperty("noteData")){
+			if(!pieceData.hasOwnProperty("timerData") && !piece.isUserPicker) {
+				this.setIcon(piece, piece.icon);
+				this.setInfo(piece, "", 256, 128, 512, 512);
+			}
+
+			if(pieceData.hasOwnProperty("noteData")) {
 				piece.isNote = true;
-				piece.noteText = pieceData["noteData"]["text"];
-				piece.noteTextSize = pieceData["noteData"]["size"];
-				var lineSize = Math.floor(750.0/piece.noteTextSize);
-				var lines = this.splitLines(piece.noteText, lineSize);
-				var line;
-				var offset = piece.noteTextSize;
-				var textFormat = "" + piece.noteTextSize + "px Courier New";
-				for(line in lines) {
-					piece.mesh.material.infoTexture.drawText(lines[line], 0, offset, textFormat, "black" , "transparent", true);
-					offset += piece.noteTextSize*1.1;
-				}
+				var noteText = pieceData["noteData"]["text"];
+				var noteTextSize = pieceData["noteData"]["size"];
+				this.setNoteData(piece, noteText, noteTextSize);
 			}
 
 			if(pieceData.hasOwnProperty("cardData")) {
@@ -713,11 +712,24 @@ var VBoard = VBoard || {};
 				}
 			}
 
-			if(pieceData.hasOwnProperty("diceData")) {
-				piece.isDie = true;
-				piece.max = pieceData["diceData"]["max"];
-				piece.faces = pieceData["diceData"]["faces"];
-				piece.isUserPicker = pieceData["diceData"]["isUserPicker"];
+			if(pieceData.hasOwnProperty("timerData")) {
+				piece.isTimer = true;
+				piece.time = pieceData["timerData"]["time"];
+				piece.mesh.scaling.y = piece.size;
+				piece.mesh.scaling.x = piece.size / 0.35;
+				this.setTimer(piece, piece.time, false);
+			}
+
+			if(piece.isUserPicker) {
+				piece.max = vb.users.userList.length;
+
+				//edge case: picked user might no longer be in game
+				if(vb.users.userList.hasOwnProperty(piece.icon)) {
+					var color = vb.users.userList[piece.icon].color;
+				} else {
+					var color = new BABYLON.Color3(1.0, 1.0, 1.0);
+				}
+				this.setColor(piece, color);
 			}
 
 			plane.actionManager = new BABYLON.ActionManager(vb.scene);
@@ -759,9 +771,6 @@ var VBoard = VBoard || {};
 			//TODO: do not register if static, make a register/unregister block in transformPiece
 			piece.mesh.actionManager.registerAction(
 				new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnLeftPickTrigger, function (evt) {
-					console.debug(evt);
-					console.log("click on: " + piece.id);
-
 					if(piece.hidden == false && piece.static == false && !evt.sourceEvent.altKey) {
 
 						//check that the shift key was pressed for the context menu
@@ -789,7 +798,6 @@ var VBoard = VBoard || {};
 							}
 							piece.lastTrigger = time;
 						}
-						console.log("HANDLED");
 						evt.sourceEvent.handled = true;
 
 						vb.internet_explorer_support_event_handled = true;
@@ -1100,7 +1108,8 @@ var VBoard = VBoard || {};
 			var icon = "";
 
 			if (piece.isUserPicker) {
-				piece.max = Object.keys(vb.users.userList).length;
+				piece.icon = value; //bleh
+				piece.max = vb.users.userList.length;
 				var color = vb.users.userList[value].color;
 				this.setColor(piece, color);
 			} else {
@@ -1203,6 +1212,24 @@ var VBoard = VBoard || {};
 			context.restore();
 			tex.update();
 			//tex.drawText(info, 0, 300, "140px verdana", "black", "transparent");
+		},
+
+		setNoteData: function (piece, text, size) {
+			var tex = piece.mesh.material.infoTexture;
+			var context = tex.getContext();
+			context.clearRect(0, 0, 512, 512);
+
+			piece.noteText = text
+			piece.noteTextSize = size
+			var lineSize = Math.floor(750.0/piece.noteTextSize);
+			var lines = this.splitLines(piece.noteText, lineSize);
+			var line;
+			var offset = piece.noteTextSize;
+			var textFormat = "" + piece.noteTextSize + "px Courier New";
+			for(line in lines) {
+				piece.mesh.material.infoTexture.drawText(lines[line], 0, offset, textFormat, "black" , "transparent", true);
+				offset += piece.noteTextSize*1.1;
+			}
 		},
 
 		doubleClick: function(piece) {

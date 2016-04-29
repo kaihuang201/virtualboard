@@ -2,6 +2,7 @@ var VBoard = VBoard || {};
 (function (vb) {
 	vb.menu = {
 		privateZoneColorSelected: null,
+		selected_note: null,
 
 		init: function () {
 			//TODO: menu should not be active until we are in a game session
@@ -89,8 +90,7 @@ var VBoard = VBoard || {};
 					var warning = "Loading a game will remove the current game, you may want to save first";
 					if (($("#template-modal").data('bs.modal') || {}).isShown) {
 						vb.interface.setTemplateModalAlert(warning);
-					}
-					else {
+					} else {
 						vb.interface.alertModal(warning,0);
 					}
 				}
@@ -108,12 +108,6 @@ var VBoard = VBoard || {};
 			$("#addDeck").on("click", function () {
 				vb.content.createDefaultDeck();
 			});
-
-			//$("#penTool").on("click", function () {
-			//	var user = null;
-			//	var pos = {x:0, y:0};
-			//	vb.board.generateNewPiece("penTool", user, pos);
-			//});
 
 			$("#submit-add-game").click(function () {
 				var selectedName = $("#add-game-list").val();
@@ -137,7 +131,6 @@ var VBoard = VBoard || {};
 					case "tic-tac-toe":
 						vb.content.loadTictactoeGame();
 						break;
-
 				}
 
 				$("#add-game-modal").modal("toggle");
@@ -173,11 +166,19 @@ var VBoard = VBoard || {};
 					"noteData" : {
 						"text" : text,
 						"size" : size
-					},				
+					},
 				};
 
 				vb.sessionIO.addPiece(data);
 				$("#add-note-modal").modal("toggle");
+			});
+
+			$("#submit-edit-note").click(function () {
+				var text = $("#edit-note").val();
+				var size = parseInt($("#edit-note-size").val());
+
+				vb.sessionIO.setNoteData(vb.menu.selected_note.id, text, size);
+				$("#edit-note-modal").modal("toggle");
 			});
 
 			$("#submit-add-timer").click(function () {
@@ -188,8 +189,7 @@ var VBoard = VBoard || {};
 				var user = null;
 
 				var data = {
-					"timerData" :
-					{
+					"timerData" : {
 						"time" : time,
 					},
 					"s" : 2.5
@@ -223,17 +223,12 @@ var VBoard = VBoard || {};
 			$("#submit-add-die").click(function () {
 				var selectedMax = parseInt($("#add-die-max").val());
 				var user = null;
-				//TODO: use vb.camera.position.x/y instead of board center
-				//var pos = {x:0, y:0};
 
-				//TODO: replace with actual method
-				//vb.board.generateNewPiece(selectedName, user, pos);
 				var icon = "/static/img/die_face/tiny_die_face_1.png";
 
 				if(selectedMax > 2) {
 					icon = "/static/img/die_face/small_die_face_1.png";
-				}
-				else if(selectedMax > 6) {
+				} else if(selectedMax > 6) {
 					icon = "/static/img/die_face/big_die_face_1.png";
 				}
 
@@ -274,8 +269,7 @@ var VBoard = VBoard || {};
 					var warning = "You must select a color for the private zone";
 					if (($("#template-modal").data('bs.modal') || {}).isShown) {
 						vb.interface.setTemplateModalAlert(warning);
-					}
-					else {
+					} else {
 						vb.interface.alertModal(warning,0);
 					}
 					return;
@@ -321,7 +315,6 @@ var VBoard = VBoard || {};
 		        	vb.board.gridConfig.enabled = false;
 		    	}
 			});
-
 		},
 
 		loadPieceOptions: function () {
@@ -340,12 +333,14 @@ var VBoard = VBoard || {};
 			$("#addPrivateZone").hide();
 			$("#removePrivateZone").hide();
 			$("#loadGame").hide();
+			$("#loadPreset").hide();
 		},
 
 		showHostOnlyButtons: function () {
 			$("#addPrivateZone").show();
 			$("#removePrivateZone").show();
 			$("#loadGame").show();
+			$("#loadPreset").show();
 		},
 
 		//TODO: instead of hard coding the menu options
@@ -367,8 +362,7 @@ var VBoard = VBoard || {};
 			$("#context-roll").off("click");
 			$("#context-draw-card").off("click");
 			$("#context-shuffle-deck").off("click");
-			//$("#context-resize").off("click");
-			//$("#context-rotate").off("click");
+			$("#context-edit-text").off("click");
 
 			//only show flip option if piece is a card
 			if (piece.isCard) {
@@ -381,32 +375,35 @@ var VBoard = VBoard || {};
 					$("#context-shuffle-deck").hide();
 					$("#context-draw-card").hide();
 				}
-			}
-			else {
+			} else {
 				$("#context-flip").hide();
 				$("#context-draw-card").hide();
 				$("#context-shuffle-deck").hide();
 			}
 
 			//only show roll option if piece is a die
-			if (piece.isDie) {
+			if(piece.isDie) {
 				$("#context-roll").show();
-			}
-			else {
+			} else {
 				$("#context-roll").hide();
 			}
 
-			if(piece.isTimer && piece.isRunning){
+			if(piece.isTimer && piece.isRunning) {
 				$("#context-stop-timer").show();
-			}
-			else{
+			} else{
 				$("#context-stop-timer").hide();
 			}
+
 			if(piece.isTimer && !piece.isRunning){
 				$("#context-start-timer").show();
-			}
-			else{				
+			} else {
 				$("#context-start-timer").hide();
+			}
+
+			if(piece.isNote) {
+				$("#context-edit-text").show();
+			} else {
+				$("#context-edit-text").hide();
 			}
 
 			//set new onclick function bindings
@@ -421,47 +418,48 @@ var VBoard = VBoard || {};
 				vb.board.pushToBack(piece);
 				$("#context-menu").css("visibility", "hidden");
 			});
-			$("#context-front").on("click", function(){
+			$("#context-front").on("click", function () {
 				//note: this is not sent to other users
 				//this should probably be changed or removed
 				vb.board.bringToFront(piece);
 				$("#context-menu").css("visibility", "hidden");
 			});
-			$("#context-static").on("click" , function(){
+			$("#context-static").on("click", function () {
 				//vb.board.toggleStatic(piece);
 				vb.sessionIO.toggleStatic(piece.id);
 				$("#context-menu").css("visibility", "hidden");
 			});
-			$("#context-start-timer").on("click", function(){
+			$("#context-start-timer").on("click", function () {
 				vb.sessionIO.startTimer(piece.id);
 				$("#context-menu").css("visibility", "hidden");
 			});
-			$("#context-stop-timer").on("click", function(){
+			$("#context-stop-timer").on("click", function () {
 				vb.sessionIO.stopTimer(piece.id);
 				$("#context-menu").css("visibility", "hidden");
 			});
-			$("#context-flip").on("click" , function(){
+			$("#context-flip").on("click", function () {
 				vb.sessionIO.flipCard(piece.id);
 				$("#context-menu").css("visibility", "hidden");
 			});
-			$("#context-roll").on("click" , function(){
+			$("#context-roll").on("click", function () {
 				vb.sessionIO.rollDice(piece.id);
 				$("#context-menu").css("visibility", "hidden");
 			});
-			$("#context-draw-card").on("click" , function(){
+			$("#context-draw-card").on("click", function () {
 				  vb.sessionIO.drawCard(piece.id);
 				$("#context-menu").css("visibility", "hidden");
 			});
-			$("#context-shuffle-deck").on("click" , function(){
+			$("#context-shuffle-deck").on("click", function () {
 				vb.sessionIO.shuffleDeck(piece.id);
 				$("#context-menu").css("visibility", "hidden");
 			});
-			//$("#context-resize").on("click", function(){
-			//	$("#context-menu").css("visibility", "hidden");
-			//});
-			//$("#context-resize").on("click", function(){
-			//	$("#context-menu").css("visibility", "hidden");
-			//});
+			$("#context-edit-text").on("click", function () {
+				vb.menu.selected_note = piece;
+				$("#context-menu").css("visibility", "hidden");
+				$("#edit-note").val(piece.noteText);
+				$("#edit-note-size").val(piece.noteTextSize);
+				$("#edit-note-modal").modal();
+			});
 		}
 	};
 
