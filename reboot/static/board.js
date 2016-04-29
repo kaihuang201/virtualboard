@@ -386,15 +386,26 @@ var VBoard = VBoard || {};
 
 			this.highlightPiece(piece, user.color, vb.moveHighlightDuration);
 
-			if(pieceData.hasOwnProperty("icon")) {
-				this.setIcon(piece, pieceData["icon"]);
-			}
-
 			if(pieceData.hasOwnProperty("color")) {
 				var c = pieceData["color"];
 				piece.color = new BABYLON.Color3(c[0]/255, c[1]/255, c[2]/255);
 				piece.mesh.material.mainMaterial.diffuseColor = piece.color;
-				//piece.mesh.material.infoMaterial.emissiveColor = piece.color;
+			}
+
+			if(pieceData.hasOwnProperty("icon")) {
+				if(piece.isUserPicker) {
+					piece.max = vb.users.userList.length;
+
+					//edge case: picked user might no longer be in game
+					if(vb.users.userList.hasOwnProperty(piece.icon)) {
+						var color = vb.users.userList[piece.icon].color;
+					} else {
+						var color = new BABYLON.Color3(1.0, 1.0, 1.0);
+					}
+					this.setColor(piece, color);
+				} else {
+					this.setIcon(piece, pieceData["icon"]);
+				}
 			}
 
 			if(pieceData.hasOwnProperty("pos")) {
@@ -910,10 +921,11 @@ var VBoard = VBoard || {};
          * @color BABYLON.Color3
          */
         setColor: function (piece, color) {
-			var material = new BABYLON.StandardMaterial("std", vb.scene);
-			material.emissiveColor = color;
-			material.disableLighting = true;
-			piece.mesh.material = material;
+			piece.mesh.material.mainMaterial.diffuseColor = color;
+			//var material = new BABYLON.StandardMaterial("std", vb.scene);
+			//material.emissiveColor = color;
+			//material.disableLighting = true;
+			//piece.mesh.material = material;
         },
 
 		//TODO: maybe a toggle for auto resizing
@@ -968,14 +980,14 @@ var VBoard = VBoard || {};
 			if(piece.isTimer) {
 				piece.mesh.scaling.x = piece.size / 0.35;
 			} else {
-				if(piece.mesh.material.mainMaterial) {
+				if(piece.mesh.material.mainMaterial && piece.mesh.material.mainMaterial.diffuseTexture) {
 					var t = piece.mesh.material.mainMaterial.diffuseTexture._texture;
 					//for some bizzare reason, not using the intermediate ratio variable makes this not work
-					var ratio = piece.mesh.scaling.y * t._baseWidth / t._baseHeight;
+					var ratio = t._baseWidth / t._baseHeight;
 				} else {
 					var ratio = 1.0;
 				}
-				piece.mesh.scaling.x = ratio;
+				piece.mesh.scaling.x = piece.mesh.scaling.y * ratio;
 			}
 		},
 
