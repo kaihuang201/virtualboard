@@ -11,14 +11,55 @@
 	<script>
 		$(document).ready(function () {
 			console.log("Welcome Page ready");
-			$("#enter-game-btn").click(function(){window.location.replace($(location).attr('href') + "game");});
+			$("#enter-game-btn").click(function () {
+				window.location.replace($(location).attr('href') + "game");
+			});
+		});
+		$(window).scroll(function () {
+			var amount = Math.floor($(window).scrollTop() / 2);
+			$("#main-header-background").css({
+				"margin-top" : amount + "px",
+				"height" : (400 - amount) + "px"
+			});
 		});
 	</script>
 </head>
 <body>
-<div id="main-page" class="container">
-	<h1 id="game-title"> Welcome to Virtual Board</h1><br>
-	<button type="button" class="btn btn-primary" id="enter-game-btn">Enter Game</button>
-</div>
+	<div id="main-page" class="container">
+		<div id="main-header">
+			<div id="main-header-background">
+				<div id="main-header-content">
+					<h1 id="game-title"> Welcome to VirtualBoard</h1><br>
+					<button type="button" class="btn btn-primary" id="enter-game-btn">Enter Game</button>
+				</div>
+			</div>
+		</div>
+		<div id="main-info">
+			<p>
+				<h3>What is VirtualBoard?</h3>
+				VirtualBoard is an online platform that lets you connect with your friends in a virtual tabletop environment.  Simply click the button above, pick a name and color, and start playing!
+			</p>
+			<br />
+			<p>
+				<h3>How does it work?</h3>
+				The game will run in any modern web browser, and you can launch your own webserver by downloading the <a href="https://github.com/kaihuang201/virtualboard">python source code</a>.  It uses BabylonJS to render the game on the front end, and Tornado to run the game server.
+			</p>
+			<br />
+			<p>
+				<h3>Contact Us</h3>
+				VirtualBoard was developed as part of a group project at the University of Illinois at Urbana-Champaign.
+			</p>
+			<br />
+			<a href="mailto:hoff121324@gmail.com">Matt Hoffman</a><br />
+			<a href="mailto:khuang29@illinois.edu">Kai Huang</a><br />
+			<a href="mailto:jlchao2@illinois.edu">Jonathan Chao</a><br />
+			<a href="mailto:gryska2@illinois.edu">Evan Gryska</a><br />
+			<a href="mailto:kdpatel2@illinois.edu">Kaushil Patel</a><br />
+			<a href="mailto:puglies2@illinois.edu">Daniel Pugliese</a><br />
+			<a href="mailto:dashen2@illinois.edu">Da Shen</a><br />
+			<a href="mailto:walstad2@illinois.edu">Madeliene Walstad</a>
+			<br />
+		</div>
+	</div>
 </body>
 </html>
