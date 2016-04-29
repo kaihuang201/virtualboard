@@ -343,8 +343,8 @@ var VBoard = VBoard || {};
 		switchToGameMode: function () {
 			$("#loading-notification-text").text("Success...");
 
-			$("#main-page").hide("slow", function () {
-				$("#game-page").show(); //("display", "block");
+			$("#main-page").fadeOut("fast", function () {
+				$("#game-page").fadeIn(); //("display", "block");
 				vb.interface.hideLoading();
 				//$("#game-page").css("display", "block");
 			});
