@@ -65,7 +65,9 @@ class Piece:
 
 			if "isUserPicker" in pieceData["diceData"]:
 				self.isUserPicker = pieceData["diceData"]["isUserPicker"]
-				self.icon = host_id
+
+				if self.isUserPicker:
+					self.icon = host_id
 			self.max = pieceData["diceData"]["max"]
 
 			#maybe also enforce positive integer here?
