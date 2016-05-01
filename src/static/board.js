@@ -38,6 +38,10 @@ var VBoard = VBoard || {};
 			sensitivity: 1 // Snap only if the sqr_dist between the piece and the grid point is below this value
 		},
 
+		/**
+		* This function takes in a piece and moves it to the closest grid position, unless it is farther 
+		* than the sensitivity of the grid, in which case it will not move the piece
+		**/
 		snapPieceToGrid : function(piece) {
 			closestGridPos = this.getClosestGridPos(piece.position.x, piece.position.y);
 			
@@ -55,6 +59,9 @@ var VBoard = VBoard || {};
 			}
 		},
 
+		/**
+		* Returns true if a piece is within the grids sensitivity of a grid position, false otherwise
+		**/
 		getIsWithinSensitivity : function(piece, closestGridPos) {
 			sqr_dist = (piece.position.x - closestGridPos.x) * (piece.position.x - closestGridPos.x) +
 			        (piece.position.y - closestGridPos.y) * (piece.position.y - closestGridPos.y);
@@ -62,6 +69,9 @@ var VBoard = VBoard || {};
 			return (sqr_dist < this.gridConfig.sensitivity);
 		},
 
+		/**
+		* Returns the closest position on the grid
+		**/
 		getClosestGridPos : function(pieceX, pieceY) {
 			var pieceX = pieceX - this.gridConfig.originX;
 			var pieceY = pieceY - this.gridConfig.originY;
@@ -75,8 +85,6 @@ var VBoard = VBoard || {};
 			return {x: closestX, y: closestY} 
 		},
 
-		//methods
-
 		//adds a new piece to the front of the board
 		//should only be called by the generateNewPiece() method
 		add: function (piece) {
@@ -86,6 +94,9 @@ var VBoard = VBoard || {};
 			piece.mesh.position.z = z;
 		},
 
+		/**
+		* Adds a new private zone to the board based on the provided data
+		**/
 		addPrivateZone: function (zoneData) {
 			//var ratio = zoneData["width"] / zoneData["height"];
 			var c = zoneData["color"];
@@ -110,18 +121,26 @@ var VBoard = VBoard || {};
 			this.registerStaticMesh(plane);
 		},
 
+		/**
+		* Removes a private zone based on the provided zoneData (which must include id)
+		**/
 		removePrivateZone: function (zoneData) {
 			var id = zoneData["id"];
 			this.removePrivateZoneID(id);
 		},
 
+		/**
+		* Removes a private zone from the list of private zones by id
+		**/
 		removePrivateZoneID: function (id) {
 			this.privateZones[id].dispose();
 			delete this.privateZones[id];
 			vb.backStaticMeshCount--;
 		},
 
-		//TODO: The whole "always private" thing is not implemented yet
+		/**
+		* places a piece within a private zone
+		**/
 		enterPrivateZone: function (piece_id, zone_id) {
 			var piece = this.getFromID(piece_id);
 			piece.zones[zone_id] = true;
@@ -140,6 +159,9 @@ var VBoard = VBoard || {};
 			this.hidePiece(piece);
 		},
 
+		/**
+		* Removes a piece from a private zone
+		**/
 		leavePrivateZone: function (piece_id, zone_id) {
 			var piece = this.getFromID(piece_id);
 			delete piece.zones[zone_id];
@@ -165,6 +187,9 @@ var VBoard = VBoard || {};
 			this.hidePiece(piece);
 		},
 
+		/**
+		* Makes the given piece visible
+		**/
 		showPiece: function (piece) {
 			//TODO: register/unregister event action
 			piece.mesh._isEnabled = true;
@@ -172,6 +197,9 @@ var VBoard = VBoard || {};
 			this.addClickAction(piece);
 		},
 
+		/**
+		* Makes the given piece hidden
+		**/
 		hidePiece: function (piece) {
 			piece.mesh._isEnabled = false;
 			piece.hidden = true;
@@ -183,6 +211,9 @@ var VBoard = VBoard || {};
 			vb.selection.computeBoxSelection();
 		},
 
+		/**
+		* Returns true if the given (x,y) position is within the given zone, false otherwise
+		**/
 		privateZoneContains: function (zone, x, y) {
 
 			ax = zone.position.x + ((zone.scaling.y / 2.0) * -Math.sin(zone.rotation.z) - (zone.scaling.x / 2.0) * Math.cos(zone.rotation.z));
@@ -209,6 +240,9 @@ var VBoard = VBoard || {};
 			return true;
 		},
 
+		/**
+		* Registers a static mesh with the scene
+		**/
 		registerStaticMesh: function (mesh, front) {
 			if(front === void(0)) {
 				front = false;
@@ -236,6 +270,9 @@ var VBoard = VBoard || {};
 			console.log("failed to register mesh: " + mesh.uniqueId);
 		},
 
+		/**
+		* Given a piece returns its index in the piece hash table
+		**/
 		ourIndexOf: function (piece) {
 			if(this.pieceHash.hasOwnProperty(piece.id)) {
 				return this.pieceHash[piece.id];
@@ -244,6 +281,9 @@ var VBoard = VBoard || {};
 			return -1;
 		},
 
+		/**
+		* Given the id of a piece, returns the piece itself
+		**/
 		getFromID: function (pieceID) {
 			if(this.pieceHash.hasOwnProperty(pieceID)) {
 				return this.pieces[this.pieceHash[pieceID]];
@@ -298,6 +338,9 @@ var VBoard = VBoard || {};
 			vb.selection.computeBoxSelection();
 		},
 
+		/**
+		* Given a piece and a guess of it index, gives the true index of the piece
+		**/
 		verifySceneIndex: function (index, piece) {
 			var meshes = vb.scene.meshes;
 			index += vb.backStaticMeshCount;
@@ -484,6 +527,9 @@ var VBoard = VBoard || {};
 
 		smoothedPieces: {},
 
+		/**
+		* Adds a movement to the list of smooth movements to be performed
+		**/
 		smoothTransition: function (piece, x, y) {
 			this.smoothedPieces[piece.id] = {
 				"time" : 0,
@@ -568,6 +614,9 @@ var VBoard = VBoard || {};
 			}
 		},
 
+		/**
+		* Given two opposite corners of the selection box, draws the box in the scene
+		**/
 		drawSelectionBox: function (corner1, corner2) {
 			var up = vb.camera.upVector;
 			var centerX = (corner1.x + corner2.x)/2;
@@ -586,10 +635,16 @@ var VBoard = VBoard || {};
 			this.selectionBox.showBoundingBox = true;
 		},
 
+		/**
+		* Makes the selection box hidden
+		**/
 		hideSelectionBox: function () {
 			this.selectionBox.showBoundingBox = false;
 		},
 
+		/**
+		* Splits text into lines given the text and desired line size
+		**/
 		splitLines: function (text, lineSize) {
 			var words = text.split(" ");
 			var lines = [];
@@ -769,6 +824,9 @@ var VBoard = VBoard || {};
 			return piece;
 		},
 
+		/**
+		* Adds an action to be performed when a piece is clicked
+		**/
 		addClickAction: function (piece) {
 			if(piece.mesh.actionManager.actions.length > 0) {
 				return;
@@ -817,10 +875,16 @@ var VBoard = VBoard || {};
 			);
 		},
 
+		/**
+		* Removes the click action from a piece
+		**/
 		removeClickAction: function (piece) {
 			piece.mesh.actionManager.actions = [];
 		},
 
+		/**
+		* Reverts a piece's mesh position to the piece's stored position
+		**/
 		undoPrediction: function (piece) {
 			//set a timeout to revert back to last confirmed server position in case of desync
 			piece.mesh.position.x = piece.position.x;
@@ -842,6 +906,9 @@ var VBoard = VBoard || {};
 			this.setBackground("");
 		},
 
+		/**
+		* Gives the center of the scene
+		**/
 		getCenter: function () {
 			return new BABYLON.Vector2(0, 0);
 		},
@@ -882,6 +949,9 @@ var VBoard = VBoard || {};
 			return new BABYLON.Vector2(totalX, totalY);
 		},
 
+		/**
+		* Given a position rotates it into the camera space
+		**/
 		rotateToCameraSpace: function (pos) {
 			var up = vb.camera.upVector;
 			var x = pos.x * up.y - pos.y * up.x;
@@ -889,6 +959,9 @@ var VBoard = VBoard || {};
 			return {"x" : x, "y" : y};
 		},
 
+		/**
+		* Sets the background image
+		**/
 		setBackground: function (icon) {
 			//TODO: set background
 			var backgroundMaterial = new BABYLON.StandardMaterial("backgroundMat", vb.scene);
@@ -897,6 +970,9 @@ var VBoard = VBoard || {};
 			vb.board.background.name = icon;
 		},
 
+		/**
+		* Loads a board state from given data
+		**/
 		loadBoardData: function (boardData) {
 			this.setBackground(boardData["background"]);
 
@@ -976,6 +1052,9 @@ var VBoard = VBoard || {};
 			}
 		},
 
+		/**
+		* Adjusts the width of a piece in relation to its height
+		**/
 		adjustPieceWidth: function (piece) {
 			if(piece.isTimer) {
 				piece.mesh.scaling.x = piece.size / 0.35;
@@ -995,6 +1074,9 @@ var VBoard = VBoard || {};
 		//linked list because meh
 		headBeacon: null,
 
+		/**
+		* Displays a beacon based on the given data
+		**/
 		beacon: function (beaconData) {
 			var x = beaconData["pos"][0];
 			var y = beaconData["pos"][1];
@@ -1024,6 +1106,9 @@ var VBoard = VBoard || {};
 			//}, 2000);
 		},
 
+		/**
+		* Updates any existing beacons, removing them if needed
+		**/
 		updateBeacons: function (dt) {
 			var prev = null;
 			var beacon = this.headBeacon;
@@ -1071,6 +1156,9 @@ var VBoard = VBoard || {};
 
 		//special pieces
 
+		/**
+		* Given deckData, updates a deck to reflect being shuffled
+		**/
 		shuffleDeck: function (deckData) {
 			var userID = deckData["user"];
 			var deckID = deckData["piece"];
@@ -1083,6 +1171,9 @@ var VBoard = VBoard || {};
 			this.setIcon(deck, deckData["icon"]);
 		},
 
+		/**
+		* Sets a timer given its new time and whether it is running or not
+		**/
 		setTimer: function(timer, time, running){
 			var minutes = Math.floor(time / 60);
 			var seconds = time % 60;
@@ -1099,8 +1190,9 @@ var VBoard = VBoard || {};
 			this.setInfo(timer, minutesString + ":" + secondsString, 40, 300, 512, 1024);
 		},
 
-		//TODO: the naming doesn't make a ton of sense here, needs some updating
-		//I did it this way to reflect how remove/removePiece was done
+		/** 
+		* Given pieceData, updates a die piece to reflect being rolled
+		**/
 		rollDiePiece: function (pieceData) {
 			var id = pieceData["piece"];
 			var value = pieceData["result"];
@@ -1112,7 +1204,9 @@ var VBoard = VBoard || {};
 			this.rollDice(piece, value);
 		},
 
-		//TODO: the only reason to have a roll function separate from pieceTransform is to have an animation
+		/**
+		* Given a die piece and a new value for the die, displays the icon for that value
+		**/
 		rollDice: function(piece, value) {
 			if(!piece.isDie) {
 				console.log("Warning: rollDice called on non-dice piece");
@@ -1153,7 +1247,9 @@ var VBoard = VBoard || {};
 			this.flipCard(piece, frontIcon);
 		},
 
-		//TODO: the only reason to have a flip function separate from pieceTransform(icon) is to do some kind of flipping animation
+		/**
+		* Given a card piece and new icon, displays the new icon to reflect the card being flipped
+		**/
 		flipCard: function (piece, frontIcon) {
 			if(!piece.isCard) {
 				console.log("Warning: flipCard called on non-card piece");
@@ -1162,6 +1258,9 @@ var VBoard = VBoard || {};
 			this.setIcon(piece, frontIcon);
 		},
 
+		/**
+		* Updates the count of cards in a deck
+		**/
 		changeDeckCount: function (deckData) {
 			var userID = deckData["user"];
 			var deckID = deckData["piece"];
@@ -1175,6 +1274,9 @@ var VBoard = VBoard || {};
 			this.setCardCount(deck, count);
 		},
 
+		/**
+		* Sets the count of cards in a deck
+		**/
 		setCardCount: function(piece, newCount) {
 			if(!piece.isCard) {
 				console.log("Warning: setCardCount called on non-card piece");
@@ -1191,7 +1293,9 @@ var VBoard = VBoard || {};
 			//this.mesh.material.diffuseTexture.drawText(this.numCards, null, 50 * this.size, "bold 128px Arial", "rgba(255,255,255,1.0)", "black");
 		},
 
-		//TODO: BARELY WORKS, NEEDS OVERHAUL
+		/**
+		* Displays texk over a piece's icon
+		**/
 		setInfo: function (piece, info, X, Y, width, height) {
 			//http://www.html5gamedevs.com/topic/8958-dynamic-texure-drawtext-attributes-get-text-to-wrap/?do=findComment&comment=62014
 			function wrapText(context, text, x, y, maxWidth, lineHeight) {
@@ -1226,6 +1330,9 @@ var VBoard = VBoard || {};
 			//tex.drawText(info, 0, 300, "140px verdana", "black", "transparent");
 		},
 
+		/**
+		* Sets the text to display on a notepad piece
+		**/
 		setNoteData: function (piece, text, size) {
 			var tex = piece.mesh.material.infoTexture;
 			var context = tex.getContext();
@@ -1244,6 +1351,9 @@ var VBoard = VBoard || {};
 			}
 		},
 
+		/**
+		* This function is called when a piece is double clicked, and behaves according the piece's type
+		**/
 		doubleClick: function(piece) {
 			//TODO: I think a double click + drag on a deck should pick up the deck
 			//		a single click + drag simply draws the top card off the deck
