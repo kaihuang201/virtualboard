@@ -782,7 +782,7 @@ var VBoard = VBoard || {};
 			//TODO: do not register if static, make a register/unregister block in transformPiece
 			piece.mesh.actionManager.registerAction(
 				new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnLeftPickTrigger, function (evt) {
-					if(piece.hidden == false && piece.static == false && !evt.sourceEvent.altKey) {
+					if(!piece.hidden && !piece.static && !evt.sourceEvent.altKey) {
 
 						//check that the shift key was pressed for the context menu
 						if(evt.sourceEvent.shiftKey) {
