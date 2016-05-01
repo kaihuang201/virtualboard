@@ -26,10 +26,6 @@ var VBoard = VBoard || {};
 		},
 
 		remove: function (user) {
-			//var index = this.userList.indexOf(user);
-
-			//this.userList[index] = this.userList[this.userList.length-1];
-			//this.userList.pop();
 			delete this.userList[user.id];
 		},
 
@@ -93,7 +89,6 @@ var VBoard = VBoard || {};
 			var isLocal = userData["local"] == 1;
 			var isHost = userData["host"] == 1;
 
-			//var user = new this.User(id, name, color, isLocal, isHost);
 			var user = {
 				"id" : id,
 				"name" : name,

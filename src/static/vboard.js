@@ -95,19 +95,10 @@ var VBoard = VBoard || {};
 			camera.setTarget(new BABYLON.Vector3.Zero());
 
 			camera.attachControl(canvas, false);
-			//camera.keysUp.push(87); // W
-			//camera.keysLeft.push(65); // A
-			//camera.keysDown.push(83); // S
-			//camera.keysRight.push(68); // D
 			camera.keysUp = [];
 			camera.keysLeft = [];
 			camera.keysDown = [];
 			camera.keysRight = [];
-			//camera.inertia = 0.6;
-			//camera.angularSensibility = Infinity;
-			//camera.maxCameraSpeed = 80;
-			//camera.cameraAcceleration = 0.1;
-			//camera.rotation = new BABYLON.Vector3(Math.PI/2, 0, 0);
 
 			scene.activeCamera = camera;
 			camera.detachControl(canvas);
@@ -122,17 +113,14 @@ var VBoard = VBoard || {};
 	};
 
 	vb.loadStaticMeshes = function () {
-
 		vb.board.background = BABYLON.Mesh.CreatePlane("background", 50, vb.scene);
 		vb.board.background.position = new BABYLON.Vector3(0, 0, 100);
 		vb.board.background.isPickable = false;
-		//vb.staticMeshCount++;
 		vb.board.registerStaticMesh(vb.board.background);
 
 		vb.board.selectionBox = BABYLON.Mesh.CreatePlane("selection box", 1, vb.scene);
 		vb.board.selectionBox.position.z = 100;
 		vb.board.selectionBox.subMeshes = [];
-		//vb.staticMeshCount++;
 		vb.board.registerStaticMesh(vb.board.selectionBox);
 	};
 
@@ -163,7 +151,6 @@ var VBoard = VBoard || {};
 $(document).ready(function () {
 	console.log("document ready");
 	VBoard.javascriptInit();
-	// VBoard.interface.init_welcome();
 	VBoard.interface.init();
 	VBoard.menu.init();
 });

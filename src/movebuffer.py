@@ -95,7 +95,6 @@ class MoveBuffer:
 		return True
 
 	def flush(self, user_id):
-		#piece = self.head
 		piece = self.client_map[user_id]
 		data = []
 

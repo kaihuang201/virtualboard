@@ -145,10 +145,8 @@ var VBoard = VBoard || {};
 				var user = null;
 				var numPieces = $('#add-piece-num').val();
 				//TODO: use vb.camera.position.x/y instead of board center
-				//var pos = {x:0, y:0};
 
 				//TODO: replace with actual method
-				//vb.board.generateNewPiece(selectedName, user, pos);
 				var mapEntry = vb.board.pieceNameMap[selectedName];
 				var data = {
 					"icon" : mapEntry.icon,
@@ -302,7 +300,6 @@ var VBoard = VBoard || {};
 			});
 
 			$("#submit-load-game").click(function () {
-				//vb.sessionIO.requestLoad();
 				var f = document.getElementById('fileField').files[0];
 				var r = new FileReader();
 				r.onload = function (e) {
@@ -416,7 +413,6 @@ var VBoard = VBoard || {};
 
 			//set new onclick function bindings
 			$("#context-delete").on("click", function(){
-				//vb.board.remove(piece);
 				vb.sessionIO.removePiece(piece.id);
 				$("#context-menu").css("visibility", "hidden");
 			});
@@ -433,7 +429,6 @@ var VBoard = VBoard || {};
 				$("#context-menu").css("visibility", "hidden");
 			});
 			$("#context-static").on("click", function () {
-				//vb.board.toggleStatic(piece);
 				vb.sessionIO.toggleStatic(piece.id);
 				$("#context-menu").css("visibility", "hidden");
 			});

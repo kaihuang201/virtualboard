@@ -77,7 +77,6 @@ var VBoard = VBoard || {};
 				VBoard.interface.colorLastSelectedStr = vb.interface.arrayRGB2StrRGB(colorFromCookie);
 
 				// send a game id poll to init Resume button
-				// vb.limboIO.gameIDExists(lobbyNoFromCookie);
 				setTimeout(function() {
 					vb.limboIO.gameIDExists(lobbyNoFromCookie);
 				}, 500);
@@ -117,7 +116,6 @@ var VBoard = VBoard || {};
 					vb.interface.toggleRightPanel("hide")
 				}
 				// send a refresh request
-				// vb.sessionIO.getClientList();
 			});
 
 			$("#chat-box-toggler").click(function () {
@@ -208,7 +206,6 @@ var VBoard = VBoard || {};
 						vb.interface.clearTemplateModal();
 						if (additionalCallBackFunction) setTimeout(additionalCallBackFunction, 500);
 					} else {
-						// alert('Please enter a valid username');
 						vb.interface.setTemplateModalAlert('Make sure you put in a valid nickname')
 					}
 				} else {
@@ -247,7 +244,6 @@ var VBoard = VBoard || {};
 				$('#template-modal').modal('show');
 				$('#template-modal #submit-btn-modal-template').unbind();
 				$('#template-modal #submit-btn-modal-template').on("click", function () {
-					// var gameName = $('lobby#-name').val();
 					var gameName = VBoard.interface.userName + "'s Game";
 					var password = $('#lobby-password').val();
 
@@ -333,7 +329,6 @@ var VBoard = VBoard || {};
 			$("#main-page").fadeOut("fast", function () {
 				$("#game-page").fadeIn(); //("display", "block");
 				vb.interface.hideLoading();
-				//$("#game-page").css("display", "block");
 			});
 			$('#template-modal').modal('hide');
 			vb.interface.clearTemplateModal();
@@ -369,8 +364,6 @@ var VBoard = VBoard || {};
 				$('#lobby-name').val(generate_game_name());
 			});
 			$('#template-modal #submit-btn-modal-template').show().html('Create');
-			// $("#selected-color").css('color',this.colorLastSelectedStr);
-			// vb.interface.colorPickerInit();
 		},
 
 		switchToJoinLobbyModal: function (lobbyName, requirePwd) {
@@ -406,7 +399,6 @@ var VBoard = VBoard || {};
 				$(header).text("Joining "+ lobbyName +"...");
 				$('#modal-template-content').empty();
 				$('#modal-template-content').append(header);
-				//$('#modal-template-content').text('<h5>Joining '+ lobbyName +'...</h5>');
 			}
 			
 			$('#template-modal #submit-btn-modal-template').show().html('Re-Join');
@@ -444,9 +436,6 @@ var VBoard = VBoard || {};
 		//the first character appears as an error for me, can we just stick to ascii please
 		setTemplateModalAlert: function (alertText) {
 			this.hideLoading();
-			// $("#model-template-alert > #inner").prepend('<div class="alert alert-danger" role="alert">\
-			// 						<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span> '+ alertText + '\
-			// 					</div>');
 
 			var tempHTML = '<div class="alert alert-danger" role="alert" id="new-alert" style="display: none;">\
 									<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span> '+ alertText + '\
@@ -498,13 +487,10 @@ var VBoard = VBoard || {};
 			$("#send-chat").on("click", function () {
 				var msg = $("#chatbox-msg").val();
 				if (msg != "") {
-					//vb.sessionIO.sendChatMessage(VBoard.interface.userName + "#1ax}#" + VBoard.interface.colorLastSelectedStr + "#1ax}#" + msg);
 					vb.sessionIO.sendChatMessage(msg);
 					// clear out the input box
 					$("#chatbox-msg").val("");
-				} else {
-					// $("#chatbox-msg").val('<span style="color:red;">Please enter your message</span>');
-				}
+				} 
 			});
 			$("#chatbox-msg").on("focus", function () {
 				clearTimeout(this.fadeTimeout);
@@ -517,8 +503,6 @@ var VBoard = VBoard || {};
 				$("#chatbox-inbox")[0].scrollTop = $("#chatbox-inbox")[0].scrollHeight;
 			});
 
-			//$("#chatbox-msg").focus(function(){VBoard.inputs.setEnabled(false)});
-			//$("#chatbox-msg").blur(function(){VBoard.inputs.setEnabled(true)});
 			$('input[type=text], textarea').focus(function () {
 				VBoard.inputs.setEnabled(false);
 			});
@@ -611,7 +595,6 @@ var VBoard = VBoard || {};
 		},
 		clearRightPanel: function () {
 			$(".right-panel-content").hide();
-			// $("#chat").hide();
 		},
 
 		setUserName: function (username, optionalColor) {

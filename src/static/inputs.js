@@ -215,7 +215,6 @@ var VBoard = VBoard || {};
 				if(piece && piece.isCard) {
 					vb.selection.addToDeck(piece);
 				}
-				//vb.selection.clear();
 			}
 		},
 
@@ -363,8 +362,6 @@ var VBoard = VBoard || {};
 			if(ignoreStatic === void 0) {
 				ignoreStatic = false;
 			}
-
-			//console.debug("get piece under mouse: " + ignoreSelection);
 
 			var pick = vb.scene.pick(vb.scene.pointerX, vb.scene.pointerY, function (mesh) {
 				if(mesh.piece) {
