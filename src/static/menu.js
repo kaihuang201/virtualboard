@@ -109,6 +109,10 @@ var VBoard = VBoard || {};
 				vb.content.createDefaultDeck();
 			});
 
+			$(".close-modal").click(function() {
+				$(".modal-error").text("");
+			});
+
 			$("#submit-add-game").click(function () {
 				var selectedName = $("#add-game-list").val();
 				
@@ -226,6 +230,10 @@ var VBoard = VBoard || {};
 
 				var icon = "/static/img/die_face/tiny_die_face_1.png";
 
+				if (selectedMax < 1) {
+					$("#die-modal-error").text("There must be at least one face.");
+					return;
+				}
 				if(selectedMax > 2) {
 					icon = "/static/img/die_face/small_die_face_1.png";
 				} else if(selectedMax > 6) {
