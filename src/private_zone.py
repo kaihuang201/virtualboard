@@ -4,7 +4,7 @@ WHITE = [255, 255, 255]
 
 class PrivateZone:
 
-	def __init__(self, zoneData, zone_id): #x, y, width, height, rotation, color):
+	def __init__(self, zoneData, zone_id):
 		self.x = float(zoneData["pos"][0])
 		self.y = float(zoneData["pos"][1])
 		self.width = float(zoneData["size"][0])

@@ -685,10 +685,6 @@ var VBoard = VBoard || {};
 
 		},
 
-		drawScribble: function (scribbleData) {
-			//TODO
-		},
-
 		requestSave: function () {
 			var data = {
 				"type" : "requestSave"

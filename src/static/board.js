@@ -98,14 +98,12 @@ var VBoard = VBoard || {};
 		* Adds a new private zone to the board based on the provided data
 		**/
 		addPrivateZone: function (zoneData) {
-			//var ratio = zoneData["width"] / zoneData["height"];
 			var c = zoneData["color"];
 
 			var plane = BABYLON.Mesh.CreatePlane("plane", 1.0, vb.scene);
 			var material = new BABYLON.StandardMaterial("std", vb.scene);
 
 			material.emissiveColor = new BABYLON.Color3(c[0]/255, c[1]/255, c[2]/255);
-			//material.diffuseColor = new BABYLON.Color3(c[0]/255, c[1]/255, c[2]/255);
 			material.disableLighting = true;
 			plane.material = material;
 			plane.position.x = zoneData["pos"][0];
@@ -206,7 +204,6 @@ var VBoard = VBoard || {};
 			this.removeClickAction(piece);
 
 			vb.selection.removePiece(piece);
-			//vb.selection.resetBoxSelection();
 			vb.sessionIO.moveBuffer.remove(piece.id);
 			vb.selection.computeBoxSelection();
 		},
@@ -580,8 +577,6 @@ var VBoard = VBoard || {};
 				piece.mesh.renderOutline = false;
 			}
 
-			//var babylonColor = new BABYLON.Color3(color[0]/255, color[1]/255, color[2]/255);
-
 			piece.mesh.overlayColor = color;
 			piece.mesh.renderOverlay = true;
 			piece.highlightTimeout = setTimeout(function () {
@@ -601,7 +596,6 @@ var VBoard = VBoard || {};
 				on = true;
 			}
 			piece.outlined = on;
-			//piece.mesh.showBoundingBox = on;
 
 			if(on) {
 				piece.mesh.outlineColor = color;
@@ -915,7 +909,6 @@ var VBoard = VBoard || {};
 
 		//TODO: this seems to break when opening/closing the developer console
 		screenToGameSpace: function (position) {
-			//console.log("input pos: " + position.x + " " + position.y);
 			//screen space
 			//also equals to the camera coordinates
 
@@ -945,7 +938,6 @@ var VBoard = VBoard || {};
 			var totalX = cameraX + dx;
 			var totalY = cameraY + dy;
 
-			//console.log("   output pos: " + totalX + " " + totalY);
 			return new BABYLON.Vector2(totalX, totalY);
 		},
 
@@ -998,16 +990,10 @@ var VBoard = VBoard || {};
          */
         setColor: function (piece, color) {
 			piece.mesh.material.mainMaterial.diffuseColor = color;
-			//var material = new BABYLON.StandardMaterial("std", vb.scene);
-			//material.emissiveColor = color;
-			//material.disableLighting = true;
-			//piece.mesh.material = material;
         },
 
 		//TODO: maybe a toggle for auto resizing
 		setIcon: function (piece, icon) {
-			//THEPIECE = piece;
-			//console.debug(piece);
 			if(this.pendingTextures.hasOwnProperty(piece.icon)) {
 				delete this.pendingTextures[piece.icon][piece.id];
 			}
@@ -1020,7 +1006,6 @@ var VBoard = VBoard || {};
 				if(!this.pendingTextures.hasOwnProperty(icon)) {
 					this.pendingTextures[icon] = {};
 
-					//function Texture(url, scene, noMipmap, invertY, samplingMode, onLoad, onError, buffer, deleteBuffer)
 					var texture = new BABYLON.Texture(icon, vb.scene, void(0), void(0), void(0), function () {
 						//onload
 						vb.board.textureMap[icon] = texture;
@@ -1099,11 +1084,6 @@ var VBoard = VBoard || {};
 				"next" : this.headBeacon
 			};
 			this.headBeacon = beaconEntry;
-
-			//beacon.fadeTimeout = setTimeout(function () {
-			//	beacon.dispose();
-			//	vb.frontStaticMeshCount--;
-			//}, 2000);
 		},
 
 		/**
@@ -1290,7 +1270,6 @@ var VBoard = VBoard || {};
 			} else {
 				this.setInfo(piece, "", 256, 128, 512, 512);
 			}
-			//this.mesh.material.diffuseTexture.drawText(this.numCards, null, 50 * this.size, "bold 128px Arial", "rgba(255,255,255,1.0)", "black");
 		},
 
 		/**
@@ -1327,7 +1306,6 @@ var VBoard = VBoard || {};
 			wrapText(context, info, X, Y, width, height);
 			context.restore();
 			tex.update();
-			//tex.drawText(info, 0, 300, "140px verdana", "black", "transparent");
 		},
 
 		/**

@@ -24,10 +24,6 @@ var VBoard = VBoard || {};
 				this.pieceMap[piece.id] = i;
 				vb.board.outlinePiece(piece, vb.users.getLocal().color, true);
 			}
-
-			//piece.pickedUp = true;
-			//piece.user = vb.users.getLocal();
-			//todo: enable the highlight
 		},
 
 		isEmpty: function () {
@@ -251,7 +247,6 @@ var VBoard = VBoard || {};
 				piece.mesh.position.y = newY;
 
 				//todo: send one update for all pieces rather than call this for each selected piece
-				//vb.sessionIO.movePiece(piece.id, newX, newY);
 				ids.push(piece.id);
 				xs.push(newX);
 				ys.push(newY);
