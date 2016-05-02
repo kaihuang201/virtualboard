@@ -12,8 +12,10 @@ var VBoard = VBoard || {};
 		//map from piece ids to the index in the pieces array
 		pieceMap : {},
 
-		//pieces should be in order from bottom element to top element
-		//that way the order won't get jumbled as the pieces move
+		/**
+		* Sets the selection to be the specified pieces.
+		* Pieces should be in order from bottom element to top element
+		**/
 		setPieces: function (pieces) {
 			//maybe this should be called first?
 			this.clear();
@@ -26,15 +28,23 @@ var VBoard = VBoard || {};
 			}
 		},
 
+		/**
+		* Returns true if no pieces are selected, false otherwise
+		**/
 		isEmpty: function () {
 			return this.pieces.length == 0;
 		},
 
+		/**
+		* Returns true if the specified piece is selected, false otherwise
+		**/
 		hasPiece: function (piece) {
 			return this.pieceMap.hasOwnProperty(piece.id);
 		},
 
-		//triggered by mouse up
+		/**
+		* Called on mouse up event, clears the old selection and sets selected pieces to new selection
+		**/
 		clearAndSelect: function () {
 			if (this.boxStart != null) {
 				for (var i = 0; i < this.newPieces.length; i++) {
@@ -51,8 +61,9 @@ var VBoard = VBoard || {};
 			this.clearAndSetOnMouseUp = null;
 		},
 
-		//pieces in this.selectedPieces should be ordered based on depth
-		//we cannot simply insert this piece at the end of the array
+		/**
+		* Adds a piece to the selection
+		**/
 		addPiece: function (piece) {
 			if(this.pieceMap.hasOwnProperty(piece.id)) {
 				return;
@@ -137,6 +148,9 @@ var VBoard = VBoard || {};
 			}
 		},
 
+		/**
+		* Adds any selected cards to the given deck
+		**/
 		addToDeck: function (deck) {
 			var ids = [];
 			var decks = [];
@@ -155,6 +169,9 @@ var VBoard = VBoard || {};
 			}
 		},
 
+		/**
+		* Drags one corner of the selection box by (dx, dy)
+		**/
 		dragBox: function (dx, dy) {
 			if (this.boxStart != null) {
 				this.boxEnd.x += dx;
@@ -164,6 +181,9 @@ var VBoard = VBoard || {};
 			}
 		},
 
+		/**
+		* Decides which pieces are in the selection box and stores it for later use
+		**/
 		computeBoxSelection: function () {
 			if (this.boxStart === null) {
 				return;
@@ -200,6 +220,9 @@ var VBoard = VBoard || {};
 			}
 		},
 
+		/**
+		* Sets the stored list of pieces in the selection box to be empty
+		**/
 		resetBoxSelection: function () {
 			for (var i = 0; i < this.newPieces.length; i++) {
 				vb.board.outlinePiece(this.newPieces[i], null, false);
@@ -207,6 +230,9 @@ var VBoard = VBoard || {};
 			this.newPieces = [];
 		},
 
+		/**
+		* Moves all selected pieces by (dx, dy)
+		**/
 		drag: function (dx, dy) {
 			if(this.pieces.length == 0) {
 				return;
@@ -263,6 +289,9 @@ var VBoard = VBoard || {};
 			vb.sessionIO.movePiece(ids, xs, ys);
 		},
 
+		/**
+		* Initializes the selection box, storing the position of its corners
+		**/
 		startDragBox: function(pos) {
 			vb.selection.boxStart = {"x": pos.x, "y": pos.y};
 			vb.selection.boxEnd = {"x": pos.x, "y": pos.y};

@@ -4,6 +4,9 @@ var VBoard = VBoard || {};
 		privateZoneColorSelected: null,
 		selected_note: null,
 
+		/**
+		* Initializes the sidebar menu
+		**/
 		init: function () {
 			//TODO: menu should not be active until we are in a game session
 			$.getJSON("/static/json/piecemap.json", function (data) {
@@ -322,18 +325,27 @@ var VBoard = VBoard || {};
 			});
 		},
 
+		/**
+		* Loads all default pieces into piece selection field
+		**/
 		loadPieceOptions: function () {
 			for (var key in vb.board.pieceNameMap) {
 				$("#add-piece-list").append( new Option(key, key) );
 			}
 		},
 
+		/**
+		* Loads all default background into background selection field
+		**/
 		loadBackgroundOptions: function () {
 			for (var key in vb.board.backgroundNameMap) {
 				$("#change-background-list").append( new Option(key, key) );
 			}
 		},
 
+		/**
+		* Hides buttons that only the game's host should see
+		**/
 		hideHostOnlyButtons: function () {
 			$("#addPrivateZone").hide();
 			$("#removePrivateZone").hide();
@@ -341,6 +353,9 @@ var VBoard = VBoard || {};
 			$("#loadPreset").hide();
 		},
 
+		/**
+		* Shows buttons that only the game's host should see
+		**/
 		showHostOnlyButtons: function () {
 			$("#addPrivateZone").show();
 			$("#removePrivateZone").show();
@@ -348,9 +363,9 @@ var VBoard = VBoard || {};
 			$("#loadPreset").show();
 		},
 
-		//TODO: instead of hard coding the menu options
-		//		we should query the piece itself for relevant options
-		//		if piece is null, we should bring up a menu with "add a piece"
+		/**
+		* Shows a context menu for the specified piece, and sets click handlers for all buttons in the menu
+		**/
 		createContextMenu: function (piece) {
 			//make the context menu appear at your mouse position
 			$("#context-menu").offset({top: vb.scene.pointerY, left: vb.scene.pointerX-5});
