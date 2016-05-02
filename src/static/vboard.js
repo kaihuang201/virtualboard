@@ -34,17 +34,20 @@ var VBoard = VBoard || {};
 	//turns out IE needs some hand holding
 	vb.internet_explorer_support_event_handled = false;
 
+	// Hosts a new game with dummy info
 	vb.quickStart = function () {
 		vb.limboIO.hostGame("bill", [0, 0, 255], "chess deathmatch", "12345");
 		vb.quickStarted = true;
 	};
 
+	// Joins the game created by quickstart with dummy info
 	vb.quickJoin = function () {
 		//this will only work if the game id of the target game is 0
 		//if you have closed and reopened the host game without restarting the tornado server this will not work
 		vb.limboIO.joinGame("bob", [0, 255, 0], 0, "12345");
 	};
 
+	// Does all needed initialization
 	vb.javascriptInit = function () {
 		//networking
 		vb.socket = new WebSocket("ws://" + window.location.host + window.location.pathname + "socket");
@@ -66,7 +69,8 @@ var VBoard = VBoard || {};
 		};
 	};
 
-	//this function is called when we enter a game session
+	// This function is called when we enter a game session,
+	// it sets up the canvas
 	vb.launchCanvas = function () {
 		vb.simTime = Date.now();
 		vb.inputs.initialize();
@@ -80,6 +84,7 @@ var VBoard = VBoard || {};
 		}
 	};
 
+	// Sets up everything needed to render the Babylon scene
 	vb.renderInit = function () {
 		vb.frame = 0;
 		vb.canvas = document.getElementById("canvas");
@@ -112,6 +117,7 @@ var VBoard = VBoard || {};
 		vb.engine.runRenderLoop(vb.renderLoop);
 	};
 
+	// Loads meshes that always exist
 	vb.loadStaticMeshes = function () {
 		vb.board.background = BABYLON.Mesh.CreatePlane("background", 50, vb.scene);
 		vb.board.background.position = new BABYLON.Vector3(0, 0, 100);
@@ -124,6 +130,7 @@ var VBoard = VBoard || {};
 		vb.board.registerStaticMesh(vb.board.selectionBox);
 	};
 
+	// Sets the camera to show the board properly
 	vb.setCameraPerspective = function () {
 		vb.canvas.height = window.innerHeight;
 		vb.canvas.width = window.innerWidth;
@@ -135,6 +142,7 @@ var VBoard = VBoard || {};
 		vb.camera.orthoLeft = -ratio*size;
 	};
 
+	// Renders a frame
 	vb.renderLoop = function () {
 		var time = Date.now();
 		var dt = time - vb.simTime;

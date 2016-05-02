@@ -91,6 +91,8 @@ class Piece:
 			else:
 				self.isDeck = False
 
+	# Returns a list of the private colors for this piece.
+	# Players with withese colors can see and interact with the piece
 	def get_private_colors(self):
 		s = copy(self.private_colors)
 
@@ -98,7 +100,8 @@ class Piece:
 			s.add(zone.color)
 		return s
 
-	#complete - True for downloading the board state, false for sending to clients
+	# Returns a JSON object of the piece
+	# complete should be true for downloading the board state, false for sending to clients
 	def get_json_obj(self, complete=False):
 		data = self.get_transform_json()
 
@@ -132,6 +135,7 @@ class Piece:
 					data["private"].append(list(color))
 		return data
 
+	# Returns a json object with only the attributes relevant for piece transformations
 	def get_transform_json(self):
 		data = {
 			"pos" : self.pos,
@@ -159,8 +163,7 @@ class BoardState:
 		self.background = ""
 		self.lobby = lobby
 
-	#Game has a similar function
-	#should probably be rewritten to avoid duplicaton, oh well
+	# Returns true if players with the given color are allowed to interact with the piece, false otherwise
 	def color_can_interact(self, color, piece_id):
 		piece = self.get_piece(piece_id)
 
@@ -324,6 +327,7 @@ class BoardState:
 		else:
 			return False
 
+	# Clears all pieces and private zones from the map, essentially making it a new board
 	def clear_board(self):
 		#TODO: maybe it's better to iterate through pieces and call remove_piece for each one
 		#NOTE: do not reset piece ids or zone ids
