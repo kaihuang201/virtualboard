@@ -99,6 +99,7 @@ class Deck:
 		if "shuffle" in cardData and cardData["shuffle"] == 1:
 			self.shuffle()
 
+	# Returns the icon to display for the deck
 	def get_icon(self):
 		if self.flipped:
 			piece = self.cards[0]
@@ -109,12 +110,16 @@ class Deck:
 			return piece["back"]
 		return piece["icon"]
 
+	# Returns the number of cards in the deck
 	def get_size(self):
 		return len(self.cards)
 
+	# Flips the deck
 	def flip(self):
 		self.flipped = not self.flipped
 
+	# If there are more than one cards in the deck returns the top card and removes it from the deck.
+	# Otherwise, returns None
 	def draw(self):
 		if len(self.cards) > 1:
 			if self.flipped:
@@ -124,6 +129,7 @@ class Deck:
 			return self.cards.pop()
 		return None
 
+	# Adds a card to the deck
 	#front - string
 	#back - string
 	#face_down - boolean
@@ -140,9 +146,11 @@ class Deck:
 			card["face_down"] = face_down
 			self.cards.append(card)
 
+	# Shuffles the deck
 	def shuffle(self):
 		random.shuffle(self.cards)
 
+	# Adds all cards in another deck to this deck
 	def absorb(self, other):
 		if other.flipped:
 			for entry in reversed(other.cards):
@@ -151,6 +159,7 @@ class Deck:
 			for entry in other.cards:
 				self.add(entry["icon"], entry["back"], entry["face_down"])
 
+	# Returns a JSON object for the deck. Complete should be true for saving the game, false otherwise
 	def get_json_obj(self, complete=False):
 		data = {
 			"count" : len(self.cards)

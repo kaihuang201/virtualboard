@@ -16,30 +16,46 @@ var VBoard = VBoard || {};
 		inputsEnabled: true,
 
 		handlers: {
+			/**
+			* Called when the up arrow should be responded to, moves the camera up and simulates moving the mouse
+			**/
 			up: function (elapsed, dist) {
 				vb.camera.position.y += dist * vb.camera.upVector.y;
 				vb.camera.position.x += dist * vb.camera.upVector.x;
 				vb.inputs.onMouseMove();
 			},
 
+			/**
+			* Called when the down arrow should be responded to, moves the camera down and simulates moving the mouse
+			**/
 			down: function (elapsed, dist) {
 				vb.camera.position.y -= dist * vb.camera.upVector.y;
 				vb.camera.position.x -= dist * vb.camera.upVector.x;
 				vb.inputs.onMouseMove();
 			},
 
+			/**
+			* Called when the right arrow should be responded to, moves the camera right and simulates moving the mouse
+			**/
 			right: function (elapsed, dist) {
 				vb.camera.position.y -= dist * vb.camera.upVector.x;
 				vb.camera.position.x += dist * vb.camera.upVector.y;
 				vb.inputs.onMouseMove();
 			},
 
+			/**
+			* Called when the left arrow should be responded to, moves the camera left and simulates moving the mouse
+			**/
 			left: function (elapsed, dist) {
 				vb.camera.position.y += dist * vb.camera.upVector.x;
 				vb.camera.position.x -= dist * vb.camera.upVector.y;
 				vb.inputs.onMouseMove();
 			},
 
+			/**
+			* Called when the input for anti-clockwise rotation is active, 
+			* rotates the camera and simulates moving the mouse
+			**/
 			rotateCCW: function (elapsed, dist) {
 				var u = vb.camera.upVector;
 				var upX = u.x*Math.cos(-elapsed/vb.inputs.inertia) - u.y * Math.sin(-elapsed/vb.inputs.inertia);
@@ -48,6 +64,10 @@ var VBoard = VBoard || {};
 				vb.inputs.onMouseMove();
 			},
 
+			/**
+			* Called when the input for clockwise rotation is active, 
+			* rotates the camera and simulates moving the mouse
+			**/
 			rotateCW: function (elapsed, dist) {
 				var u = vb.camera.upVector;
 				var upX = u.x*Math.cos(elapsed/vb.inputs.inertia) - u.y * Math.sin(elapsed/vb.inputs.inertia);
@@ -56,6 +76,10 @@ var VBoard = VBoard || {};
 				vb.inputs.onMouseMove();
 			},
 
+			/**
+			* If pieces are selected flips any cards. If no pieces are selected, and there is
+			* a card under the mouse, flips that card
+			**/
 			flipPiece: function () {
 				if(vb.selection.isEmpty()) {
 					var piece = vb.inputs.getPieceUnderMouse(false, true);
@@ -68,6 +92,10 @@ var VBoard = VBoard || {};
 				}
 			},
 
+			/**
+			* If pieces are selected removes them. If no pieces are selected, and there is
+			* a piece under the mouse, removes that piece
+			**/
 			removePiece: function () {
 				if(vb.selection.isEmpty()) {
 					var piece = vb.inputs.getPieceUnderMouse(false, true);
@@ -80,7 +108,9 @@ var VBoard = VBoard || {};
 				}
 			},
 
-			//need to make sure this plays nicely with box selection too
+			/**
+			* Cancels any mouse-based action that has been started
+			**/
 			cancel: function () {
 				vb.selection.clear();
 
@@ -90,6 +120,9 @@ var VBoard = VBoard || {};
 				}
 			},
 
+			/**
+			* Resets the camera to the initial position and rotation
+			**/
 			resetCamera: function () {
 				//resets the camera to default
 				//or at least it would in theory if backspace didn't also go back a page
@@ -102,14 +135,23 @@ var VBoard = VBoard || {};
 				vb.inputs.onMouseMove();
 			},
 
+			/**
+			* Increases size of targeted pieces
+			**/
 			biggify: function () {
 				vb.inputs.handlers.resizePieces(vb.scalingFactor);
 			},
 
+			/**
+			* Reduces size of targeted pieces
+			**/
 			smallify: function () {
 				vb.inputs.handlers.resizePieces(1.0 / vb.scalingFactor);
 			},
 
+			/**
+			* Resizes targeted pieces by gived factor
+			**/
 			resizePieces: function (factor) {
 				var pieces = vb.inputs.getTargetedPieces(true);
 
@@ -126,14 +168,23 @@ var VBoard = VBoard || {};
 				}
 			},
 
+			/**
+			* Rotates targeted pieces anti-clockwise
+			*/
 			rotatePieceCCW: function () {
 				vb.inputs.handlers.rotatePieces(vb.rotationAmount);
 			},
 
+			/** 
+			* Rotates targeted pieces clockwise
+			**/
 			rotatePieceCW: function () {
 				vb.inputs.handlers.rotatePieces(-vb.rotationAmount);
 			},
 
+			/**
+			* Rotates targeted pieces by given angle
+			**/
 			rotatePieces: function (rotation) {
 				var pieces = vb.inputs.getTargetedPieces(true);
 
@@ -151,6 +202,9 @@ var VBoard = VBoard || {};
 			}
 		},
 
+		/**
+		* Initializes all input listeners
+		**/
 		initialize: function () {
 			window.addEventListener("resize", function () {
 				vb.setCameraPerspective()
@@ -191,11 +245,18 @@ var VBoard = VBoard || {};
 			});
 		},
 
+		/**
+		* Sets whether inputs are enabled or not
+		**/
 		setEnabled: function (enabled) {
 			this.inputsEnabled = enabled;
 		},
 
 		//mouse handlers
+
+		/**
+		* Called when mouse is released, triggers approriate actions
+		**/
 		onMouseUp: function (event) {
 			this.mouseDown = false;
 			this.isDraggingBox = false;
@@ -218,6 +279,9 @@ var VBoard = VBoard || {};
 			}
 		},
 
+		/**
+		* Called when mouse is pressed, triggers approriate actions
+		**/
 		onMouseDown: function (event) {
 			var pos = vb.board.screenToGameSpace(new BABYLON.Vector2(vb.scene.pointerX, vb.scene.pointerY));
 
@@ -256,6 +320,9 @@ var VBoard = VBoard || {};
 			vb.internet_explorer_support_event_handled = false;
 		},
 
+		/**
+		* Called when mouse is moved, triggers approriate actions
+		**/
 		onMouseMove: function (event) {
 			//TODO: needs rework
 			if(vb.inputs.mouseDown) {
@@ -299,6 +366,9 @@ var VBoard = VBoard || {};
 			}
 		},
 
+		/**
+		* Called when mouse is scrolled, zooms the camera in or out
+		**/
 		onScroll: function (delta) {
 			var mousePos = vb.board.screenToGameSpace({
 				x: vb.scene.pointerX,
@@ -307,6 +377,9 @@ var VBoard = VBoard || {};
 			this.adjustZoom(mousePos, delta);
 		},
 
+		/**
+		* Adjusts the zoom of the camera by the amount specified by delta, and centered at focusPos
+		**/
 		adjustZoom: function (focusPos, delta) {
 			//TODO: remove magic numbers
 			//we should probably also call the mouse move handler here
@@ -330,7 +403,10 @@ var VBoard = VBoard || {};
 			vb.setCameraPerspective();
 		},
 
-		//we should use the data from the mouse event rather than scene.pointer
+		/**
+		* Called when mouse is dragged (down and moved),
+		* changes the selection box or moves selected pieces as approriate
+		**/
 		onDrag: function (dx, dy) {
 			if (this.isDraggingBox) {
 				vb.selection.dragBox(dx, dy)
@@ -340,6 +416,9 @@ var VBoard = VBoard || {};
 			}
 		},
 
+		/**
+		* Returns selected pieces, if no pieces are selected return the piece under the mouse if there is one
+		**/
 		getTargetedPieces: function (ignoreStatic) {
 			if(vb.selection.isEmpty()) {
 				var piece = vb.inputs.getPieceUnderMouse(false, ignoreStatic);
@@ -354,6 +433,9 @@ var VBoard = VBoard || {};
 			}
 		},
 
+		/**
+		* Returns the piece under the mouse if there is one, null otherwise
+		**/
 		getPieceUnderMouse: function (ignoreSelection, ignoreStatic) {
 			if(ignoreSelection === void 0) {
 				ignoreSelection = false;
@@ -391,6 +473,9 @@ var VBoard = VBoard || {};
 			return null;
 		},
 
+		/**
+		* Returns the private zone under the mouse if there is one, null otherwise
+		**/
 		getZoneUnderMouse: function () {
 			var pick = vb.scene.pick(vb.scene.pointerX, vb.scene.pointerY, function (mesh) {
 				if(mesh.hasOwnProperty("zone")) {
@@ -405,6 +490,9 @@ var VBoard = VBoard || {};
 			return null;
 		},
 
+		/**
+		* Called on a right click, opens a context menu for the piece under the mouse, if there is one
+		**/
 		onRightClick: function () {
 			var piece = this.getPieceUnderMouse();
 
@@ -434,6 +522,9 @@ var VBoard = VBoard || {};
 			}
 		},
 
+		/**
+		* Changes the mouse cursor to a crosshair, and prepares to create a private zone on the next click
+		**/
 		prepAddPrivateZone: function(width, height, color) {
 			this.privateZoneWidth = width;
 			this.privateZoneHeight = height;
@@ -442,6 +533,9 @@ var VBoard = VBoard || {};
 			document.body.style.cursor = "crosshair";
 		},
 
+		/**
+		* Changes the mouse cursor to a crosshair, and prepares to remove a private zone on the next click
+		**/
 		prepRemovePrivateZone: function() {
 			this.removePrivateZoneNextClick = true;
 			document.body.style.cursor = "crosshair";
