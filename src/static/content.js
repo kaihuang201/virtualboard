@@ -2,6 +2,9 @@ var VBoard = VBoard || {};
 (function (vb) {
 
 	vb.content = {
+		/**
+		* Loads a game of parcheesi
+		**/
 		loadParcheesiGame: function() {
 			var parcheesiData = {
 				"background" : vb.board.background.name,
@@ -62,6 +65,9 @@ var VBoard = VBoard || {};
 			vb.sessionIO.loadBoardState(parcheesiData);
 		},
 
+		/**
+		* Loads a parcheesi piece at the given position
+		**/
 		loadParcheesiPiece: function(icon, x, y) {
 			return {
 				"icon" : "/static/img/parcheesi/" + icon + ".png",
@@ -73,6 +79,9 @@ var VBoard = VBoard || {};
 			}
 		},
 
+		/**
+		* Loads a game of chess
+		**/
 		loadChessGame: function () {
 			var chessData = {
 				"background" : vb.board.background.name,
@@ -115,6 +124,9 @@ var VBoard = VBoard || {};
 			vb.sessionIO.loadBoardState(chessData);
 		},
 
+		/**
+		* Loads a chess piece at the given position
+		**/
 		loadChessGameHelper: function (subicon, x, y) {
 			return {
 				"icon" : "/static/img/" + subicon + ".png",
@@ -126,6 +138,9 @@ var VBoard = VBoard || {};
 			};
 		},
 
+		/**
+		* Loads a game of checkers
+		**/
 		loadCheckersGame: function () {
 			var checkersData = {
 				"background" : vb.board.background.name,
@@ -157,6 +172,9 @@ var VBoard = VBoard || {};
 			vb.sessionIO.loadBoardState(checkersData);
 		},
 
+		/**
+		* Creates and returns an array of images of scrabble tiles based on the given tile distribution
+		**/
 		makeScrabbleTileArray: function (distribution) {
 			var tiles = [];
 
@@ -174,6 +192,9 @@ var VBoard = VBoard || {};
 			return tiles;
 		},
 
+		/**
+		* Loads a game of scrabble
+		**/
 		loadScrabbleGame: function () {
 			var distribution = {
 				"wild" : 2,
@@ -262,6 +283,9 @@ var VBoard = VBoard || {};
 			vb.sessionIO.loadBoardState(scrabbleData);
 		},
 
+		/**
+		* Loads a standard deck od cards
+		**/
 		createDefaultDeck: function () {
 			var properties = {
 				"pos" : [vb.camera.position.x, vb.camera.position.y],
@@ -279,6 +303,9 @@ var VBoard = VBoard || {};
 			vb.sessionIO.addPiece(properties);
 		},
 
+		/**
+		* Loads a game of risk
+		**/
 		loadRiskGame: function () {
 			var territories = [];
 
@@ -436,6 +463,9 @@ var VBoard = VBoard || {};
 			vb.sessionIO.loadBoardState(riskData);
 		},
 
+		/**
+		* Loads a game of tic tac toe
+		**/
 		loadTictactoeGame: function() {
 			var tictactoeData = {
 				"background" : vb.board.background.name,
@@ -459,6 +489,9 @@ var VBoard = VBoard || {};
 			vb.sessionIO.loadBoardState(tictactoeData);
 		},
 
+		/**
+		* Loads a tic tac toe piece at the given position
+		**/
 		loadTictactoeHelper: function (subicon, x, y) {
 			return {
 				"icon" : "/static/img/tictactoe/" + subicon + ".png",
