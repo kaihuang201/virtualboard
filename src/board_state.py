@@ -472,7 +472,6 @@ class BoardState:
 		pieces_json = []
 
 		for piece in self.pieces:
-			#if color == WHITE or color == piece.color or piece.color == WHITE or not piece.in_private_zone:
 			pieces_json.append(piece.get_json_obj(complete))
 
 		zones_json = []

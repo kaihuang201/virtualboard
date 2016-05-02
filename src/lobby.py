@@ -37,6 +37,8 @@ class Game:
 		#this is just to get the loop going
 		tornado.ioloop.IOLoop.instance().add_callback(self.check_spam)
 
+	# param: none
+	# return: dictionary 
 	def get_basic_info(self):
 		data = {
 			"id" : self.game_id,
@@ -46,6 +48,8 @@ class Game:
 		}
 		return data
 
+	# param: WebSocketGameHandler local
+	# return: list of dictionary 
 	def get_abridged_clients(self, local):
 		abridged_users = []
 
@@ -59,12 +63,17 @@ class Game:
 			})
 		return abridged_users
 
+
+	# param: int id
+	# return: 
 	def get_client_from_id(self, id):
 		if id in self.clients:
 			return self.clients[id]
 		return None
 
-	#this function must run on the main thread
+	# param: none
+	# return: none
+	# kicks users which are spamming the socket, this function must run on the main thread
 	def check_spam(self):
 		if self.spam_timeout is not None:
 			tornado.ioloop.IOLoop.instance().remove_timeout(self.spam_timeout)
@@ -82,6 +91,9 @@ class Game:
 			self.kickUser(None, user_id, "Excessive spamming")
 		self.spam_timeout = tornado.ioloop.IOLoop.instance().add_timeout(datetime.timedelta(seconds=SPAM_FILTER_TIMEOUT), self.check_spam)
 
+
+	# param: WebSocketGameHandler new_client, string name, array (length 3) color, string password
+	# return: none
 	def connect(self, new_client, name, color, password):
 		if self.password and not (self.host == new_client or password == self.password):
 			response = {
@@ -128,6 +140,9 @@ class Game:
 		}
 		new_client.write_message(json.dumps(mainResponse))
 
+
+	# param: WebSocketGameHandler client, string reason
+	# return: none
 	def disconnect(self, client, reason):
 		del self.clients[client.user_id]
 		self.movebuffer.remove_client(client.user_id)
@@ -167,15 +182,23 @@ class Game:
 		}
 		self.message_all(groupResponse)
 
+
+	# param: dictionary response 
+	# return: none
 	def message_all(self, response):
 		for user_id, client in self.clients.iteritems():
 			client.write_message(json.dumps(response))
 
+	# param: dictionary response, list of tuples colors
+	# return: none
 	def message_colors(self, response, colors):
 		for client in self.clients.itervalues():
 			if client.color in colors:
 				client.write_message(json.dumps(response))
 
+
+	# param: WebSocketGameHandler client, string message
+	# return: none
 	def send_error(self, client, message):
 		error_message = {
 			"type" : "error",
@@ -187,8 +210,9 @@ class Game:
 		}
 		client.write_message(json.dumps(error_message))
 
-	#BoardState has a similar function
-	#should probably be rewritten to avoid duplicaton, oh well
+	# param: WebSocketGameHandler client, Piece piece
+	# return Boolean - False if the piece has a private color which is different from the client's color, true otherwise
+	# BoardState has a similar function, should probably be rewritten to avoid duplicaton, oh well
 	def client_can_interact(self, client, piece):
 		private_colors = piece.get_private_colors()
 
@@ -203,6 +227,8 @@ class Game:
 	# host only commands
 	#==========
 
+	# param: WebSocketGameHandler client, List of dictonaries zones
+	# return: none
 	def add_private_zone(self, client, zones):
 		if client is None or self.host.user_id == client.user_id:
 			new_zone_response = []
@@ -250,6 +276,9 @@ class Game:
 		else:
 			self.send_error(client, "Only the host can use that command")
 
+
+	# param: WebSocketGameHandler client, List of dictionary zones
+	# return: none
 	def remove_private_zone(self, client, zones):
 		if client is None or self.host.user_id == client.user_id:
 			remove_zone_response = []
@@ -303,6 +332,9 @@ class Game:
 		else:
 			self.send_error(client, "Only the host can use that command")
 
+
+	# param: WebSocketGameHandler client, int target, string message
+	# return: none
 	def changeHost(self, client, target, message):
 		if self.host.user_id == client.user_id:
 			new_host = self.get_client_from_id(target)
@@ -321,6 +353,9 @@ class Game:
 		else:
 			self.send_error(client, "Only the host can use that command")
 
+
+	# param: WebSocketGameHandler client, string message
+	# return: none
 	def announce(self, client, message):
 		if client is None or self.host.user_id == client.user_id:
 			announcement = {
@@ -335,6 +370,9 @@ class Game:
 		else:
 			self.send_error(client, "Only the host can use that command")
 
+
+	# param: WebSocketGameHandler client, int target, string message
+	# return: none
 	def kickUser(self, client, target, message):
 		if client is None or self.host.user_id == client.user_id:
 			#yes the host can kick himself, why not
@@ -351,6 +389,9 @@ class Game:
 		else:
 			self.send_error(client, "Only the host can use that command")
 
+
+	# param: WebSocketGameHandler client, dictionary data
+	# return: none
 	def changeServerInfo(self, client, data):
 		if client is None or self.host.user_id == client.user_id:
 
@@ -364,6 +405,9 @@ class Game:
 		else:
 			self.send_error(client, "Only the host can use that command")
 
+
+	# param: WebSocketGameHandler client, dictionary boardData
+	# return: none
 	def loadBoardState(self, client, boardData):
 		if client is None or self.host.user_id == client.user_id:
 
@@ -381,6 +425,9 @@ class Game:
 		else:
 			self.send_error(client, "Only the host can use that command")
 
+
+	# param: WebSocketGameHandler client
+	# return: none
 	def clearBoard(self, client):
 		if client is None or self.host.user_id == client.user_id:
 			for user_id, user in self.clients.iteritems():
@@ -393,6 +440,8 @@ class Game:
 			}
 			self.message_all(response)
 
+	# param: WebSocketGameHandler client
+	# return: none
 	def closeServer(self, client):
 		if client is None or self.host.user_id == client.user_id:
 			for user_id, user in self.clients.iteritems():
@@ -404,6 +453,8 @@ class Game:
 	# general commands
 	#==========
 
+	# param: WebSocketGameHandler client, List of dictionary messages
+	# return: none
 	def chat(self, client, messages):
 		client.spam_amount += 1 + 1*len(messages)
 		response_data = []
@@ -425,6 +476,8 @@ class Game:
 		}
 		self.message_all(response)
 
+	# param: WebSocketGameHandler client, List of dictionary beacons
+	# return: none
 	def beacon(self, client, beacons):
 		client.spam_amount += 0.5 + 0.5*len(beacons)
 		response_data = []
@@ -444,6 +497,9 @@ class Game:
 		}
 		self.message_all(response)
 
+
+	# param: WebSocketGameHandler client, list of dictionary pieces
+	# return: none
 	def pieceTransform(self, client, pieces):
 		client.spam_amount += 0.1 + 0.1*len(pieces)
 
@@ -564,7 +620,9 @@ class Game:
 			else:
 				self.send_error(client, "invalid piece id " + str(pieceData["piece"]))
 
-	#this function must run on the main thread
+	# param: none
+	# return: none
+	# this function must run on the main thread
 	def end_move_timeout(self):
 		instance = tornado.ioloop.IOLoop.instance()
 
@@ -591,6 +649,9 @@ class Game:
 			#server is not very lively, we can just sit around
 			self.movebuffer.flush_timeout = None
 
+
+	# param: WebSocketGameHandler client, list of dictionary pieces
+	# return: none
 	def pieceAdd(self, client, pieces):
 		client.spam_amount += 3 + 1.5*len(pieces)
 		response_data = []
@@ -608,9 +669,11 @@ class Game:
 			"type" : "pieceAdd",
 			"data" : response_data
 		}
-		#self.message_color(piece.color, response)
 		self.message_all(response)
 
+
+	# param: WebSocketGameHandler client, list of dictionary pieces
+	# return: none
 	def pieceRemove(self, client, pieces):
 		client.spam_amount += 0.5 + 0.1*len(pieces) #less spammable because it requires spam to already exist
 		response_data = []
@@ -641,9 +704,9 @@ class Game:
 	# special pieces
 	#==========
 
+	# param: Timer object timer, float current_time
+	# return: none
 	def updateTimer(self, timer, current_time):
-		#timer = self.board_state.get_piece(timer_id)
-
 		if timer == None:
 			return
 		if timer.timeout is not None:
@@ -666,6 +729,9 @@ class Game:
 		}
 		self.message_all(response)
 
+
+	# param: WebSocketGameHandler client, int timer_id
+	# return: none
 	def startTimer(self, client, timer_id):
 		timer = self.board_state.get_piece(timer_id)
 		if timer == None:
@@ -678,9 +744,13 @@ class Game:
 		timer.isRunning = True
 		tornado.ioloop.IOLoop.instance().add_callback(self.initializeTimer, timer, time.time())
 
+	# param: Timer object timer, float start_time
 	def initializeTimer(self, timer, start_time):
 		timer.timeout = tornado.ioloop.IOLoop.instance().add_timeout(start_time + 1.0, self.updateTimer, timer, start_time + 1.0)
 
+
+	# param: WebSocketGameHandler client, int timer_id
+	# return: none
 	def stopTimer(self, client, timer_id):
 		timer = self.board_state.get_piece(timer_id)
 		if timer == None:
@@ -702,6 +772,9 @@ class Game:
 		}
 		self.message_all(response)
 
+
+	# param: WebSocketGameHandler client, dictionary timer_data
+	# return: none
 	def setTimer(self, client, timer_data):
 		timer_id = timer_data["id"]
 		time = timer_data["time"]
@@ -726,6 +799,8 @@ class Game:
 
 		self.message_all(response_data)
 
+	# param: WebSocketGameHandler client, list of dictionary pieces
+	# return: none
 	def setNoteData(self, client, pieces):
 		client.spam_amount += 2 + 2*len(pieces)
 		response_data = []
@@ -752,6 +827,9 @@ class Game:
 		}
 		self.message_all(response)
 
+
+	# param: WebSocketGameHandler client, list of dictionary pieces
+	# return: none
 	def rollDice(self, client, pieces):
 		client.spam_amount += 0.5 + 0.25*len(pieces)
 		response_data = []
@@ -777,6 +855,9 @@ class Game:
 		}
 		self.message_all(response)
 
+
+	# param: WebSocketGameHandler client, list of dictionary pieces
+	# return: none
 	def drawCard(self, client, pieces):
 		#TODO: spam protection needs to be more advanced here
 
@@ -845,6 +926,9 @@ class Game:
 		if len(decktransform_response["data"]) > 0:
 			self.message_all(decktransform_response)
 
+
+	# param: WebSocketGameHandler client, list of dictionary pieces
+	# return: none
 	def flipCard(self, client, pieces):
 		client.spam_amount += 0.5 + 0.25*len(pieces)
 
@@ -879,6 +963,9 @@ class Game:
 			else:
 				self.send_error(client, "invalid deck: " + str(piece_id))
 
+
+	# param: WebSocketGameHandler client, list of dictionary pieces
+	# return: none
 	def addCardToDeck(self, client, pieces):
 		#TODO: spam protection needs to be more advanced here
 
@@ -945,6 +1032,9 @@ class Game:
 			self.message_all(decktransform_response)
 		self.message_all(removepiece_response)
 
+
+	# param: WebSocketGameHandler client, list of dictionary pieces
+	# return: none
 	def shuffleDeck(self, client, pieces):
 		response_data = []
 		for piece in pieces:
@@ -969,6 +1059,9 @@ class Game:
 		}
 		self.message_all(response)
 
+
+	# param: WebSocketGameHandler client, dictionary backgroundData
+	# return: none
 	def setBackground(self, client, backgroundData):
 		client.spam_amount += 3
 		self.board_state.background = backgroundData["icon"]
@@ -981,8 +1074,10 @@ class Game:
 		}
 		self.message_all(response)
 
-	#someone can give themselves a rainbow color by spamming this
-	#whatever it probably looks sweet
+	# param: WebSocketGameHandler client, dictionary colorData
+	# return: none
+	# someone can give themselves a rainbow color by spamming this
+	# whatever it probably looks sweet
 	def changeColor(self, client, colorData):
 		client.spam_amount += 10
 		old_color = client.color
@@ -1018,6 +1113,8 @@ class Game:
 		}
 		self.message_all(response)
 
+	# param: WebSocketGameHandler client
+	# return: none
 	def prepareToSave(self, client):
 			response = {
 				"type" : "savePrep",

@@ -29,6 +29,9 @@ class MoveBuffer:
 		#since there is no "tail packet" this will have to do
 		self.synchronized_clients = set()
 
+
+	# param: int id - piece id, list pos - x, y coords, int user - user id
+	# return: none
 	def add(self, id, pos, user):
 		self.remove(id)
 		self.list_map[id] = MoveBufferNode(id, pos, user, self.tail, self.synchronized_clients)
@@ -45,6 +48,9 @@ class MoveBuffer:
 			self.head = self.list_map[id]
 		self.tail = self.list_map[id]
 
+
+	# param: int id - piece id
+	# return: none
 	def remove(self, id):
 		if id in self.list_map:
 			prev = self.list_map[id].prev
@@ -73,15 +79,25 @@ class MoveBuffer:
 				next.prev = prev
 			del self.list_map[id]
 
+	# param: int user_id
+	# return: none
 	def add_client(self, user_id):
 		self.client_map[user_id] = None
 		self.synchronized_clients.add(user_id)
 
+
+	# param: int user_id
+	# return: none
 	def remove_client(self, user_id):
 		self.flush(user_id)
 		self.synchronized_clients.remove(user_id)
 		del self.client_map[user_id]
 
+
+	# param: int user_id (optional)
+	# return: Boolean 
+	# if no id is given return True if any packets are pending, false otherwise
+	# else, return True if that user has packets pending, false otherwise
 	def has_entries(self, user_id=None):
 		if user_id is None:
 			#do we have any packets pending for anyone?
@@ -94,6 +110,9 @@ class MoveBuffer:
 			return False
 		return True
 
+
+	# param: int user_id
+	# return: list of dictionaries data
 	def flush(self, user_id):
 		piece = self.client_map[user_id]
 		data = []

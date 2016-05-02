@@ -14,6 +14,7 @@ class PrivateZone:
 		self.zone_id = zone_id
 		self.pieces = set()
 
+	# return: json representation of this private zone
 	def get_json_obj(self):
 		return {
 			"pos" : [
@@ -29,6 +30,8 @@ class PrivateZone:
 			"id" : self.zone_id
 		}
 
+	# param: int x, int y 
+	# return: true if this this point is within the private zone, false otherwise
 	def contains(self, x, y):
 		ax = self.x + ((self.height / 2.0) * -math.sin(self.rotation) - (self.width / 2.0) * math.cos(self.rotation))
 		ay = self.y + ((self.height / 2.0) * math.cos(self.rotation) - (self.width / 2.0) * math.sin(self.rotation))
@@ -53,10 +56,15 @@ class PrivateZone:
 
 		return True
 
+	# param: piece object
+	# return: none
 	def add_piece(self, piece):
 		self.pieces.add(piece)
 		piece.zones.add(self)
 
+
+	# param: piece object
+	# return: none
 	def remove_piece(self, piece):
 		self.pieces.remove(piece)
 		piece.zones.remove(self)
