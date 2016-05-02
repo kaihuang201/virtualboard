@@ -6,11 +6,14 @@ import jsonschema
 from lobby import *
 
 class WebSocketGameHandler(tornado.websocket.WebSocketHandler):
+	# Initiates the client's connection, called when the websocket is opened
 	def open(self, *args):
 		self.game = None
 		self.name = None
 		self.user_id = None
 
+	# Reacts to incoming messages based on their content, typically by calling a function of the game,
+	# Called when a message is received
 	def on_message(self, message):
 		print(message)
 		message_length = len(message)
@@ -212,6 +215,7 @@ class WebSocketGameHandler(tornado.websocket.WebSocketHandler):
 				}
 				self.write_message(json.dumps(response))
 
+	# Disconnect the client from the game they are in, called when the websocket is closed
 	def on_close(self):
 		if self.game is not None:
 			self.game.disconnect(self, "socket terminated")
