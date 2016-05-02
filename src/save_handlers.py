@@ -5,7 +5,7 @@ import datetime
 from lobby import *
 
 class DownloadStateHandler(tornado.web.RequestHandler):
-	#TODO: we should probably use the server password instead of a key
+	#Checks that the given key matches the lobby's password, and if it does initiates a download of the board state
     def get(self):
         lobby_id = int(self.get_argument("lobbyId"))
         key = self.get_argument("key")
