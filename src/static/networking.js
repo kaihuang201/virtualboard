@@ -3,12 +3,14 @@ var VBoard = VBoard || {};
 
 	//socket IO before user is in a game
 	vb.limboIO = {
+		// Sends a JSON message to the server
 		send: function (data) {
 			vb.socket.send(JSON.stringify(data));
 		},
 
 		//the following functions are called by the client to send queries to the server
 
+		// Asks the server for a list of all games
 		listGames: function () {
 			var data = {
 				"type" : "listGames"
@@ -16,6 +18,7 @@ var VBoard = VBoard || {};
 			this.send(data);
 		},
 
+		// Asks the server if a game exists with the given id
 		gameIDExists: function (lobbyID) {
 			var data = {
 				"type" : "gameIDExists",
@@ -26,6 +29,7 @@ var VBoard = VBoard || {};
 			this.send(data);
 		},
 
+		// Tells the server to add the user to the given game
 		joinGame: function (userName, userColor, gameID, password) {
 			var data = {
 				"type" : "initJoin",
@@ -39,6 +43,7 @@ var VBoard = VBoard || {};
 			this.send(data);
 		},
 
+		// Tells the server create a new game with the given properties, with the user as host
 		hostGame: function (userName, userColor, gameName, password) {
 			var data = {
 				"type" : "initHost",
@@ -120,6 +125,7 @@ var VBoard = VBoard || {};
 
 	//socket IO while in a game session
 	vb.sessionIO = {
+		// Sends a JSON message to the server
 		send: function (data) {
 			vb.socket.send(JSON.stringify(data, function(key, value) {
 				if(value.toFixed) {
@@ -131,6 +137,8 @@ var VBoard = VBoard || {};
 		},
 
 		//functions used to send queries to the server
+
+		// Tells the server to send a message to the game's chat
 		sendChatMessage: function (message) {
 			if(message.constructor === Array) {
 				var chatData = [];
@@ -154,6 +162,7 @@ var VBoard = VBoard || {};
 			this.send(data);
 		},
 
+		// Tells the server to show a beacon at the given (x, y) position
 		sendBeacon: function (x, y) {
 			if(x.constructor === Array) {
 				var beaconData = [];
@@ -177,6 +186,7 @@ var VBoard = VBoard || {};
 			this.send(data);
 		},
 
+		// Tells the server to disconnect the user
 		disconnect: function (reason) {
 			var data = {
 				"type" : "disconnect",
@@ -187,6 +197,7 @@ var VBoard = VBoard || {};
 			this.send(data);
 		},
 
+		// Tells the server change the user's color
 		changeColor: function (color) {
 			var data = {
 				"type" : "changeColor",
@@ -197,6 +208,7 @@ var VBoard = VBoard || {};
 			this.send(data);
 		},
 
+		// Asks the server for a list of players in the game
 		getClientList: function () {
 			var data = {
 				"type" : "listClients"
@@ -204,6 +216,7 @@ var VBoard = VBoard || {};
 			this.send(data);
 		},
 
+		// Tells the server to add a new piece
 		//input data is an object that maps properties to values (see pieceData for an example)
 		addPiece: function (inputData) {
 			if(inputData.constructor !== Array) {
@@ -241,6 +254,7 @@ var VBoard = VBoard || {};
 			this.send(data);
 		},
 
+		// Tells the server to remove a piece
 		//takes an array of integers representing piece ids
 		removePiece: function (id) {
 			if(id.constructor === Array) {
@@ -271,6 +285,7 @@ var VBoard = VBoard || {};
 			this.send(data);
 		},
 
+		// Tells the server to set the game's background
 		setBackground: function (icon) {
 			var data = {
 				"type" : "setBackground",
@@ -353,6 +368,8 @@ var VBoard = VBoard || {};
 		},
 
 		//all of the following should send a pieceTransform message
+
+		// Moves a piece, either through the buffer or right away as appropriate
 		movePiece: function (id, x, y) {
 			if(id.constructor !== Array) {
 				this.moveBuffer.add(id, x, y);
@@ -368,6 +385,7 @@ var VBoard = VBoard || {};
 			}
 		},
 
+		// Ends a move timeout, telling the server to move the piece
 		endMoveTimeout: function () {
 			clearTimeout(this.moveBuffer.flushTimeout);
 
@@ -387,8 +405,7 @@ var VBoard = VBoard || {};
 			}
 		},
 
-		//TODO: implement
-
+		// Tells the server to rotate a piece
 		rotatePiece: function (id, angle) {
 			if(id.constructor === Array) {
 				var pieceData = [];
@@ -414,6 +431,7 @@ var VBoard = VBoard || {};
 			this.send(data);
 		},
 
+		// Tells the server to change a piece's size
 		resizePiece: function (id, size) {
 			if(id.constructor === Array) {
 				var pieceData = [];
@@ -439,6 +457,7 @@ var VBoard = VBoard || {};
 			this.send(data);
 		},
 
+		// Tells the server to change a piece's color
 		//an entry in color is an array of length 3
 		recolorPiece: function (id, color) {
 			if(id.constructor === Array) {
@@ -465,6 +484,7 @@ var VBoard = VBoard || {};
 			this.send(data);
 		},
 
+		// Tells the server make a static piece not static, or vice-versa
 		//can take either a single integer, or an array of ids
 		toggleStatic: function (id) {
 			if(id.constructor === Array) {
@@ -493,6 +513,7 @@ var VBoard = VBoard || {};
 
 		//interacting with special pieces
 
+		// Tells the server to roll a die
 		rollDice: function (id) {
 			if(id.constructor === Array) {
 				var pieceData = [];
@@ -516,6 +537,7 @@ var VBoard = VBoard || {};
 			this.send(data);
 		},
 
+		// Tells the server to start a timer
 		startTimer: function(id) {
 			var data = {
 				"type" : "startTimer",
@@ -526,6 +548,7 @@ var VBoard = VBoard || {};
 			this.send(data);
 		},
 
+		// Tells the server to stop a timer
 		stopTimer: function(id) {
 			var data = {
 				"type" : "stopTimer",
@@ -536,6 +559,7 @@ var VBoard = VBoard || {};
 			this.send(data);
 		},
 
+		// Tells the server to set the specified timer to the given time
 		setTimer: function(id, time) {
 			var data = {
 				"type" : "setTimer",
@@ -547,6 +571,7 @@ var VBoard = VBoard || {};
 			this.send(data);
 		},
 
+		// Tells the server to set the text data of the specified notepad to the given value
 		setNoteData: function(id, text, size) {
 			if(id.constructor === Array) {
 				var responseData = [];
@@ -578,6 +603,7 @@ var VBoard = VBoard || {};
 			this.send(data);
 		},
 
+		// Tells the server to flip the specified card
 		flipCard: function (id) {
 			if(id.constructor === Array) {
 				var pieceData = [];
@@ -601,7 +627,7 @@ var VBoard = VBoard || {};
 			this.send(data);
 		},
 
-		// Might need to change data format depending on implementation of interface
+		// Tells the server to add the specified card to the specified deck
 		addCardToDeck: function (cardID, deckID) {
 			if(deckID.constructor === Array) {
 				var pieceData = [];
@@ -633,6 +659,7 @@ var VBoard = VBoard || {};
 			this.send(data)
 		},
 
+		// Tells the server to draw a card from the specified deck
 		drawCard: function (deckID) {
 			console.log("draw card" + deckID)
 			var cameraRotation = Math.atan2(vb.camera.upVector.y, vb.camera.upVector.x);
@@ -661,6 +688,7 @@ var VBoard = VBoard || {};
 			this.send(data);
 		},
 
+		// Tells the server to shuffle the specified deck
 		shuffleDeck: function (deckID) {
 			if(deckID.constructor === Array) {
 				var pieceData = [];
@@ -685,6 +713,7 @@ var VBoard = VBoard || {};
 
 		},
 
+		// Requests the the server accepts a http request for a savefile download in the near future
 		requestSave: function () {
 			var data = {
 				"type" : "requestSave"
@@ -692,6 +721,7 @@ var VBoard = VBoard || {};
 			this.send(data);
 		},
 
+		// Requests that the server accept a file to load from
 		requestLoad: function () {
 			var data = {
 				"type" : "requestLoad"
@@ -701,6 +731,7 @@ var VBoard = VBoard || {};
 
 		//host only commands
 
+		// Tells the server to create a private zone with the given properties
 		addPrivateZone: function(x, y, width, height, color) {
 			if(vb.users.getLocal().isHost) {
 				var data = {
@@ -718,6 +749,7 @@ var VBoard = VBoard || {};
 			}
 		},
 
+		// Tells the server to remove the specified private zone
 		removePrivateZone: function (id) {
 			if(vb.users.getLocal().isHost) {
 				var data = {
@@ -732,6 +764,7 @@ var VBoard = VBoard || {};
 			}
 		},
 
+		// Tells the server to change to a new hosting player
 		//id is user id of new host
 		changeHost: function (id, message) {
 			if(vb.users.getLocal().isHost) {
@@ -746,6 +779,7 @@ var VBoard = VBoard || {};
 			}
 		},
 
+		// Tells the server to broadcast an announcment to all players
 		announcement: function (message) {
 			if(vb.users.getLocal().isHost) {
 				var data = {
@@ -758,6 +792,7 @@ var VBoard = VBoard || {};
 			}
 		},
 
+		// Tells the server to change its information
 		//example serverData:
 		// {
 		//	"name" : "new servername",
@@ -773,6 +808,7 @@ var VBoard = VBoard || {};
 			}
 		},
 
+		// Tells the server to kick the specified user from the game, and display the given message to them
 		kickUser: function (id, message) {
 			if(vb.users.getLocal().isHost) {
 				var data = {
@@ -786,6 +822,7 @@ var VBoard = VBoard || {};
 			}
 		},
 
+		// Tells the server to clear the board
 		clearBoard: function () {
 			if(vb.users.getLocal().isHost) {
 				var data = {
@@ -795,6 +832,7 @@ var VBoard = VBoard || {};
 			}
 		},
 
+		// Tells the server to close the game
 		closeServer: function () {
 			if(vb.users.getLocal().isHost) {
 				var data = {
@@ -804,6 +842,7 @@ var VBoard = VBoard || {};
 			}
 		},
 
+		// Tells the server to load the boards state in boardData
 		loadBoardState: function (boardData) {
 			var data = {
 				"type" : "loadBoardState",
